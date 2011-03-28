@@ -1,0 +1,70 @@
+The first time you start this script, I recommend you do it manually.
+You'll be able to edit your settings in order to suit your needs.
+Those settings will be stored in a settings files that will be generated on first run. That way you won't need to set them again if you update the script.
+
+The only required settings are the path to your destination_folder (aka : the folder where you want your torrents to be expanded), the path to the unrar program and the path to the unzip program.
+
+This script has been tested on Mac OS 10.6.7, Ubuntu 9.10, Debian 6 and the Popcornhour C200 Media Player and seems to work reliably.
+
+Here is the complete list of settings that are offered in this script
+
+##################################################################################
+################################ USER VARIABLES ##################################
+########################### These variables are required #########################
+################# On 1st run they will be stored in an ini file###################
+## The destination folder is where files will be extracted
+## It MUST be different from the one where your torrents are located
+## A sub directory of your torrents directory is fine though
+destination_folder="/path/to/your/destination/folder/"
+################################ Software paths ##################################
+################# Please check if these variables are correct ####################
+unrar_bin="/usr/bin/unrar"
+unzip_bin="/usr/bin/unzip"
+ccd2iso_bin="/usr/bin/ccd2iso"
+mkvdts2ac3_bin="/path/to/mkvdts2ac3.sh"
+##################### Supported file extensions - Comma separated ################
+########### You must have at least one extension enabled in each field ###########
+############### DON T ADD RAR OR ZIP EXTENSIONS IN THESE FIELDS ##################
+supported_extensions="avi,mkv,divx,iso,img,mp3,m4a,wav,srt,idx,sub,dvd"
+tv_show_extensions="avi,mkv,srt"
+movies_extensions="avi,mkv,divx,iso,srt,idx,sub"
+music_extensions="mp3,m4a,wav"
+##################### Movies detection patterns - Comma separated ################
+##################### You must have at least one pattern enabled #################
+movies_detect_patterns="r5,ts,720p,1080p,dvdrip,bdrip,brrip,dvdscr,dvdr"
+####################### Optional functionalities variables #######################
+#################### Set these variables to "no" to disable ######################
+## Fix numbering for TV Shows - Switch variable to "yes" to enable
+tv_shows_fix_numbering="yes"
+## Cleanup Filenames - Switch variable to "yes" to enable
+clean_up_filenames=yes
+## Create Wii Cuesheet - Switch variable to "yes" to enable
+wii_post="no"
+## Convert img to iso - Switch variable to "yes" to enable
+img_post="no"
+## Copy or move TV Shows to a specific folder - choose action (copy / move)
+## and add path to enable
+tv_shows_post="no"
+tv_shows_post_path="no"
+## Copy or move movies to a specific folder - choose action (copy / move)
+## and add path to enable
+movies_post="no"
+movies_post_path="no"
+## Copy or move music to a specific folder - choose action (copy / move)
+## and add path to enable
+music_post="no"
+music_post_path="no"
+## Convert DTS track from MKV files to AC3 - Switch variable to "yes" to enable and check mkvdts2ac3.sh path
+dts_post="no"
+## Edit files and folders permissions - If you don t know what that means set it all to "no"
+user_perm_post="no"
+group_perm_post="no"
+files_perm_post="no"
+folder_perm_post="no"
+edit_perm_as_sudo="no"
+## Use a source / resulting files log shared with a third party app - Add path to enable
+third_party_log="no"
+## Reset timestamp (mtime)
+reset_timestamp="no"
+############################ END USER VARIABLES ##################################
+################################################################################## 
