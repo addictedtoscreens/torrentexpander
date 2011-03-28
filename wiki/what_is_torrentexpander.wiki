@@ -1,6 +1,0 @@
-torrentexpander can be launched as a daemon by the Transmission torrent client of by Flexget.
-It can also be run manually : in that case you'll get a basic GUI that will enable you to choose a torrent file or folder and the destination where it should be expanded.
-It can expand rar archives (including multipart) and zip archives, but it can also manage many audio and video files.
-It can also solve numbering issues on TV series and cleanup filenames.
-It also has the ability to move TV series / movies / music files to a folder of your choice.
-On Ubuntu and Debian, it can interact with third party apps like ccd2iso (to convert IMG to ISO) and mkvdts2ac3 (to convert a DTS track from a MKV into an AC3 track)
