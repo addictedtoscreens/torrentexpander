@@ -1,0 +1,6 @@
+In the transmission GUI, enable the "call script when torrent is completed" option and select the path to the torrentexpander.sh script. You're done !
+
+You can also do it command line way by editing Transmission's settings file (/$HOME/.config/Transmission/settings.json  or   /share/.transmission/settings.json)
+and editing those two lines
+"script-torrent-done-enabled": true,
+"script-torrent-done-filename": "/path/to/torrentexpander.sh $TR_TORRENT_DIR/$TR_TORRENT_NAME" 
