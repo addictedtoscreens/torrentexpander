@@ -1,6 +1,28 @@
-torrentexpander can be launched as a daemon by the Transmission torrent client of by Flexget.
-It can also be run manually : in that case you'll get a basic GUI that will enable you to choose a torrent file or folder and the destination where it should be expanded.
-It can expand rar archives (including multipart) and zip archives, but it can also manage many audio and video files.
-It can also solve numbering issues on TV series and cleanup filenames.
-It also has the ability to move TV series / movies / music files to a folder of your choice.
-On Ubuntu and Debian, it can interact with third party apps like ccd2iso (to convert IMG to ISO) and mkvdts2ac3 (to convert a DTS track from a MKV into an AC3 track)
+Torrentexpander can be launched as a daemon by the Transmission torrent client of by Flexget.<br />
+It can also be run manually : in that case you'll get a basic GUI that will enable you to choose a torrent file or folder and the destination where it should be expanded.<br />
+It can expand rar archives (including multipart) and zip archives, but it can also manage many audio and video files.<br />
+It can also solve numbering issues on TV series and cleanup filenames.<br />
+It also has the ability to move TV series / movies / music files to a folder of your choice.<br />
+On Ubuntu and Debian, it can interact with third party apps like ccd2iso (to convert IMG to ISO) and mkvdts2ac3 (to convert a DTS track from a MKV into an AC3 track)<br />
+<br />
+<br />
+<B>Full features list</B> (some of them are not enabled by default and have to be activated by editing the torrentexpander_settings.ini file generated on first run) :<br /><br />
+- This script can be launched manually and offer a basic interface to select a torrent and a destination<br />
+- This script can be started automatically by Flexget or Transmission and run as a daemon<br />
+- This script can be fed with files with RAR, ZIP, AVI, MKV, DIVX, ISO, IMG, MP3, M4A, WAV, SRT, IDX, SUB, DVD extension or folders containing any of those files<br />
+- RAR / Multipart RAR and ZIP archives are expanded<br />
+- Sample files won't be kept<br />
+- If the torrent is an archive or a folder with only one file in it, the expanded file will be renamed as the initial folder or archive (very often, once expanded, the files have dummy names, making it impossible to identify them)<br />
+- This script will then try to correct weird series numbering (101 or 1x01 for example) and convert them to the S01E01 norm<br />
+- A cleanup will be applied to your files so that TV Series end up renamed as "Series Name SXXEXX".<br />
+- On movies, all the script does is replace the dots and underscores by spaces<br />
+- If the <a href="https://github.com/JakeWharton/mkvdts2ac3">mkvdts2ac3.sh</a> script can be run on your computer, you can ask this script to convert a DTS track from a MKV file to an AC3 track (the AC3 track will be added to your MKV file and not replace the DTS track)<br />
+- If you're running Ubuntu and a IMG disc image is detected, it can be converted to an ISO disc image (requires ccd2iso)<br />
+- This script can detect Music files and copy /move them to a folder of your choice.<br />
+- This script can detect TV Series and copy /move them to a folder of your choice.<br />
+- This script will do its best to detect Movies and copy /move them to a folder of your choice (results are not garanteed as the script relies on patterns in filenames)<br />
+- This script can set files and folders permissions (chown requires the script to be run by the root user)<br />
+- This script can reset the modification time on files (can be useful if you want to sort your files by modification date)<br />
+- You can edit the detection patterns to suit your needs by editing the torrentexpander_settings.ini file
+
+
