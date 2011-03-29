@@ -3,6 +3,8 @@ You'll be able to edit your settings in order to suit your needs.
 Those settings will be stored in a settings files that will be generated on first run. That way you won't need to set them again if you update the script.
 
 The only required settings are the path to your destination_folder (aka : the folder where you want your torrents to be expanded), the path to the unrar program and the path to the unzip program.
+- In Mac OS X, the script comes pre-configured  to expand torrents to your desktop. All you have to do is download <a href="http://www.rarlab.com/rar/rarosx-4.0.0.tar.gz">Unrar from Winrar's website</a>. Expand the rar folder and drag it to your /Applications/ folder
+- On the PopCornHour C200 / A200 / A210, you don't have to do anything except 
 
 This script has been tested on Mac OS 10.6.7, Ubuntu 9.10, Debian 6 and the Popcornhour C200 Media Player and seems to work reliably.
 
