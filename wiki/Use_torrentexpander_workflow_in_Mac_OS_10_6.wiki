@@ -1,4 +1,4 @@
-- Download <a href="http://www.rarlab.com/rar/rarosx-4.0.0.tar.gz">Unrar from Winrar's website</a>. Expand the rar folder and drag it to your /Applications/ folder<br />
+- Download <a href="http://www.rarlab.com/rar/rarosx-4.0.0.tar.gz">Rar from Winrar's website</a>. Expand the rar folder and drag it to your /Applications/ folder<br />
 - Drag "torrentexpander.workflow" to /$HOME/Services/<br />
 - In Mac OS X Finder, Select the Finder / Services / Services Preferences menu and activate torrentexpander<br />
 <br />
