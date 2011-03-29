@@ -1,6 +1,8 @@
-In the transmission GUI, enable the "call script when torrent is completed" option and select the path to the torrentexpander.sh script. You're done !
+In the transmission GUI, enable the "call script when torrent is completed" option and select the path to the torrentexpander.sh script. You're done !<br />
+<br />
+You can also do it command line way by editing Transmission's settings file <br />(/$HOME/.config/Transmission/settings.json  or   /share/.transmission/settings.json)
+and editing those two lines :<br />
+"script-torrent-done-enabled": true,<br />
+"script-torrent-done-filename": "/path/to/torrentexpander.sh $TR_TORRENT_DIR/$TR_TORRENT_NAME" <br />
 
-You can also do it command line way by editing Transmission's settings file (/$HOME/.config/Transmission/settings.json  or   /share/.transmission/settings.json)
-and editing those two lines
-"script-torrent-done-enabled": true,
-"script-torrent-done-filename": "/path/to/torrentexpander.sh $TR_TORRENT_DIR/$TR_TORRENT_NAME" 
+On the PopCornHour C200 / A200 / A210, you'll need to enable SSH access to your NMT and chmod +x the script to allow it to run.
