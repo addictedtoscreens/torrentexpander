@@ -12,6 +12,8 @@ if [[ "$(uname -a)" == *Darwin* ]]; then OS="darwin"; elif [[ "$(uname -a)" == *
 if [ -t 1 ] && [ "$subtitles_mode" != "yes" ]; then has_display="yes"; fi
 if [ "$1" == "-c" ]; then first_run="yes"; fi
 
+## Checking if commit works
+
 ##################################################################################
 ##                   TORRENTEXPANDER 
 ##                   v0.14
