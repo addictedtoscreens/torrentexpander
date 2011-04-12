@@ -684,11 +684,14 @@ if [[ "$tv_shows_fix_numbering" == "yes" && "$(cat "$log_file" | egrep -i "([123
 	elif [[ "$tv_shows_fix_numbering" == "yes" && "$(echo "$line" | egrep -i "([^eE])([12345689])([012345])([0-9])([^0123456789pPiI])")" && "$(echo "$line" | egrep -i "$tv_show_extensions_rev")" ]] || [[ "$tv_shows_fix_numbering" == "yes" && "$(echo "$line" | egrep -i "([^eE])([12345689])([012345])([0-9])([^0123456789pPiI])")" && -d "$line" ]]; then
 		ren_file=`echo "$item" | sed 's;\([^eE]\)\([12345689]\)\([012345]\)\([0-9]\)\([^0123456789pPiI]\);\1S0\2E\3\4\5;g'`;
 	fi
+	bis="_bis"
 	ren_location=`echo "$(dirname "$source")/$ren_file"`;
+	ren_temp_location=`echo "$(dirname "$source")/$ren_file$bis"`;
+	source_bis=`echo "$line"`;
 	if [ "$has_display" == "yes" ] && [ "$item" != "$ren_file" ]; then echo "- Renaming $item to $ren_file";  fi
-	if [[ -d "$ren_location" && "$(dirname "$source")/" == "$destination_folder" ]]; then rm -rf "$ren_location"; fi
-	if [ "$item" != "$ren_file" ] && [ "$OS" == "darwin" ]; then mv -f "$source" "$ren_location" && sed -i '' "s;^$source;$ren_location;g" "$log_file"
-	elif [ "$item" != "$ren_file" ] && [ "$OS" != "darwin" ]; then mv -f "$source" "$ren_location" && sed -i "s;^$source;$ren_location;g" "$log_file"
+	if [[ -d "$ren_location" && "$(dirname "$source")/" == "$destination_folder" ]]; then mv -f "$source" "$ren_temp_location"; rm -rf "$ren_location"; source="$ren_temp_location"; fi
+	if [ "$item" != "$ren_file" ] && [ "$OS" == "darwin" ]; then mv -f "$source" "$ren_location" && sed -i '' "s;^$source_bis;$ren_location;g" "$log_file"
+	elif [ "$item" != "$ren_file" ] && [ "$OS" != "darwin" ]; then mv -f "$source" "$ren_location" && sed -i "s;^$source_bis;$ren_location;g" "$log_file"
 	fi
 done
 fi
@@ -696,7 +699,7 @@ fi
 
 ## Cleanup filenames
 if [[ "$has_display" == "yes" && "$clean_up_filenames" == "yes" ]]; then step_number=$(( $step_number + 1 )) && echo "Step $step_number : Cleaning up filenames";  fi
-if [[ "$has_display" == "yes" && "$clean_up_filenames" == "yes" ]]; then for line in $(cat "$log_file"); do
+if [[ "$clean_up_filenames" == "yes" ]]; then for line in $(cat "$log_file"); do
 	item=`echo "$(basename "$line")"`;
 	ren_file=`echo "$item"`;
 	source=`echo "$line"`;
@@ -719,17 +722,20 @@ if [[ "$has_display" == "yes" && "$clean_up_filenames" == "yes" ]]; then for lin
 	elif [[ "$clean_up_filenames" == "yes" && "$(echo "$line" | egrep -i "$movies_extensions_rev")" ]] || [[ "$clean_up_filenames" == "yes" && -d "$source" ]]; then
 		ren_file=`echo "$title_clean_ter$extension"`;
 	fi
+	bis="_bis"
 	ren_location=`echo "$(dirname "$source")/$ren_file"`;
+	ren_temp_location=`echo "$(dirname "$source")/$ren_file$bis"`;
+	source_bis=`echo "$line"`;
 	if [ "$has_display" == "yes" ] && [ "$item" != "$ren_file" ]; then echo "- Renaming $item to $ren_file";  fi
-	if [[ -d "$ren_location" && "$(dirname "$source")/" == "$destination_folder" ]]; then rm -rf "$ren_location"; fi
-	if [ "$item" != "$ren_file" ] && [ "$OS" == "darwin" ]; then mv -f "$source" "$ren_location" && sed -i '' "s;^$source;$ren_location;g" "$log_file"
-	elif [ "$item" != "$ren_file" ] && [ "$OS" != "darwin" ]; then mv -f "$source" "$ren_location" && sed -i "s;^$source;$ren_location;g" "$log_file"
+	if [[ -d "$ren_location" && "$(dirname "$source")/" == "$destination_folder" ]]; then mv -f "$source" "$ren_temp_location"; rm -rf "$ren_location"; source="$ren_temp_location"; fi
+	if [ "$item" != "$ren_file" ] && [ "$OS" == "darwin" ]; then mv -f "$source" "$ren_location" && sed -i '' "s;^$source_bis;$ren_location;g" "$log_file"
+	elif [ "$item" != "$ren_file" ] && [ "$OS" != "darwin" ]; then mv -f "$source" "$ren_location" && sed -i "s;^$source_bis;$ren_location;g" "$log_file"
 	fi
 done
 fi
 
 if [[ "$folder_short" && "$tv_shows_fix_numbering" == "yes" && "$OS" == "darwin" ]] || [[ "$folder_short" && "$clean_up_filenames" == "yes" && "$OS" == "darwin" ]]; then sed -i '' '$d' "$log_file"
-elif [[ "$folder_short" && "$tv_shows_fix_numbering" == "yes" && "$OS" != "darwin" ]] || [[ "$folder_short" && "$clean_up_filenames" == "yes" && "$OS" == "darwin" ]]; then sed -i '$d' "$log_file"
+elif [[ "$folder_short" && "$tv_shows_fix_numbering" == "yes" && "$OS" != "darwin" ]] || [[ "$folder_short" && "$clean_up_filenames" == "yes" && "$OS" != "darwin" ]]; then sed -i '$d' "$log_file"
 fi
 
 
