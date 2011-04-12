@@ -640,6 +640,8 @@ for line in $(cat "$log_file"); do
 	fi
 done
 
+# test
+
 ## If more than one resulting file, rename and fix numbering for enclosing folder 
 if [ "$tv_shows_fix_numbering" == "yes" ] && [ "$(echo "$folder_short" | egrep -i "([123456789])([xX])([0-9])([0-9])")" ]; then
 		folder_short=`echo "$folder_short" | sed 's;\([123456789]\)\([xX]\)\([0-9]\)\([0-9]\);S0\1E\3\4;g'`;
