@@ -464,6 +464,15 @@ if [ "$current_folder" ]; then
 			zipFiles=`ls $directory | fgrep -i .zip`
 			searchPath="$directory/$zipFiles"
 			"$unzip_bin" -o -j "$searchPath" -d "$temp_folder" && ls -1 "$temp_folder" >> "$log_file" && rm -rf "$temp_folder"
+		elif [ "$(ls $directory | egrep -i "$music_extensions_rev" )" ]; then
+			audioFiles=`ls $directory | egrep -i "$music_extensions_rev"`;
+			for f in $(echo -e "$audioFiles"); do
+				item=`echo "$directory/$f"`;
+				item_short=`echo "$f"`
+				depth=$(( $(echo "$directory/" | sed "s;$torrent_directory;;g" | sed "s;[^/];;g" | wc -c) - 1 ))
+				if [[ $depth -eq 1 ]]; then destination_name="$item_short"; elif [[ $depth -gt 1 ]]; then destination_name="$(echo "$item" | sed "s;$current_folder/;;g" | sed "s;/; - ;g")"; fi
+				echo "$destination_name" >> "$log_file"
+			done
 		elif [ "$(ls $directory | egrep -i "$supported_extensions_rev" )" ]; then
 			otherFiles=`ls $directory | egrep -i "$supported_extensions_rev"`;
 			item=`echo "$otherFiles"` && echo "$item" >> "$log_file"
@@ -493,6 +502,15 @@ if [ "$current_folder" ]; then
 			zipFiles=`ls $directory | fgrep -i .zip`
 			searchPath="$directory/$zipFiles"
 			nice -n 15 "$unzip_bin" -o -j "$searchPath" -d "$temp_folder" && ls -1 "$temp_folder" >> "$log_file" && rm -rf "$temp_folder"
+		elif [ "$(ls $directory | egrep -i "$music_extensions_rev" )" ]; then
+			audioFiles=`ls $directory | egrep -i "$music_extensions_rev"`;
+			for f in $(echo -e "$audioFiles"); do
+				item=`echo "$directory/$f"`;
+				item_short=`echo "$f"`
+				depth=$(( $(echo "$directory/" | sed "s;$torrent_directory;;g" | sed "s;[^/];;g" | wc -c) - 1 ))
+				if [[ $depth -eq 1 ]]; then destination_name="$item_short"; elif [[ $depth -gt 1 ]]; then destination_name="$(echo "$item" | sed "s;$current_folder/;;g" | sed "s;/; - ;g")"; fi
+				echo "$destination_name" >> "$log_file"
+			done
 		elif [ "$(ls $directory | egrep -i "$supported_extensions_rev" )" ]; then
 			otherFiles=`ls $directory | egrep -i "$supported_extensions_rev"`;
 			item=`echo "$otherFiles"` && echo "$item" >> "$log_file"
@@ -500,7 +518,6 @@ if [ "$current_folder" ]; then
 	done
 	fi
 fi
-
 
 
 ## Expanding and copying folders to the destination folder
@@ -530,6 +547,14 @@ if [ "$current_folder" ]; then
 			zipFiles=`ls $directory | fgrep -i .zip`
 			searchPath="$directory/$zipFiles"
 			if [ "$has_display" == "yes" ]; then "$unzip_bin" -o -j "$searchPath" -d "$destination_folder"; else "$unzip_bin" -o -j "$searchPath" -d "$destination_folder" > /dev/null 2>&1; fi
+		elif [ "$(ls $directory | egrep -i "$music_extensions_rev" )" ]; then
+			audioFiles=`ls $directory | egrep -i "$music_extensions_rev"`;
+			for f in $(echo -e "$audioFiles"); do
+				item=`echo "$directory/$f"`;
+				depth=$(( $(echo "$directory/" | sed "s;$torrent_directory;;g" | sed "s;[^/];;g" | wc -c) - 1 ))
+				if [[ $depth -eq 1 ]]; then destination_name="$destination_folder"; elif [[ $depth -gt 1 ]]; then destination_name="$destination_folder$(echo "$item" | sed "s;$current_folder/;;g" | sed "s;/; - ;g")"; fi
+				cp -f "$item" "$destination_name"
+			done
 		elif [ "$(ls $directory | egrep -i "$supported_extensions_rev" )" ]; then
 			otherFiles=`ls $directory | egrep -i "$supported_extensions_rev"`;
 			for f in $(echo -e "$otherFiles"); do item=`echo "$directory/$f"`; cp -f "$item" "$destination_folder"; done
@@ -559,6 +584,14 @@ if [ "$current_folder" ]; then
 			zipFiles=`ls $directory | fgrep -i .zip`
 			searchPath="$directory/$zipFiles"
 			if [ "$has_display" == "yes" ]; then nice -n 15 "$unzip_bin" -o -j "$searchPath" -d "$destination_folder"; else nice -n 15 "$unzip_bin" -o -j "$searchPath" -d "$destination_folder" > /dev/null 2>&1; fi
+		elif [ "$(ls $directory | egrep -i "$music_extensions_rev" )" ]; then
+			audioFiles=`ls $directory | egrep -i "$music_extensions_rev"`;
+			for f in $(echo -e "$audioFiles"); do
+				item=`echo "$directory/$f"`;
+				depth=$(( $(echo "$directory/" | sed "s;$torrent_directory;;g" | sed "s;[^/];;g" | wc -c) - 1 ))
+				if [[ $depth -eq 1 ]]; then destination_name="$destination_folder"; elif [[ $depth -gt 1 ]]; then destination_name="$destination_folder$(echo "$item" | sed "s;$current_folder/;;g" | sed "s;/; - ;g")"; fi
+				nice -n 15 cp -f "$item" "$destination_name"
+			done
 		elif [ "$(ls $directory | egrep -i "$supported_extensions_rev" )" ]; then
 			otherFiles=`ls $directory | egrep -i "$supported_extensions_rev"`;
 			for f in $(echo -e "$otherFiles"); do item=`echo "$directory/$f"`; nice -n 15 cp -f "$item" "$destination_folder"; done
@@ -689,7 +722,7 @@ if [[ "$tv_shows_fix_numbering" == "yes" && "$(cat "$log_file" | egrep -i "([123
 	ren_temp_location=`echo "$(dirname "$source")/$ren_file$bis"`;
 	source_bis=`echo "$line"`;
 	if [ "$has_display" == "yes" ] && [ "$item" != "$ren_file" ]; then echo "- Renaming $item to $ren_file";  fi
-	if [[ -d "$ren_location" && "$(dirname "$source")/" == "$destination_folder" ]]; then mv -f "$source" "$ren_temp_location"; rm -rf "$ren_location"; source="$ren_temp_location"; fi
+	if [[ -d "$ren_location" && "$(dirname "$source")/" == "$destination_folder" && "$item" != "$ren_file" ]]; then mv -f "$source" "$ren_temp_location"; rm -rf "$ren_location"; source="$ren_temp_location"; fi
 	if [ "$item" != "$ren_file" ] && [ "$OS" == "darwin" ]; then mv -f "$source" "$ren_location" && sed -i '' "s;^$source_bis;$ren_location;g" "$log_file"
 	elif [ "$item" != "$ren_file" ] && [ "$OS" != "darwin" ]; then mv -f "$source" "$ren_location" && sed -i "s;^$source_bis;$ren_location;g" "$log_file"
 	fi
@@ -727,7 +760,7 @@ if [[ "$clean_up_filenames" == "yes" ]]; then for line in $(cat "$log_file"); do
 	ren_temp_location=`echo "$(dirname "$source")/$ren_file$bis"`;
 	source_bis=`echo "$line"`;
 	if [ "$has_display" == "yes" ] && [ "$item" != "$ren_file" ]; then echo "- Renaming $item to $ren_file";  fi
-	if [[ -d "$ren_location" && "$(dirname "$source")/" == "$destination_folder" ]]; then mv -f "$source" "$ren_temp_location"; rm -rf "$ren_location"; source="$ren_temp_location"; fi
+	if [[ -d "$ren_location" && "$(dirname "$source")/" == "$destination_folder" && "$item" != "$ren_file" ]]; then mv -f "$source" "$ren_temp_location"; rm -rf "$ren_location"; source="$ren_temp_location"; fi
 	if [ "$item" != "$ren_file" ] && [ "$OS" == "darwin" ]; then mv -f "$source" "$ren_location" && sed -i '' "s;^$source_bis;$ren_location;g" "$log_file"
 	elif [ "$item" != "$ren_file" ] && [ "$OS" != "darwin" ]; then mv -f "$source" "$ren_location" && sed -i "s;^$source_bis;$ren_location;g" "$log_file"
 	fi
