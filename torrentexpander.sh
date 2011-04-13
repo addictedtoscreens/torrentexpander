@@ -686,7 +686,7 @@ for line in $(cat "$log_file"); do
 		mkdir -p "$new_dir" && mv -f "$source" "$new_dir"
 		if [ "$OS" == "darwin" ]; then sed -i '' "s;$item;$new_item;g" "$log_file"; elif [ "$OS" != "darwin" ]; then sed -i "s;$item;$new_item;g" "$log_file"; fi
 	elif [[ $files -gt 1 ]] && [ ! "$folder_short" ] && [ "$torrent" ]; then
-		folder_short=`echo "$torrent" | perl -pe 's/(.*)\..*$/$1/;s{^.*/}{}'`
+		folder_short=`echo "$torrent" | sed 's/\(.*\)\..*/\1/' | sed 's;.*/;;g'`
 		new_dir=`echo "$destination_folder$folder_short/"`
 		source=`echo "$line"`
 		item=`echo "$(basename "$source")"`
@@ -788,7 +788,7 @@ for line in $(cat "$log_file"); do
 	if [ "$(echo "$line" | egrep -i "\.img$" )" ] && [ "$img_post" == "yes" ]; then
 		img=`echo "$line"`
 		has_folder="$(if [ $(echo "$(dirname "$img")/") == "$destination_folder" ]; then echo "no"; else echo "yes"; fi)"
-		folder_short=`echo "$(echo "$line" | perl -pe 's/(.*)\..*$/$1/;s{^.*/}{}')"`
+		folder_short=`echo "$line" | sed 's/\(.*\)\..*/\1/' | sed 's;.*/;;g'`
 		img_file=`echo "$(basename "$line")"`
 		new_folder=`echo "$destination_folder$folder_short/"`
 		new_location=`echo "$destination_folder$folder_short/$img_file"`
@@ -816,7 +816,7 @@ for line in $(cat "$log_file"); do
 	if [ "$(echo "$line" | egrep -i "\.wii" )" ] && [ "$(echo "$line" | egrep -i "\.iso$" )" ] && [ "$wii_post" == "yes" ]; then
 		wii=`echo "$line"`;
 		has_folder="$(if [ $(echo "$(dirname "$wii")/") == "$destination_folder" ]; then echo "no"; else echo "yes"; fi)"
-		folder_short=`echo "$wii" | perl -pe 's/(.*)\..*$/$1/;s{^.*/}{}')`
+		folder_short=`echo "$wii" | sed 's/\(.*\)\..*/\1/' | sed 's;.*/;;g'`
 		new_folder=`echo "$destination_folder$folder_short/"`
 		iso_file=`echo "$(basename "$wii")"`
 		dvd_file=`echo "$new_folder$folder_short.dvd"`
