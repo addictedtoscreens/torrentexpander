@@ -767,8 +767,8 @@ if [[ "$clean_up_filenames" == "yes" ]]; then for line in $(cat "$log_file"); do
 done
 fi
 
-if [[ "$folder_short" && "$tv_shows_fix_numbering" == "yes" && "$OS" == "darwin" ]] || [[ "$folder_short" && "$clean_up_filenames" == "yes" && "$OS" == "darwin" ]]; then sed -i '' '$d' "$log_file"
-elif [[ "$folder_short" && "$tv_shows_fix_numbering" == "yes" && "$OS" != "darwin" ]] || [[ "$folder_short" && "$clean_up_filenames" == "yes" && "$OS" != "darwin" ]]; then sed -i '$d' "$log_file"
+if [[ "$folder_short" && "$tv_shows_fix_numbering" == "yes" && "$OS" == "darwin" ]] || [[ "$folder_short" && "$clean_up_filenames" == "yes" && "$OS" == "darwin" ]]; then folder_short=`echo "$(cat "$log_file" | sed -n '$p' | sed 's;.*/;;g')"`; sed -i '' '$d' "$log_file"
+elif [[ "$folder_short" && "$tv_shows_fix_numbering" == "yes" && "$OS" != "darwin" ]] || [[ "$folder_short" && "$clean_up_filenames" == "yes" && "$OS" != "darwin" ]]; then folder_short=`echo "$(cat "$log_file" | sed -n '$p' | sed 's;.*/;;g')"`; sed -i '$d' "$log_file"
 fi
 
 
