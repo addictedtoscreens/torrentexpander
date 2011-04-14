@@ -746,15 +746,14 @@ if [[ "$clean_up_filenames" == "yes" ]]; then for line in $(cat "$log_file"); do
 	for q in $(echo -e "$(echo "$movies_detect_patterns" | sed "s;,;\\\n;g")"); do if [ "$(echo "$title_clean_ter" | egrep -i "[. _-]$q[. _-]")" ]; then quality=" ($q)"; title_clean_ter="$(echo "$title_clean_ter" | sed "s;$(echo "$title_clean_ter" | egrep -o -i "[. _-]$q[. _-]").*;_;")"; fi; done
 	for i in $(echo -e "$(echo "$other_movies_patterns" | sed "s;,;\\\n;g")"); do if [ "$(echo "$title_clean_ter" | egrep -i "[. _-]$i[. _-]")" ]; then title_clean_ter="$(echo "$title_clean_ter" | sed "s;$(echo "$title_clean_ter" | egrep -o -i "[. _-]$i[. _-]").*;_;")"; fi; done
 	title_clean_ter=`echo "$title_clean_ter" | sed "s/_*$//g"`
+	if [[ "$repack_handling" == "yes" && "$(echo "$item" | egrep -i "([. _])repack([. _])|([. _])proper([. _])")" ]]; then is_repack=" REPACK"; else is_repack=""; fi
 	if [[ "$clean_up_filenames" == "yes" && "$(echo "$line" | egrep -i "([sS])([0-9])([0-9])([eE])([0-9])([0-9])")" && "$(echo "$line" | egrep -i "$tv_show_extensions_rev")" ]] || [[ "$clean_up_filenames" == "yes" && "$(echo "$line" | egrep -i "([sS])([0-9])([0-9])([eE])([0-9])([0-9])")" && -d "$source" ]]; then
 		series_title=`echo "$title_clean_ter" | sed 's;.\([sS]\)\([0-9]\)\([0-9]\)\([eE]\)\([0-9]\)\([0-9]\).*;;'`;
 		series_episode=`echo "$item" | sed 's;.*\([sS]\)\([0-9]\)\([0-9]\)\([eE]\)\([0-9]\)\([0-9]\).*;S\2\3E\5\6;g'`;
-		is_repack=""
-		if [[ "$repack_handling" == "yes" && "$(echo "$item" | egrep -i "([. _])repack([. _])|([. _])proper([. _])")" ]]; then is_repack=" REPACK"; fi
 		ren_file=`echo "$series_title $series_episode$is_repack$quality$extension"`;
 	elif [[ "$clean_up_filenames" == "yes" && "$(echo "$line" | egrep -i "([0-9])([0-9])([0-9])([0-9]).([0-9])([0-9]).([0-9])([0-9])")" && "$(echo "$line" | egrep -i "$tv_show_extensions_rev")" ]] || [[ "$clean_up_filenames" == "yes" && "$(echo "$line" | egrep -i "([0-9])([0-9])([0-9])([0-9]).([0-9])([0-9]).([0-9])([0-9])")" && -d "$source" ]]; then
 		talk_show_title=`echo "$title_clean_ter" | sed 's/\([0-9]\)\([0-9]\)\([0-9]\)\([0-9]\).\([0-9]\)\([0-9]\).\([0-9]\)\([0-9]\)/\1\2\3\4-\5\6-\7\8/g'`;
-		ren_file=`echo "$talk_show_title$extension"`;
+		ren_file=`echo "$talk_show_title$quality$extension"`;
 	elif [[ "$clean_up_filenames" == "yes" && "$(echo "$line" | egrep -i "$movies_extensions_rev")" ]] || [[ "$clean_up_filenames" == "yes" && -d "$source" ]]; then
 		ren_file=`echo "$title_clean_ter$quality$extension"`;
 	fi
