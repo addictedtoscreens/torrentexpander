@@ -79,7 +79,8 @@ movies_extensions="avi,mkv,divx,iso,img,srt,idx,sub"
 music_extensions="mp3,m4a,wav"
 ##################### Movies detection patterns - Comma separated ################
 ##################### You must have at least one pattern enabled #################
-movies_detect_patterns="r5,ts,720p,1080p,dvdrip,bdrip,brrip,dvdscr,dvdr"
+movies_detect_patterns="TS,Workprint,SCR,DVDSCR,R5,DVDRip,BDRip,BRRip,DVDR,720p,1080p"
+other_movies_patterns="proper,repack,pdtv,hdtv,xvid,webrip,web-dl"
 ####################### Optional functionalities variables #######################
 #################### Set these variables to "no" to disable ######################
 ## Fix numbering for TV Shows - Switch variable to "yes" to enable
@@ -190,12 +191,15 @@ if [[ "$check_settings" != *upported_extensions=* ]]; then echo "supported_exten
 if [[ "$check_settings" != *v_show_extensions=* ]]; then echo "tv_show_extensions="$tv_show_extensions"" >> "$settings_file"; fi
 if [[ "$check_settings" != *ovies_extensions=* ]]; then echo "movies_extensions="$movies_extensions"" >> "$settings_file"; fi
 if [[ "$check_settings" != *usic_extensions=* ]]; then echo "music_extensions="$music_extensions"" >> "$settings_file"; fi
-if [[ "$check_settings" != *ovies_detect_patterns=* ]]; then echo "movies_detect_patterns="$movies_detect_patterns"" >> "$settings_file"; fi
+if [[ "$check_settings" == *ovies_detect_patterns=* && "$OS" == "darwin" ]]; then sed -i '' "/movies_detect_patterns=/d" "$settings_file"; fi
+if [[ "$check_settings" == *ovies_detect_patterns=* && "$OS" != "darwin" ]]; then sed -i "/movies_detect_patterns=/d" "$settings_file"; fi
 if [ "$(echo "$check_settings" | egrep -i "([^\\]) ")" ] && [ "$OS" == "darwin" ]; then sed -i '' 's;\([^\\]\) ;\1\\ ;g' "$settings_file"; fi
 if [ "$(echo "$check_settings" | egrep -i "([^\\]) ")" ] && [ "$OS" != "darwin" ]; then sed -i 's;\([^\\]\) ;\1\\ ;g' "$settings_file"; fi
 
 source "$settings_file"
 
+if [ "$movies_detect_patterns_override" ]; then movies_detect_patterns="$movies_detect_patterns_override"; fi
+if [ "$other_movies_patterns_override" ]; then other_movies_patterns="$other_movies_patterns_override"; fi
 if [[ "$tv_shows_post_path" != */ ]] && [ "$tv_shows_post" != "no" ]; then tv_shows_post_path="$tv_shows_post_path/"; fi
 if [[ "$music_post_path" != */ ]] && [ "$music_post_path" != "no" ]; then music_post_path="$music_post_path/"; fi
 if [[ "$movies_post_path" != */ ]] && [ "$movies_post_path" != "no" ]; then movies_post_path="$movies_post_path/"; fi
@@ -737,23 +741,22 @@ if [[ "$clean_up_filenames" == "yes" ]]; then for line in $(cat "$log_file"); do
 	ren_file=`echo "$item"`;
 	source=`echo "$line"`;
 	if [ -d "$source" ]; then extension="" && title_clean=`echo "$item"`; else extension=`echo "$item" | sed 's;.*\.;.;'` && title_clean=`echo "$item" | sed 's/\(.*\)\..*/\1/'`; fi
-	title_clean_bis=`echo "$title_clean" | sed 's/\([\._]\)\([^ ]\)/ \2/g'`;
-	title_clean_ter=`echo "$title_clean_bis" | sed "s/^/_/g" | sed "s/$/_/g" | sed "s/A/a/g" | sed "s/B/b/g" | sed "s/C/c/g" | sed "s/D/d/g" | sed "s/E/e/g" | sed "s/F/f/g" | sed "s/G/g/g" | sed "s/H/h/g" | sed "s/I/i/g" | sed "s/J/j/g" | sed "s/K/k/g" | sed "s/L/l/g" | sed "s/M/m/g" | sed "s/N/n/g" | sed "s/O/o/g" | sed "s/P/p/g" | sed "s/Q/q/g" | sed "s/R/r/g" | sed "s/S/s/g" | sed "s/T/t/g" | sed "s/U/u/g" | sed "s/V/v/g" | sed "s/W/w/g" | sed "s/X/x/g" | sed "s/Y/y/g" | sed "s/Z/z/g" | sed "s/[. _-]proper[. _-]/_/" | sed "s/[. _-]repack[. _-]/_/" | sed "s/\(.*\)[. _-]720p[. _-].*/\1 (720p)_/" | sed "s/\(.*\)[. _-]1080p[. _-].*/\1 (1080p)_/" | sed "s/\(.*\)[. _-]dvdr[. _-].*/\1 (DVDR)_/" | sed "s/\(.*\)[. _-]dvdrip[. _-].*/\1 (DVDRip)_/" | sed "s/\(.*\)[. _-]brrip[. _-].*/\1 (BDRip)_/" | sed "s/\(.*\)[. _-]bdrip[. _-].*/\1 (BDRip)_/" | sed "s/\(.*\)[. _-]r5[. _-].*/\1 (R5)_/" | sed "s/\(.*\)[. _-]dvdscr[. _-].*/\1 (DVDSCR)_/" | sed "s/\(.*\)[. _-]scr[. _-].*/\1 (SCR)_/" | sed "s/\(.*\)[. _-]ts[. _-].*/\1 (TS)_/" | sed "s/\(.*\)[. _-]workprint[. _-].*/\1 (WORKPRINT)_/" | sed "s/[. _-]pdtv[. _-].*/_/" | sed "s/[. _-]hdtv[. _-].*/_/" | sed "s/[. _-]xvid[. _-].*/_/" | sed "s/[. _-]webrip[. _-].*/_/" | sed "s/[. _-]web-dl[. _-].*/_/" | sed "s/\([. _-]\)\(mc\)*\(mac\)*a/\1\2\3A/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*b/\1\2\3B/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*c/\1\2\3C/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*d/\1\2\3D/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*e/\1\2\3E/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*f/\1\2\3F/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*g/\1\2\3G/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*h/\1\2\3H/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*i/\1\2\3I/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*j/\1\2\3J/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*k/\1\2\3K/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*l/\1\2\3L/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*m/\1\2\3M/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*n/\1\2\3N/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*o/\1\2\3O/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*p/\1\2\3P/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*q/\1\2\3Q/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*r/\1\2\3R/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*s/\1\2\3S/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*t/\1\2\3T/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*u/\1\2\3U/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*v/\1\2\3V/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*w/\1\2\3W/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*x/\1\2\3X/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*y/\1\2\3Y/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*z/\1\2\3Z/g" | sed "s/^_//g" | sed "s/_*$//g"`;
+	title_clean_bis=`echo "$title_clean" | sed 's/\([\._]\)\([^ ]\)/ \2/g' | sed "s/^/_/g" | sed "s/$/_/g" | sed "s/A/a/g" | sed "s/B/b/g" | sed "s/C/c/g" | sed "s/D/d/g" | sed "s/E/e/g" | sed "s/F/f/g" | sed "s/G/g/g" | sed "s/H/h/g" | sed "s/I/i/g" | sed "s/J/j/g" | sed "s/K/k/g" | sed "s/L/l/g" | sed "s/M/m/g" | sed "s/N/n/g" | sed "s/O/o/g" | sed "s/P/p/g" | sed "s/Q/q/g" | sed "s/R/r/g" | sed "s/S/s/g" | sed "s/T/t/g" | sed "s/U/u/g" | sed "s/V/v/g" | sed "s/W/w/g" | sed "s/X/x/g" | sed "s/Y/y/g" | sed "s/Z/z/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*a/\1\2\3A/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*b/\1\2\3B/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*c/\1\2\3C/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*d/\1\2\3D/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*e/\1\2\3E/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*f/\1\2\3F/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*g/\1\2\3G/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*h/\1\2\3H/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*i/\1\2\3I/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*j/\1\2\3J/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*k/\1\2\3K/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*l/\1\2\3L/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*m/\1\2\3M/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*n/\1\2\3N/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*o/\1\2\3O/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*p/\1\2\3P/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*q/\1\2\3Q/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*r/\1\2\3R/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*s/\1\2\3S/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*t/\1\2\3T/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*u/\1\2\3U/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*v/\1\2\3V/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*w/\1\2\3W/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*x/\1\2\3X/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*y/\1\2\3Y/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*z/\1\2\3Z/g" | sed "s/^_//g"`;
+	title_clean_ter="$title_clean_bis"
+	for q in $(echo -e "$(echo "$movies_detect_patterns" | sed "s;,;\\\n;g")"); do if [ "$(echo "$title_clean_ter" | egrep -i "[. _-]$q[. _-]")" ]; then quality=" ($q)"; title_clean_ter="$(echo "$title_clean_ter" | sed "s;$(echo "$title_clean_ter" | egrep -o -i "[. _-]$q[. _-]").*;_;")"; fi; done
+	for i in $(echo -e "$(echo "$other_movies_patterns" | sed "s;,;\\\n;g")"); do if [ "$(echo "$title_clean_ter" | egrep -i "[. _-]$i[. _-]")" ]; then title_clean_ter="$(echo "$title_clean_ter" | sed "s;$(echo "$title_clean_ter" | egrep -o -i "[. _-]$i[. _-]").*;_;")"; fi; done
+	title_clean_ter=`echo "$title_clean_ter" | sed "s/_*$//g"`
 	if [[ "$clean_up_filenames" == "yes" && "$(echo "$line" | egrep -i "([sS])([0-9])([0-9])([eE])([0-9])([0-9])")" && "$(echo "$line" | egrep -i "$tv_show_extensions_rev")" ]] || [[ "$clean_up_filenames" == "yes" && "$(echo "$line" | egrep -i "([sS])([0-9])([0-9])([eE])([0-9])([0-9])")" && -d "$source" ]]; then
 		series_title=`echo "$title_clean_ter" | sed 's;.\([sS]\)\([0-9]\)\([0-9]\)\([eE]\)\([0-9]\)\([0-9]\).*;;'`;
 		series_episode=`echo "$item" | sed 's;.*\([sS]\)\([0-9]\)\([0-9]\)\([eE]\)\([0-9]\)\([0-9]\).*;S\2\3E\5\6;g'`;
-		series_high_def=""
-		if [ "$(echo "$item" | egrep -i "([7])([2])([0])([pP])")" ]; then series_high_def=`echo "$item" | sed 's;.*\([7]\)\([2]\)\([0]\)\([pP]\).*; \(\1\2\3p\);g'`;
-		elif [ "$(echo "$item" | egrep -i "([1])([0])([8])([0])([pP])")" ]; then series_high_def=`echo "$item" | sed 's;.*\([1]\)\([0]\)\([8]\)\([0]\)\([pP]\).*; \(\1\2\3\4p\);g'`;
-		fi
 		is_repack=""
 		if [[ "$repack_handling" == "yes" && "$(echo "$item" | egrep -i "([. _])repack([. _])|([. _])proper([. _])")" ]]; then is_repack=" REPACK"; fi
-		ren_file=`echo "$series_title $series_episode$is_repack$series_high_def$extension"`;
+		ren_file=`echo "$series_title $series_episode$is_repack$quality$extension"`;
 	elif [[ "$clean_up_filenames" == "yes" && "$(echo "$line" | egrep -i "([0-9])([0-9])([0-9])([0-9]).([0-9])([0-9]).([0-9])([0-9])")" && "$(echo "$line" | egrep -i "$tv_show_extensions_rev")" ]] || [[ "$clean_up_filenames" == "yes" && "$(echo "$line" | egrep -i "([0-9])([0-9])([0-9])([0-9]).([0-9])([0-9]).([0-9])([0-9])")" && -d "$source" ]]; then
 		talk_show_title=`echo "$title_clean_ter" | sed 's/\([0-9]\)\([0-9]\)\([0-9]\)\([0-9]\).\([0-9]\)\([0-9]\).\([0-9]\)\([0-9]\)/\1\2\3\4-\5\6-\7\8/g'`;
 		ren_file=`echo "$talk_show_title$extension"`;
 	elif [[ "$clean_up_filenames" == "yes" && "$(echo "$line" | egrep -i "$movies_extensions_rev")" ]] || [[ "$clean_up_filenames" == "yes" && -d "$source" ]]; then
-		ren_file=`echo "$title_clean_ter$extension"`;
+		ren_file=`echo "$title_clean_ter$quality$extension"`;
 	fi
 	bis="_bis"
 	ren_location=`echo "$(dirname "$source")/$ren_file"`;
