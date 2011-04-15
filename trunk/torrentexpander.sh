@@ -970,11 +970,11 @@ export TR_TORRENT_NAME=""
 export torrent=""
 rm -f "$log_file"
 
-if [[ "$subtitles_mode" != "yes" && "$subtitles_handling" != "no" && -d "$subtitles_directory" && "$(find "$subtitles_directory" -maxdepth 1 -not -name "._*" -name "*.srt" -type f)" ]]; then
+if [[ "$subtitles_mode" != "yes" && "$subtitles_handling" != "no" && -d "$subtitles_directory" && "$(find "$subtitles_directory" -maxdepth 1 ! -name "._*" -name "*.srt" -type f)" ]]; then
  	if [ "$has_display" == "yes" ]; then step_number=$(( $step_number + 1 )) && echo "Step $step_number : Fetching new subtitles from the subtitles folder";  fi
  	export subtitles_mode="yes"
  	has_display="no"
- 	for line in $(find "$subtitles_directory" -maxdepth 1 -not -name "._*" -name "*.srt" -type f); do
+ 	for line in $(find "$subtitles_directory" -maxdepth 1 ! -name "._*" -name "*.srt" -type f); do
  		line=`echo "$line"`
  		item=`echo "$(basename "$line")"`
  		item_bis=`echo "$item" | sed 's/\(.*\)\..*/\1/'`
