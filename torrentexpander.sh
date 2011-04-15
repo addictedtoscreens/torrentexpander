@@ -237,6 +237,7 @@ if [ "$has_display" == "yes" ] && [ ! "$torrent" ]; then
 		item_selected=${!sel_item}
 		if [ "$item_selected" == "Select current folder" ]; then item_selected="$(pwd)" && selected=1
 		elif [ "$item_selected" == ".." ]; then cd "$(dirname $(pwd))"
+		elif [[ "$(pwd)" == "/" && -d "/$item_selected" ]]; then cd "/$item_selected"
 		elif [ -d "$(pwd)/$item_selected" ]; then cd "$(pwd)/$item_selected"
 		elif [ -f "$(pwd)/$item_selected" ]; then item_selected="$(pwd)/$item_selected" && selected=1
 		fi
@@ -264,6 +265,7 @@ if [ "$has_display" == "yes" ] && [ ! "$alt_dest_enabled" ] && [ ! "$alt_destina
 		item_selected=${!sel_item}
 		if [ "$item_selected" == "Select current folder" ]; then item_selected="$(pwd)" && selected=1
 		elif [ "$item_selected" == ".." ]; then cd "$(dirname $(pwd))"
+		elif [[ "$(pwd)" == "/" && -d "/$item_selected" ]]; then cd "/$item_selected"
 		elif [ -d "$(pwd)/$item_selected" ]; then cd "$(pwd)/$item_selected"
 		elif [ -f "$(pwd)/$item_selected" ]; then cd "$(pwd)"
 		fi
