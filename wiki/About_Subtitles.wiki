@@ -1,0 +1,8 @@
+Nowadays, most subtitles downloading apps can rely on the video file hash to find the correct subtitles match.<br />
+But many subtitles databases don't support this video file hash and rely only on the filename of the video file.<br />
+That's where the new subtitles_handling introduced in v0.14 of torrentexpander comes into play.<br />
+<br />
+This feature archives in the torrentexpander_subtitles_dir directory a dummy (0k) video file with the original video filename. <br />These dummy files can be used by a third party app to fetch subtitles on websites that do not support hash. <br />On each run, Torrentexpander will look for new srt files in the torrentexpander_subtitles_dir directory and copy them automatically to your destination folder.<br />
+- Once a new srt is found, the original dummy file is deleted<br />
+- If a dummy video file is older than a month, it will be automatically deleted<br />
+- If torrentexpander is used as a Workflow Service for Mac OS X, this feature will be disabled
