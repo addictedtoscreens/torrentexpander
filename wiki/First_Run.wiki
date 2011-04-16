@@ -1,3 +1,4 @@
+#labels Featured
 The first time you start this script, I recommend you do it manually.
 You'll be able to edit your settings in order to suit your needs.
 Those settings will be stored in a settings files that will be generated on first run. That way you won't need to set them again if you update the script.
