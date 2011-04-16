@@ -1,0 +1,5 @@
+The movies_detect_patterns is used to detect movies and also to rename files. It needs to be sorted by quality (from lowest to highest).<br />
+The movies_detect_patterns property has been removed from the settings file. You can override the default movies_detect_patterns by adding a movies_detect_patterns_override variable in your settings.ini file.<br />
+<br />
+The other_movies_patterns is used to trim video filenames from unnecessary information<br />
+You can also override the default other_movies_patterns by adding a other_movies_patterns_override variable in your settings.ini file.
