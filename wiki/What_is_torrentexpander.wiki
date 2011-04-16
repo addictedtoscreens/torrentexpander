@@ -1,3 +1,4 @@
+#labels Featured
 Torrentexpander can be launched as a daemon by the Transmission torrent client of by Flexget.<br />
 It can also be run manually : in that case you'll get a basic GUI that will enable you to choose a torrent file or folder and the destination where it should be expanded.<br />
 It can expand rar archives (including multipart) and zip archives, but it can also manage many audio and video files.<br />
@@ -24,5 +25,3 @@ On Ubuntu and Debian, it can interact with third party apps like ccd2iso (to con
 - This script can set files and folders permissions (chown requires the script to be run by the root user)<br />
 - This script can reset the modification time on files (can be useful if you want to sort your files by modification date)<br />
 - You can edit the detection patterns to suit your needs by editing the torrentexpander_settings.ini file
-
-
