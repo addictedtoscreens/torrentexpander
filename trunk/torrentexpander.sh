@@ -165,18 +165,18 @@ if [[ "$check_settings" != *estination_folder=* || "$check_settings" == *estinat
 fi
 if [[ "$check_settings" != *nrar_bin=* || "$check_settings" == *nrar_bin=incorrect_or_not_se* ]]; then
 	# Looking for unrar in the PATH variable or /Applications /nmt/apps /usr/local/bin directories
-	if [ ! -x "$unrar_bin" ] && [ -x "$(for d in $(echo -e "$(echo -e "$PATH" | sed "s;:;\\\n;g")\n/Applications\n/nmt/apps\n/usr/local/bin"); do if [ -d "$d" ]; then find "$d" -name unrar; fi; done | sed -n -e '1p')" ]; then unrar_bin="$(for d in $(echo -e "$(echo -e "$PATH" | sed "s;:;\\\n;g")\n/Applications\n/nmt/apps\n/usr/local/bin"); do if [ -d "$d" ]; then find "$d" -name unrar; fi; done | sed -n -e '1p')"; fi
+	if [ ! -x "$unrar_bin" ] && [ -x "$(for d in $(echo -e "$(echo -e "$PATH" | sed "s;:;\\\n;g")\n/Applications\n/nmt/apps\n/usr/local/bin"); do if [ -d "$d" ]; then find -L "$d" -name unrar; fi; done | sed -n -e '1p')" ]; then unrar_bin="$(for d in $(echo -e "$(echo -e "$PATH" | sed "s;:;\\\n;g")\n/Applications\n/nmt/apps\n/usr/local/bin"); do if [ -d "$d" ]; then find -L "$d" -name unrar; fi; done | sed -n -e '1p')"; fi
 	# If unrar is unavailable, switch back to 7z
-	if [ ! -x "$unrar_bin" ] && [ -x "$(for d in $(echo -e "$(echo -e "$PATH" | sed "s;:;\\\n;g")\n/Applications\n/nmt/apps\n/usr/local/bin"); do if [ -d "$d" ]; then find "$d" -name 7z; fi; done | sed -n -e '1p')" ]; then unrar_bin="$(for d in $(echo -e "$(echo -e "$PATH" | sed "s;:;\\\n;g")\n/Applications\n/nmt/apps\n/usr/local/bin"); do if [ -d "$d" ]; then find "$d" -name 7z; fi; done | sed -n -e '1p')"; fi
+	if [ ! -x "$unrar_bin" ] && [ -x "$(for d in $(echo -e "$(echo -e "$PATH" | sed "s;:;\\\n;g")\n/Applications\n/nmt/apps\n/usr/local/bin"); do if [ -d "$d" ]; then find -L "$d" -name 7z; fi; done | sed -n -e '1p')" ]; then unrar_bin="$(for d in $(echo -e "$(echo -e "$PATH" | sed "s;:;\\\n;g")\n/Applications\n/nmt/apps\n/usr/local/bin"); do if [ -d "$d" ]; then find -L "$d" -name 7z; fi; done | sed -n -e '1p')"; fi
 fi
 if [[ "$check_settings" != *nzip_bin=* || "$check_settings" == *nzip_bin=incorrect_or_not_se* ]]; then
 	# Looking for unrar in the PATH variable or /Applications /nmt/apps /usr/local/bin directories
-	if [ ! -x "$unzip_bin" ] && [ -x "$(for d in $(echo -e "$(echo -e "$PATH" | sed "s;:;\\\n;g")\n/Applications\n/nmt/apps\n/usr/local/bin"); do if [ -d "$d" ]; then find "$d" -name unzip; fi; done | sed -n -e '1p')" ]; then unzip_bin="$(for d in $(echo -e "$(echo -e "$PATH" | sed "s;:;\\\n;g")\n/Applications\n/nmt/apps\n/usr/local/bin"); do if [ -d "$d" ]; then find "$d" -name unzip; fi; done | sed -n -e '1p')"; fi
+	if [ ! -x "$unzip_bin" ] && [ -x "$(for d in $(echo -e "$(echo -e "$PATH" | sed "s;:;\\\n;g")\n/Applications\n/nmt/apps\n/usr/local/bin"); do if [ -d "$d" ]; then find -L "$d" -name unzip; fi; done | sed -n -e '1p')" ]; then unzip_bin="$(for d in $(echo -e "$(echo -e "$PATH" | sed "s;:;\\\n;g")\n/Applications\n/nmt/apps\n/usr/local/bin"); do if [ -d "$d" ]; then find -L "$d" -name unzip; fi; done | sed -n -e '1p')"; fi
 	# If unzip is unavailable, switch back to 7z
-	if [ ! -x "$unzip_bin" ] && [ -x "$(for d in $(echo -e "$(echo -e "$PATH" | sed "s;:;\\\n;g")\n/Applications\n/nmt/apps\n/usr/local/bin"); do if [ -d "$d" ]; then find "$d" -name 7z; fi; done | sed -n -e '1p')" ]; then unzip_bin="$(for d in $(echo -e "$(echo -e "$PATH" | sed "s;:;\\\n;g")\n/Applications\n/nmt/apps\n/usr/local/bin"); do if [ -d "$d" ]; then find "$d" -name 7z; fi; done | sed -n -e '1p')"; fi
+	if [ ! -x "$unzip_bin" ] && [ -x "$(for d in $(echo -e "$(echo -e "$PATH" | sed "s;:;\\\n;g")\n/Applications\n/nmt/apps\n/usr/local/bin"); do if [ -d "$d" ]; then find -L "$d" -name 7z; fi; done | sed -n -e '1p')" ]; then unzip_bin="$(for d in $(echo -e "$(echo -e "$PATH" | sed "s;:;\\\n;g")\n/Applications\n/nmt/apps\n/usr/local/bin"); do if [ -d "$d" ]; then find -L "$d" -name 7z; fi; done | sed -n -e '1p')"; fi
 fi
 if [[ "$check_settings" != *cd2iso_bin=* || "$check_settings" == *cd2iso_bin=incorrect_or_not_se* ]]; then
-	if [ ! -x "$ccd2iso_bin" ] && [ -x "$(for d in $(echo -e "$(echo -e "$PATH" | sed "s;:;\\\n;g")\n/nmt/apps\n/Applications"); do if [ -d "$d" ]; then find "$d" -name ccd2iso; fi; done | sed -n -e '1p')" ]; then ccd2iso_bin="$(for d in $(echo -e "$(echo -e "$PATH" | sed "s;:;\\\n;g")\n/nmt/apps\n/Applications"); do if [ -d "$d" ]; then find "$d" -name ccd2iso; fi; done | sed -n -e '1p')"; fi
+	if [ ! -x "$ccd2iso_bin" ] && [ -x "$(for d in $(echo -e "$(echo -e "$PATH" | sed "s;:;\\\n;g")\n/nmt/apps\n/Applications"); do if [ -d "$d" ]; then find -L "$d" -name ccd2iso; fi; done | sed -n -e '1p')" ]; then ccd2iso_bin="$(for d in $(echo -e "$(echo -e "$PATH" | sed "s;:;\\\n;g")\n/nmt/apps\n/Applications"); do if [ -d "$d" ]; then find -L "$d" -name ccd2iso; fi; done | sed -n -e '1p')"; fi
 fi
 
 ## Inserting values into the settings file
@@ -462,7 +462,7 @@ mkdir -p "$temp_folder"
 
 ## Expanding and copying folders to the temp folder
 if [ "$has_display" == "yes" ]; then step_number=$(( $step_number + 1 )) && echo "Step $step_number : Expanding / moving content of the torrent";  fi
-for item in $(if [ "$current_folder" ]; then find "$current_folder" -type d; elif [ "$torrent" ]; then echo "$torrent"; fi); do
+for item in $(if [ "$current_folder" ]; then find -L "$current_folder" -type d; elif [ "$torrent" ]; then echo "$torrent"; fi); do
 	if [[ "$item" == */.AppleDouble ]] || [[ "$item" == */._* ]]; then
 		echo "" > /dev/null 2>&1
 	elif [[ "$(ls "$item" | egrep -i "\.rar$|\.001$")" ]]; then
@@ -495,7 +495,7 @@ for item in $(if [ "$current_folder" ]; then find "$current_folder" -type d; eli
 		elif [[ "$unzip_bin" == *7z* ]]; then "$unzip_bin" x -y "$searchPath" -o"$temp_folder" > /dev/null 2>&1
 		fi
 	elif [[ "$(ls $item | egrep -i -v "\.[0-9][0-9][0-9]$|\.r[0-9][0-9]")" ]]; then
-		if [[ -d "$item" && "$(ls "$item" | egrep -i -v "\.[0-9][0-9][0-9]$|\.r[0-9][0-9]")" ]]; then otherFiles=`find "$item" -maxdepth 1 ! -name "._*" -type f | egrep -i -v "\.[0-9][0-9][0-9]$|\.r[0-9][0-9]"` && dest_path=`echo "$item/" | sed "s;$current_folder/;$temp_folder;g"`
+		if [[ -d "$item" && "$(ls "$item" | egrep -i -v "\.[0-9][0-9][0-9]$|\.r[0-9][0-9]")" ]]; then otherFiles=`find -L "$item" -maxdepth 1 ! -name "._*" -type f | egrep -i -v "\.[0-9][0-9][0-9]$|\.r[0-9][0-9]"` && dest_path=`echo "$item/" | sed "s;$current_folder/;$temp_folder;g"`
 		elif [[ "$(echo "$item" | egrep -i -v "\.[0-9][0-9][0-9]$|\.r[0-9][0-9]")" ]]; then otherFiles=`echo "$item" | egrep -i -v "\.[0-9][0-9][0-9]$|\.r[0-9][0-9]"` && dest_path=`echo $temp_folder"`
 		fi
 		if [ "$nice_available" == "yes" ]; then for f in $(echo -e "$otherFiles"); do otherFile=`echo "$f"`; mkdir -p "$dest_path"; nice -n 15 cp -f "$otherFile" "$dest_path"; done
@@ -505,7 +505,7 @@ for item in $(if [ "$current_folder" ]; then find "$current_folder" -type d; eli
 done
 
 ## If archives within archives - Expanding and copying folders to the temp folder
-for item in $(find "$temp_folder" -type d); do
+for item in $(find -L "$temp_folder" -type d); do
 	if [[ "$item" == */.AppleDouble ]] || [[ "$item" == */._* ]]; then
 		echo "" > /dev/null 2>&1
 	elif [[ "$(ls "$item" | egrep -i "\.rar$|\.001$")" ]]; then
@@ -538,7 +538,7 @@ for item in $(find "$temp_folder" -type d); do
 done
 
 ## Delete Mac OS X invisible files and sample from temp folder
-for item in $(find "$temp_folder"); do
+for item in $(find -L "$temp_folder"); do
 	item=`echo "$item"`
 	if [[ "$item" == */.AppleDouble* ]] || [[ "$item" == */._* ]]; then rm -rf "$item"
 	elif [[ "$(echo "$item" | egrep -i "^sample[^A-Za-z0-9_]" )" && "$(echo "$item" | egrep -i "\.avi$|\.mkv$|\.ts$" )" ]] || [[ "$(echo "$item" | egrep -i "[^A-Za-z0-9_]sample[^A-Za-z0-9_]" )" && "$(echo "$item" | egrep -i "\.avi$|\.mkv$|\.ts$" )" ]]; then rm -rf "$item"
@@ -546,14 +546,14 @@ for item in $(find "$temp_folder"); do
 done
 
 ## Count number of resulting files and exit if no supported file
-count=0 && files=$(( $count + $(find "$temp_folder" -type f | egrep -i "$supported_extensions_rev" | wc -l) ))
+count=0 && files=$(( $count + $(find -L "$temp_folder" -type f | egrep -i "$supported_extensions_rev" | wc -l) ))
 if [ "$has_display" == "yes" ] && [[ $files -eq 0 ]]; then if [ ! "$folder_short" ]; then folder_short=`echo "$torrent" | sed 's/\(.*\)\..*/\1/' | sed 's;.*/;;g'`; fi && mv "$temp_folder" "$destination_folder$folder_short" && rm -f "$log_file" && echo "Sorry, I cannot detect any supported file" && exit;  fi
 if [[ $files -eq 0 ]]; then if [ ! "$folder_short" ]; then folder_short=`echo "$torrent" | sed 's/\(.*\)\..*/\1/' | sed 's;.*/;;g'`; fi && mv "$temp_folder" "$destination_folder$folder_short" && rm -f "$log_file" && exit;  fi
 
 ## If only one resulting file rename it according to the initial torrent
 if [[ $files -eq 1 ]]; then
 	if [ ! "$folder_short" ]; then folder_short=`echo "$torrent" | sed 's/\(.*\)\..*/\1/' | sed 's;.*/;;g'`; fi
-	item=`echo "$(find "$temp_folder" -type f | egrep -i "$supported_extensions_rev")"`;
+	item=`echo "$(find -L "$temp_folder" -type f | egrep -i "$supported_extensions_rev")"`;
 	extension=`echo "$item" | sed 's;.*\.;.;'`;
 	mv "$item" "$destination_folder$folder_short$extension" && echo "$destination_folder$folder_short$extension" >> "$log_file" && rm -rf "$temp_folder"
 	subtitles_dest=`echo "$subtitles_directory/$(basename "$item")"`
@@ -563,7 +563,7 @@ fi
 
 
 ## If more than one file, create folder named as the initial one and move the resulting files there
-if [[ $files -gt 1 ]]; then for directory in $(find "$temp_folder" -type d); do
+if [[ $files -gt 1 ]]; then for directory in $(find -L "$temp_folder" -type d); do
 	if [ ! "$folder_short" ]; then folder_short=`echo "$torrent" | sed 's/\(.*\)\..*/\1/' | sed 's;.*/;;g'`; fi
 	if [ "$(ls $directory | egrep -i "$music_extensions_rev" )" ]; then
 		audioFiles=`ls $directory | egrep -i "$music_extensions_rev"`;
@@ -578,7 +578,7 @@ if [[ $files -gt 1 ]]; then for directory in $(find "$temp_folder" -type d); do
 		for f in $(echo -e "$otherFiles"); do item=`echo "$directory/$f"`; mkdir -p "$destination_folder$folder_short/" && mv -f "$item" "$destination_folder$folder_short/"; done
 	fi
 done
-for item in $(find "$destination_folder$folder_short/" -type f | egrep -i "$supported_extensions_rev"); do
+for item in $(find -L "$destination_folder$folder_short/" -type f | egrep -i "$supported_extensions_rev"); do
 	subtitles_dest=`echo "$subtitles_directory/$(basename "$item")"`
 	already_subtitles=`echo "$(echo "$item" | sed 's/\(.*\)\..*/\1\.srt/')"`
 	if [[ "$subtitles_mode" != "yes" && "$subtitles_handling" == "yes" && ! -f "$already_subtitles" && "$(echo "$item" | egrep -i "\.avi$|\.mkv$|\.divx$")" ]]; then mkdir -p "$subtitles_directory" && echo "$(basename "$item")" > "$subtitles_dest"; fi
@@ -854,21 +854,21 @@ export TR_TORRENT_NAME=""
 export torrent=""
 rm -f "$log_file"
 
-if [[ "$subtitles_mode" != "yes" && "$subtitles_handling" != "no" && -d "$subtitles_directory" && "$(find "$subtitles_directory" -maxdepth 1 ! -name "._*" -name "*.srt" -type f)" ]]; then
+if [[ "$subtitles_mode" != "yes" && "$subtitles_handling" != "no" && -d "$subtitles_directory" && "$(find -L "$subtitles_directory" -maxdepth 1 ! -name "._*" -name "*.srt" -type f)" ]]; then
  	if [ "$has_display" == "yes" ]; then step_number=$(( $step_number + 1 )) && echo "Step $step_number : Fetching new subtitles from the subtitles folder";  fi
  	export subtitles_mode="yes"
  	has_display="no"
- 	for line in $(find "$subtitles_directory" -maxdepth 1 ! -name "._*" -name "*.srt" -type f); do
+ 	for line in $(find -L "$subtitles_directory" -maxdepth 1 ! -name "._*" -name "*.srt" -type f); do
  		line=`echo "$line"`
  		item=`echo "$(basename "$line")"`
  		item_bis=`echo "$item" | sed 's/\(.*\)\..*/\1/'`
- 		orig_file=`echo "$(find "$subtitles_directory" -name "$item_bis.*" -type f | egrep -i "\.avi$|\.mkv$|\.divx$")"`
+ 		orig_file=`echo "$(find -L "$subtitles_directory" -name "$item_bis.*" -type f | egrep -i "\.avi$|\.mkv$|\.divx$")"`
  		new_line=`echo "$(cat "$orig_file" | sed '/^ *$/d' | sed 's/\(.*\)\..*/\1\.srt/')"`
  		if [ "$line" != "$new_line" ]; then mv "$line" "$new_line"; fi
  		"$script_path/torrentexpander.sh" "$new_line" "$destination_folder"
  		rm -f "$new_line"
  		rm -f "$orig_file"
- 		find "$subtitles_directory" -mtime +30 -exec rm -f {} \;
+ 		find -L "$subtitles_directory" -mtime +30 -exec rm -f {} \;
  	done
  	if [ -t 1 ]; then echo "That's All Folks"; fi
 fi
