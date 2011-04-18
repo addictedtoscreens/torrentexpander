@@ -451,34 +451,34 @@ for item in $(if [[ "$current_folder" && "$find_l_available" == "yes" ]]; then f
 	elif [[ "$(ls "$item" | egrep -i "\.rar$|\.001$")" ]]; then
 		if [[ "$(ls "$item" | egrep -i "part001\.rar$")" ]]; then rarFile=`ls "$item" | egrep -i "part001\.rar$"` && searchPath="$item/$rarFile";
 		elif [[ "$(ls "$item" | egrep -i "part01\.rar$")" ]]; then rarFile=`ls "$item" | egrep -i "part01\.rar$"` && searchPath="$item/$rarFile";
-		elif [[ -d "$item" && "$(ls "$item" | egrep -i "\.rar$")" ]]; then rarFile=`ls "$item" | egrep -i "\.rar$"` && searchPath="$item/$rarFile";
+		elif [[ -d "$item" && "$(ls "$item" | egrep -i "\.rar$")" ]]; then searchPath=`find -L "$item" -maxdepth 1 ! -name "._*" -type f | egrep -i "\.rar$"`;
 		elif [[ "$(echo "$torrent" | egrep -i "\.rar$" )" ]]; then searchPath=`echo "$item" | egrep -i "\.rar$"`;
 		elif [[ "$(ls "$item" | egrep -i "\.001$")" ]]; then rarFile=`ls "$item" | egrep -i "\.001$"` && searchPath="$item/$rarFile";
 		fi
-		if [[ "$unrar_bin" == *unrar* ]] && [ "$nice_available" == "yes" ] && [ "$has_display" == "yes" ]; then nice -n 15 "$unrar_bin" x -y -o+ -p- "$searchPath" "$temp_folder"
-		elif [[ "$unrar_bin" == *unrar* ]] && [ "$nice_available" == "yes" ]; then nice -n 15 "$unrar_bin" x -y -o+ -p- "$searchPath" "$temp_folder" > /dev/null 2>&1
-		elif [[ "$unrar_bin" == *unrar* ]] && [ "$has_display" == "yes" ]; then "$unrar_bin" x -y -o+ -p- "$searchPath" "$temp_folder" 
-		elif [[ "$unrar_bin" == *unrar* ]]; then "$unrar_bin" x -y -o+ -p- "$searchPath" "$temp_folder" > /dev/null 2>&1
-		elif [[ "$unrar_bin" == *7z* ]] && [ "$nice_available" == "yes" ] && [ "$has_display" == "yes" ]; then nice -15 "$unrar_bin" x -y "$searchPath" -o"$temp_folder"
-		elif [[ "$unrar_bin" == *7z* ]] && [ "$nice_available" == "yes" ]; then nice -15 "$unrar_bin" x -y "$searchPath" -o"$temp_folder" > /dev/null 2>&1
-		elif [[ "$unrar_bin" == *7z* ]] && [ "$has_display" == "yes" ]; then "$unrar_bin" x -y "$searchPath" -o"$temp_folder"
-		elif [[ "$unrar_bin" == *7z* ]]; then "$unrar_bin" x -y "$searchPath" -o"$temp_folder" > /dev/null 2>&1
+		if [[ "$unrar_bin" == *unrar* ]] && [ "$nice_available" == "yes" ] && [ "$has_display" == "yes" ]; then for f in $(echo -e "$searchPath"); do nice -n 15 "$unrar_bin" x -y -o+ -p- `echo "$f"` "$temp_folder"; done
+		elif [[ "$unrar_bin" == *unrar* ]] && [ "$nice_available" == "yes" ]; then for f in $(echo -e "$searchPath"); do nice -n 15 "$unrar_bin" x -y -o+ -p- `echo "$f"` "$temp_folder" > /dev/null 2>&1; done
+		elif [[ "$unrar_bin" == *unrar* ]] && [ "$has_display" == "yes" ]; then for f in $(echo -e "$searchPath"); do "$unrar_bin" x -y -o+ -p- `echo "$f"` "$temp_folder" ; done
+		elif [[ "$unrar_bin" == *unrar* ]]; then for f in $(echo -e "$searchPath"); do "$unrar_bin" x -y -o+ -p- `echo "$f"` "$temp_folder" > /dev/null 2>&1; done
+		elif [[ "$unrar_bin" == *7z* ]] && [ "$nice_available" == "yes" ] && [ "$has_display" == "yes" ]; then for f in $(echo -e "$searchPath"); do nice -15 "$unrar_bin" x -y `echo "$f"` -o"$temp_folder"; done
+		elif [[ "$unrar_bin" == *7z* ]] && [ "$nice_available" == "yes" ]; then for f in $(echo -e "$searchPath"); do nice -15 "$unrar_bin" x -y `echo "$f"` -o"$temp_folder" > /dev/null 2>&1; done
+		elif [[ "$unrar_bin" == *7z* ]] && [ "$has_display" == "yes" ]; then for f in $(echo -e "$searchPath"); do "$unrar_bin" x -y `echo "$f"` -o"$temp_folder"; done
+		elif [[ "$unrar_bin" == *7z* ]]; then for f in $(echo -e "$searchPath"); do "$unrar_bin" x -y `echo "$f"` -o"$temp_folder" > /dev/null 2>&1; done
 		fi
 	fi
 	if [[ "$item" == */.AppleDouble ]] || [[ "$item" == */._* ]]; then
 		echo "" > /dev/null 2>&1
 	elif [[ "$(ls $item | egrep -i "\.zip$")" ]]; then
-		if [[ -d "$item" && "$(ls "$item" | egrep -i "\.zip$")" ]]; then zipFile=`ls "$item" | egrep -i "\.zip$"` && searchPath="$item/$zipFile";
+		if [[ -d "$item" && "$(ls "$item" | egrep -i "\.zip$")" ]]; then searchPath=`find -L "$item" -maxdepth 1 ! -name "._*" -type f | egrep -i "\.zip$"`;
 		elif [[ "$(echo "$item" | egrep -i "\.zip$" )" ]]; then searchPath=`echo "$item" | egrep -i "\.zip$"`;
 		fi
-		if [[ "$unzip_bin" == *unzip* ]] && [ "$nice_available" == "yes" ] && [ "$has_display" == "yes" ]; then nice -n 15 "$unzip_bin" -o "$searchPath" -d "$temp_folder"
-		elif [[ "$unzip_bin" == *unzip* ]] && [ "$nice_available" == "yes" ]; then nice -n 15 "$unzip_bin" -o "$searchPath" -d "$temp_folder" > /dev/null 2>&1
-		elif [[ "$unzip_bin" == *unzip* ]] && [ "$has_display" == "yes" ]; then "$unzip_bin" -o "$searchPath" -d "$temp_folder"
-		elif [[ "$unzip_bin" == *unzip* ]]; then "$unzip_bin" -o "$searchPath" -d "$temp_folder" > /dev/null 2>&1
-		elif [[ "$unzip_bin" == *7z* ]] && [ "$nice_available" == "yes" ] && [ "$has_display" == "yes" ]; then nice -n 15 "$unzip_bin" x -y "$searchPath" -o"$temp_folder"
-		elif [[ "$unzip_bin" == *7z* ]] && [ "$nice_available" == "yes" ]; then nice -n 15 "$unzip_bin" x -y "$searchPath" -o"$temp_folder" > /dev/null 2>&1
-		elif [[ "$unzip_bin" == *7z* ]] && [ "$has_display" == "yes" ]; then "$unzip_bin" x -y "$searchPath" -o"$temp_folder"
-		elif [[ "$unzip_bin" == *7z* ]]; then "$unzip_bin" x -y "$searchPath" -o"$temp_folder" > /dev/null 2>&1
+		if [[ "$unzip_bin" == *unzip* ]] && [ "$nice_available" == "yes" ] && [ "$has_display" == "yes" ]; then for f in $(echo -e "$searchPath"); do nice -n 15 "$unzip_bin" -o `echo "$f"` -d "$temp_folder"; done
+		elif [[ "$unzip_bin" == *unzip* ]] && [ "$nice_available" == "yes" ]; then for f in $(echo -e "$searchPath"); do nice -n 15 "$unzip_bin" -o `echo "$f"` -d "$temp_folder" > /dev/null 2>&1; done
+		elif [[ "$unzip_bin" == *unzip* ]] && [ "$has_display" == "yes" ]; then for f in $(echo -e "$searchPath"); do "$unzip_bin" -o `echo "$f"` -d "$temp_folder"; done
+		elif [[ "$unzip_bin" == *unzip* ]]; then for f in $(echo -e "$searchPath"); do "$unzip_bin" -o `echo "$f"` -d "$temp_folder" > /dev/null 2>&1; done
+		elif [[ "$unzip_bin" == *7z* ]] && [ "$nice_available" == "yes" ] && [ "$has_display" == "yes" ]; then for f in $(echo -e "$searchPath"); do nice -n 15 "$unzip_bin" x -y `echo "$f"` -o"$temp_folder"; done
+		elif [[ "$unzip_bin" == *7z* ]] && [ "$nice_available" == "yes" ]; then for f in $(echo -e "$searchPath"); do nice -n 15 "$unzip_bin" x -y `echo "$f"` -o"$temp_folder" > /dev/null 2>&1; done
+		elif [[ "$unzip_bin" == *7z* ]] && [ "$has_display" == "yes" ]; then for f in $(echo -e "$searchPath"); do "$unzip_bin" x -y `echo "$f"` -o"$temp_folder"; done
+		elif [[ "$unzip_bin" == *7z* ]]; then for f in $(echo -e "$searchPath"); do "$unzip_bin" x -y `echo "$f"` -o"$temp_folder" > /dev/null 2>&1; done
 		fi
 	fi
 	if [[ "$item" == */.AppleDouble ]] || [[ "$item" == */._* ]]; then
@@ -500,29 +500,29 @@ for item in $(find "$temp_folder_without_slash" -type d); do
 	if [[ "$item" == */.AppleDouble ]] || [[ "$item" == */._* ]]; then
 		echo "" > /dev/null 2>&1
 	elif [[ "$(ls "$item" | egrep -i "\.rar$")" ]]; then
-		rarFile=`ls "$item" | egrep -i "\.rar$"` && searchPath="$item/$rarFile";
-		if [[ "$unrar_bin" == *unrar* ]] && [ "$nice_available" == "yes" ] && [ "$has_display" == "yes" ]; then nice -n 15 "$unrar_bin" x -y -o+ -p- "$searchPath" "$item"
-		elif [[ "$unrar_bin" == *unrar* ]] && [ "$nice_available" == "yes" ]; then nice -n 15 "$unrar_bin" x -y -o+ -p- "$searchPath" "$item" > /dev/null 2>&1
-		elif [[ "$unrar_bin" == *unrar* ]] && [ "$has_display" == "yes" ]; then "$unrar_bin" x -y -o+ -p- "$searchPath" "$item" 
-		elif [[ "$unrar_bin" == *unrar* ]]; then "$unrar_bin" x -y -o+ -p- "$searchPath" "$item" > /dev/null 2>&1
-		elif [[ "$unrar_bin" == *7z* ]] && [ "$nice_available" == "yes" ] && [ "$has_display" == "yes" ]; then nice -15 "$unrar_bin" x -y "$searchPath" -o"$item"
-		elif [[ "$unrar_bin" == *7z* ]] && [ "$nice_available" == "yes" ]; then nice -15 "$unrar_bin" x -y "$searchPath" -o"$item" > /dev/null 2>&1
-		elif [[ "$unrar_bin" == *7z* ]] && [ "$has_display" == "yes" ]; then "$unrar_bin" x -y "$searchPath" -o"$item"
-		elif [[ "$unrar_bin" == *7z* ]]; then "$unrar_bin" x -y "$searchPath" -o"$item" > /dev/null 2>&1
+		searchPath=`find -L "$item" -maxdepth 1 ! -name "._*" -type f | egrep -i "\.rar$"`;
+		if [[ "$unrar_bin" == *unrar* ]] && [ "$nice_available" == "yes" ] && [ "$has_display" == "yes" ]; then for f in $(echo -e "$searchPath"); do nice -n 15 "$unrar_bin" x -y -o+ -p- `echo "$f"` "$item"; done
+		elif [[ "$unrar_bin" == *unrar* ]] && [ "$nice_available" == "yes" ]; then for f in $(echo -e "$searchPath"); do nice -n 15 "$unrar_bin" x -y -o+ -p- `echo "$f"` "$item" > /dev/null 2>&1; done
+		elif [[ "$unrar_bin" == *unrar* ]] && [ "$has_display" == "yes" ]; then for f in $(echo -e "$searchPath"); do "$unrar_bin" x -y -o+ -p- `echo "$f"` "$item"; done
+		elif [[ "$unrar_bin" == *unrar* ]]; then for f in $(echo -e "$searchPath"); do "$unrar_bin" x -y -o+ -p- `echo "$f"` "$item" > /dev/null 2>&1; done
+		elif [[ "$unrar_bin" == *7z* ]] && [ "$nice_available" == "yes" ] && [ "$has_display" == "yes" ]; then for f in $(echo -e "$searchPath"); do nice -15 `echo "$f"` x -y "$searchPath" -o"$item"; done
+		elif [[ "$unrar_bin" == *7z* ]] && [ "$nice_available" == "yes" ]; then for f in $(echo -e "$searchPath"); do nice -15 "$unrar_bin" x -y `echo "$f"` -o"$item" > /dev/null 2>&1; done
+		elif [[ "$unrar_bin" == *7z* ]] && [ "$has_display" == "yes" ]; then for f in $(echo -e "$searchPath"); do "$unrar_bin" x -y `echo "$f"` -o"$item"; done
+		elif [[ "$unrar_bin" == *7z* ]]; then for f in $(echo -e "$searchPath"); do "$unrar_bin" x -y `echo "$f"` -o"$item" > /dev/null 2>&1; done
 		fi
 	fi
 	if [[ "$item" == */.AppleDouble ]] || [[ "$item" == */._* ]]; then
 		echo "" > /dev/null 2>&1
 	elif [[ "$(ls $item | egrep -i "\.zip$")" ]]; then
-		zipFile=`ls "$item" | egrep -i "\.zip$"` && searchPath="$item/$zipFile";
-		if [[ "$unzip_bin" == *unzip* ]] && [ "$nice_available" == "yes" ] && [ "$has_display" == "yes" ]; then nice -n 15 "$unzip_bin" -o "$searchPath" -d "$item"
-		elif [[ "$unzip_bin" == *unzip* ]] && [ "$nice_available" == "yes" ]; then nice -n 15 "$unzip_bin" -o "$searchPath" -d "$item" > /dev/null 2>&1
-		elif [[ "$unzip_bin" == *unzip* ]] && [ "$has_display" == "yes" ]; then "$unzip_bin" -o "$searchPath" -d "$item"
-		elif [[ "$unzip_bin" == *unzip* ]]; then "$unzip_bin" -o "$searchPath" -d "$item" > /dev/null 2>&1
-		elif [[ "$unzip_bin" == *7z* ]] && [ "$nice_available" == "yes" ] && [ "$has_display" == "yes" ]; then nice -n 15 "$unzip_bin" x -y "$searchPath" -o"$item"
-		elif [[ "$unzip_bin" == *7z* ]] && [ "$nice_available" == "yes" ]; then nice -n 15 "$unzip_bin" x -y "$searchPath" -o"$item" > /dev/null 2>&1
-		elif [[ "$unzip_bin" == *7z* ]] && [ "$has_display" == "yes" ]; then "$unzip_bin" x -y "$searchPath" -o"$item"
-		elif [[ "$unzip_bin" == *7z* ]]; then "$unzip_bin" x -y "$searchPath" -o"$item" > /dev/null 2>&1
+		searchPath=`find -L "$item" -maxdepth 1 ! -name "._*" -type f | egrep -i "\.zip$"`;
+		if [[ "$unzip_bin" == *unzip* ]] && [ "$nice_available" == "yes" ] && [ "$has_display" == "yes" ]; then for f in $(echo -e "$searchPath"); do nice -n 15 "$unzip_bin" -o `echo "$f"` -d "$item"; done
+		elif [[ "$unzip_bin" == *unzip* ]] && [ "$nice_available" == "yes" ]; then for f in $(echo -e "$searchPath"); do nice -n 15 "$unzip_bin" -o `echo "$f"` -d "$item" > /dev/null 2>&1; done
+		elif [[ "$unzip_bin" == *unzip* ]] && [ "$has_display" == "yes" ]; then for f in $(echo -e "$searchPath"); do "$unzip_bin" -o `echo "$f"` -d "$item"; done
+		elif [[ "$unzip_bin" == *unzip* ]]; then for f in $(echo -e "$searchPath"); do "$unzip_bin" -o `echo "$f"` -d "$item" > /dev/null 2>&1; done
+		elif [[ "$unzip_bin" == *7z* ]] && [ "$nice_available" == "yes" ] && [ "$has_display" == "yes" ]; then for f in $(echo -e "$searchPath"); do nice -n 15 "$unzip_bin" x -y `echo "$f"` -o"$item"; done
+		elif [[ "$unzip_bin" == *7z* ]] && [ "$nice_available" == "yes" ]; then for f in $(echo -e "$searchPath"); do nice -n 15 "$unzip_bin" x -y `echo "$f"` -o"$item" > /dev/null 2>&1; done
+		elif [[ "$unzip_bin" == *7z* ]] && [ "$has_display" == "yes" ]; then for f in $(echo -e "$searchPath"); do "$unzip_bin" x -y `echo "$f"` -o"$item"; done
+		elif [[ "$unzip_bin" == *7z* ]]; then for f in $(echo -e "$searchPath"); do "$unzip_bin" x -y `echo "$f"` -o"$item" > /dev/null 2>&1; done
 		fi
 	fi
 done
