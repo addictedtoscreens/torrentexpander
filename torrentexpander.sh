@@ -182,62 +182,43 @@ if [[ "$check_settings" != *cd2iso_bin=* || "$check_settings" == *cd2iso_bin=inc
 fi
 
 ## Inserting values into the settings file
-if [[ "$check_settings" != *estination_folder=* && -d "$destination_folder" ]] || [[ "$check_settings" == *estination_folder=incorrect_or_not_se* && -d "$destination_folder" ]]; then
-	if [[ "$check_settings" == *estination_folder=incorrect_or_not_se* && "$gnu_sed_available" != "yes" ]]; then sed -i '' "/destination_folder=/d" "$settings_file"; fi;
-	if [[ "$check_settings" == *estination_folder=incorrect_or_not_se* && "$gnu_sed_available" == "yes" ]]; then sed -i "/destination_folder=/d" "$settings_file"; fi;
-	echo "destination_folder="$destination_folder"" >> "$settings_file";
-elif [[ "$check_settings" != *estination_folder=* ]]; then echo "destination_folder=incorrect_or_not_set" >> "$settings_file"
+for c in $(echo -e "unrar_bin\nunzip_bin\nccd2iso_bin\nmkvdts2ac3_bin"); do
+	pat="$(echo "$c" | sed "s;^.\(.*\)$;\*\1=\*;")"
+	pat_two="$(echo "$c" | sed "s;^.\(.*\)$;\*\1=incorrect_or_not_se\*;")"
+	if [[ "$check_settings" != $pat && -x "${!c}" ]] || [[ "$check_settings" == $pat_two && -x "${!c}" ]]; then
+		if [[ "$check_settings" == $pat_two && "$gnu_sed_available" != "yes" ]]; then sed -i '' "/$c=/d" "$settings_file"; fi;
+		if [[ "$check_settings" == $pat_two && "$gnu_sed_available" == "yes" ]]; then sed -i "/$c=/d" "$settings_file"; fi;
+		echo "$c=${!c}" >> "$settings_file"
+	elif [[ "$check_settings" != $pat ]]; then echo "$c=incorrect_or_not_set" >> "$settings_file"
+	fi
+done
+for c in $(echo -e "destination_folder\ntv_shows_post_path\nmovies_post_path\nmusic_post_path"); do
+	pat="$(echo "$c" | sed "s;^.\(.*\)$;\*\1=\*;")"
+	pat_two="$(echo "$c" | sed "s;^.\(.*\)$;\*\1=n\*;")"
+	if [[ "$check_settings" != $pat && -d "${!c}" ]] || [[ "$check_settings" == $pat_two && -d "${!c}" ]]; then
+		if [[ "$check_settings" == $pat_two && "$gnu_sed_available" != "yes" ]]; then sed -i '' "/$c=/d" "$settings_file"; fi;
+		if [[ "$check_settings" == $pat_two && "$gnu_sed_available" == "yes" ]]; then sed -i "/$c=/d" "$settings_file"; fi;
+		echo "$c=${!c}" >> "$settings_file"
+	elif [[ "$check_settings" != $pat ]]; then echo "$c=no" >> "$settings_file"
+	fi
+done
+if [ "$third_party_log" != "no" ]; then third_party_log_directory="$(echo "$(dirname "$third_party_log")")"; fi
+if [[ "$check_settings" != *hird_party_log=* && -d "$third_party_log_directory" ]] || [[ "$check_settings" == *hird_party_log=n* && -d "$third_party_log_directory" ]]; then
+	if [[ "$check_settings" == *hird_party_log=n* && "$gnu_sed_available" != "yes" ]]; then sed -i '' "/third_party_log=/d" "$settings_file"; fi;
+	if [[ "$check_settings" == *hird_party_log=n* && "$gnu_sed_available" == "yes" ]]; then sed -i "/third_party_log=/d" "$settings_file"; fi;
+	echo "third_party_log="$third_party_log"" >> "$settings_file";
+elif [[ "$check_settings" != *hird_party_log=* ]]; then echo "third_party_log=no" >> "$settings_file"
 fi
-if [[ "$check_settings" != *nrar_bin=* && -x "$unrar_bin" ]] || [[ "$check_settings" == *nrar_bin=incorrect_or_not_se* && -x "$unrar_bin" ]]; then
-	if [[ "$check_settings" == *nrar_bin=incorrect_or_not_se* && "$gnu_sed_available" != "yes" ]]; then sed -i '' "/unrar_bin=/d" "$settings_file"; fi;
-	if [[ "$check_settings" == *nrar_bin=incorrect_or_not_se* && "$gnu_sed_available" == "yes" ]]; then sed -i "/unrar_bin=/d" "$settings_file"; fi;
-	echo "unrar_bin="$unrar_bin"" >> "$settings_file"
-elif [[ "$check_settings" != *nrar_bin=* ]]; then echo "unrar_bin=incorrect_or_not_set" >> "$settings_file" 
-fi
-if [[ "$check_settings" != *nzip_bin=* && -x "$unzip_bin" ]] || [[ "$check_settings" == *nzip_bin=incorrect_or_not_se* && -x "$unzip_bin" ]]; then
-	if [[ "$check_settings" == *nzip_bin=incorrect_or_not_se* && "$gnu_sed_available" != "yes" ]]; then sed -i '' "/unzip_bin=/d" "$settings_file"; fi;
-	if [[ "$check_settings" == *nzip_bin=incorrect_or_not_se* && "$gnu_sed_available" == "yes" ]]; then sed -i "/unzip_bin=/d" "$settings_file"; fi;
-	echo "unzip_bin="$unzip_bin"" >> "$settings_file"
-elif [[ "$check_settings" != *nzip_bin=* ]]; then echo "unzip_bin=incorrect_or_not_set" >> "$settings_file"
-fi
-if [[ "$check_settings" != *cd2iso_bin=* && -x "$ccd2iso_bin" ]] || [[ "$check_settings" == *cd2iso_bin=incorrect_or_not_se* && -x "$ccd2iso_bin" ]]; then
-	if [[ "$check_settings" == *cd2iso_bin=incorrect_or_not_se* && "$gnu_sed_available" != "yes" ]]; then sed -i '' "/ccd2iso_bin=/d" "$settings_file"; fi;
-	if [[ "$check_settings" == *cd2iso_bin=incorrect_or_not_se* && "$gnu_sed_available" == "yes" ]]; then sed -i "/ccd2iso_bin=/d" "$settings_file"; fi;
-	echo "ccd2iso_bin="$ccd2iso_bin"" >> "$settings_file"
-elif [[ "$check_settings" != *cd2iso_bin=* ]]; then echo "ccd2iso_bin=incorrect_or_not_set" >> "$settings_file"
-fi
-if [[ "$check_settings" != *kvdts2ac3_bin=* && -x "$mkvdts2ac3_bin" ]] || [[ "$check_settings" == *kvdts2ac3_bin=incorrect_or_not_se* && -x "$mkvdts2ac3_bin" ]]; then
-	if [[ "$check_settings" == *kvdts2ac3_bin=incorrect_or_not_se* && "$gnu_sed_available" != "yes" ]]; then sed -i '' "/mkvdts2ac3_bin=/d" "$settings_file"; fi;
-	if [[ "$check_settings" == *kvdts2ac3_bin=incorrect_or_not_se* && "$gnu_sed_available" == "yes" ]]; then sed -i "/mkvdts2ac3_bin=/d" "$settings_file"; fi;
-	echo "mkvdts2ac3_bin="$mkvdts2ac3_bin"" >> "$settings_file"
-elif [[ "$check_settings" != *mkvdts2ac3_bin=* ]]; then echo "mkvdts2ac3_bin=incorrect_or_not_set" >> "$settings_file"
-fi
-if [[ "$check_settings" != *v_shows_fix_numbering=* ]]; then echo "tv_shows_fix_numbering="$tv_shows_fix_numbering"" >> "$settings_file"; fi
-if [[ "$check_settings" != *lean_up_filenames=* ]]; then echo "clean_up_filenames="$clean_up_filenames"" >> "$settings_file"; fi
-if [[ "$check_settings" != *ubtitles_handling=* ]]; then echo "subtitles_handling="$subtitles_handling"" >> "$settings_file"; fi
-if [[ "$check_settings" != *epack_handling=* ]]; then echo "repack_handling="$repack_handling"" >> "$settings_file"; fi
-if [[ "$check_settings" != *ii_post=* ]]; then echo "wii_post="$wii_post"" >> "$settings_file"; fi
-if [[ "$check_settings" != *mg_post=* ]]; then echo "img_post="$img_post"" >> "$settings_file"; fi
-if [[ "$check_settings" != *v_shows_post=* ]]; then echo "tv_shows_post="$tv_shows_post"" >> "$settings_file"; fi
-if [[ "$check_settings" != *v_shows_post_path=* && -d "$tv_shows_post_path" ]]; then echo "tv_shows_post_path="$tv_shows_post_path"" >> "$settings_file"; fi
-if [[ "$check_settings" != *ovies_post=* ]]; then echo "movies_post="$movies_post"" >> "$settings_file"; fi
-if [[ "$check_settings" != *ovies_post_path=* && -d "$movies_post_path" ]]; then echo "movies_post_path="$movies_post_path"" >> "$settings_file"; fi
-if [[ "$check_settings" != *usic_post=* ]]; then echo "music_post="$music_post"" >> "$settings_file"; fi
-if [[ "$check_settings" != *usic_post_path=* && -d "$music_post_path" ]]; then echo "music_post_path="$music_post_path"" >> "$settings_file"; fi
-if [[ "$check_settings" != *ts_post=* ]]; then echo "dts_post="$dts_post"" >> "$settings_file"; fi
-if [[ "$check_settings" != *ser_perm_post=* ]]; then echo "user_perm_post="$user_perm_post"" >> "$settings_file"; fi
-if [[ "$check_settings" != *roup_perm_post=* ]]; then echo "group_perm_post="$group_perm_post"" >> "$settings_file"; fi
-if [[ "$check_settings" != *iles_perm_post=* ]]; then echo "files_perm_post="$files_perm_post"" >> "$settings_file"; fi
-if [[ "$check_settings" != *older_perm_post=* ]]; then echo "folder_perm_post="$folder_perm_post"" >> "$settings_file"; fi
-if [[ "$check_settings" != *dit_perm_as_sudo=* ]]; then echo "edit_perm_as_sudo="$edit_perm_as_sudo"" >> "$settings_file"; fi
-if [[ "$check_settings" != *third_party_log=* ]]; then echo "third_party_log="$third_party_log"" >> "$settings_file"; fi
-if [[ "$check_settings" != *eset_timestamp=* ]]; then echo "reset_timestamp="$reset_timestamp"" >> "$settings_file"; fi
-if [[ "$check_settings" != *upported_extensions=* ]]; then echo "supported_extensions="$supported_extensions"" >> "$settings_file"; fi
-if [[ "$check_settings" != *v_show_extensions=* ]]; then echo "tv_show_extensions="$tv_show_extensions"" >> "$settings_file"; fi
-if [[ "$check_settings" != *ovies_extensions=* ]]; then echo "movies_extensions="$movies_extensions"" >> "$settings_file"; fi
-if [[ "$check_settings" != *usic_extensions=* ]]; then echo "music_extensions="$music_extensions"" >> "$settings_file"; fi
+for c in $(echo -e "tv_shows_fix_numbering\nclean_up_filenames\nsubtitles_handling\nrepack_handling\nwii_post\nimg_post\ntv_shows_post\nmovies_post\nmusic_post\ndts_post\nuser_perm_post\ngroup_perm_post\nfiles_perm_post\nfolder_perm_post\nedit_perm_as_sudo\nreset_timestamp\nsupported_extensions\ntv_show_extensions\nmovies_extensions\nmusic_extensions"); do
+	pat="$(echo "$c" | sed "s;^.\(.*\)$;\*\1=\*;")"
+	if [[ "$check_settings" != $pat ]]; then echo "$c=${!c}" >> "$settings_file"; fi
+done
+
+# Removing patterns from settings file generated by a previous version of the script
 if [[ "$check_settings" == *ovies_detect_patterns=* && "$gnu_sed_available" != "yes" ]]; then sed -i '' "/movies_detect_patterns=/d" "$settings_file"; fi
 if [[ "$check_settings" == *ovies_detect_patterns=* && "$gnu_sed_available" == "yes" ]]; then sed -i "/movies_detect_patterns=/d" "$settings_file"; fi
+
+# Escaping spaces from paths in settings file
 if [ "$(echo "$check_settings" | egrep -i "([^\\]) ")" ] && [ "$gnu_sed_available" != "yes" ]; then sed -i '' 's;\([^\\]\) ;\1\\ ;g' "$settings_file"; fi
 if [ "$(echo "$check_settings" | egrep -i "([^\\]) ")" ] && [ "$gnu_sed_available" == "yes" ]; then sed -i 's;\([^\\]\) ;\1\\ ;g' "$settings_file"; fi
 
@@ -372,7 +353,6 @@ fi
 ##################### CHECKING IF VARIABLES ARE CORRECT ##########################
 variables_check="Please check your script variables"
 temp_directory="$(echo "$(dirname "$temp_folder")")"
-third_party_log_directory="$(echo "$(dirname "$third_party_log")")"
 errors_file="$script_path/torrentexpander_errors.log"
 if [ "$torrent" ] && [ ! "$current_folder" ]; then
 	torrent_directory="$(echo "$(dirname "$torrent")/")"
@@ -506,7 +486,7 @@ for item in $(if [[ "$current_folder" && "$find_l_available" == "yes" ]]; then f
 	elif [[ "$(ls $item | egrep -i -v "\.[0-9][0-9][0-9]$|\.r[0-9][0-9]$|\.rar$|\.001$|\.zip$")" ]]; then
 		if [[ -d "$item" && "$(ls "$item" | egrep -i -v "\.[0-9][0-9][0-9]$|\.r[0-9][0-9]$|\.rar$|\.001$|\.zip$")" && "$find_l_available" == "yes" ]]; then otherFiles=`find -L "$item" -maxdepth 1 ! -name "._*" -type f | egrep -i -v "\.[0-9][0-9][0-9]$|\.r[0-9][0-9]$|\.rar$|\.001$|\.zip$"` && dest_path=`echo "$item/" | sed "s;$current_folder/;$temp_folder;g"`
 		elif [[ -d "$item" && "$(ls "$item" | egrep -i -v "\.[0-9][0-9][0-9]$|\.r[0-9][0-9]$|\.rar$|\.001$|\.zip$")" ]]; then otherFiles=`find "$item" -maxdepth 1 ! -name "._*" -type f | egrep -i -v "\.[0-9][0-9][0-9]$|\.r[0-9][0-9]$|\.rar$|\.001$|\.zip$"` && dest_path=`echo "$item/" | sed "s;$current_folder/;$temp_folder;g"`
-		elif [[ "$(echo "$item" | egrep -i -v "\.[0-9][0-9][0-9]$|\.r[0-9][0-9]$|\.rar$|\.001$|\.zip$")" ]]; then otherFiles=`echo "$item" | egrep -i -v "\.[0-9][0-9][0-9]$|\.r[0-9][0-9]$|\.rar$|\.001$|\.zip$"` && dest_path=`echo $temp_folder"`
+		elif [[ "$(echo "$item" | egrep -i -v "\.[0-9][0-9][0-9]$|\.r[0-9][0-9]$|\.rar$|\.001$|\.zip$")" ]]; then otherFiles=`echo "$item" | egrep -i -v "\.[0-9][0-9][0-9]$|\.r[0-9][0-9]$|\.rar$|\.001$|\.zip$"` && dest_path=`echo "$temp_folder"`
 		fi
 		if [ "$nice_available" == "yes" ]; then for f in $(echo -e "$otherFiles"); do otherFile=`echo "$f"`; mkdir -p "$dest_path"; nice -n 15 cp -f "$otherFile" "$dest_path"; done
 		elif [ "$nice_available" != "yes" ]; then for f in $(echo -e "$otherFiles"); do otherFile=`echo "$f"`; mkdir -p "$dest_path"; cp -f "$otherFile" "$dest_path"; done
@@ -821,7 +801,7 @@ if [[ $files -gt 1 ]] && [ "$third_party_log" != "no" ]; then folder_name=`echo 
 if [ "$third_party_log" != "no" ] && [ "$user_perm_post" == "yes" ]; then chown "$user_perm_post":"$group_perm_post" "$third_party_log" && sudo chmod "$files_perm_post" "$third_party_log"; fi
 
 
-## Edit files and folders permissions - Still quick and dirty
+## Edit files and folders permissions
 if [[ "$has_display" == "yes" && "$user_perm_post" != "no" ]] || [[ "$has_display" == "yes" && "$files_perm_post" != "no" ]]; then step_number=$(( $step_number + 1 )) && echo "Step $step_number : Setting permissions";  fi
 if [ "$music_post_perm" ]; then echo "$music_post_perm" >> "$log_file"; fi
 if [ "$tv_show_post_perm" ]; then echo "$tv_show_post_perm" >> "$log_file"; fi
@@ -864,6 +844,7 @@ export TR_TORRENT_NAME=""
 export torrent=""
 rm -f "$log_file"
 
+## This is the subtitles routine. If srt files are found in the subtitles directory, they will be renamed and moved to the destination folder
 if [[ "$subtitles_mode" != "yes" && "$subtitles_handling" != "no" && -d "$subtitles_directory" && "$(find "$subtitles_directory" -maxdepth 1 ! -name "._*" -name "*.srt" -type f)" ]]; then
  	if [ "$has_display" == "yes" ]; then step_number=$(( $step_number + 1 )) && echo "Step $step_number : Fetching new subtitles from the subtitles folder";  fi
  	export subtitles_mode="yes"
@@ -888,4 +869,3 @@ if [ "$has_display" == "yes" ]; then echo "That's All Folks";  fi
 export subtitles_mode=""
 IFS=$SAVEIFS
 
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
