@@ -331,7 +331,6 @@ elif [ "$has_display" == "yes" ]; then
 	echo "I cannot detect any Torrent Source - This script will exit" && exit
 else exit
 fi
-
 ######################### END TORRENT SOURCE SETUP ###############################
 ##################################################################################
 
@@ -347,12 +346,12 @@ done
 if [ ! -f "$log_file" ]; then
 	touch "$log_file"
 fi
-
 ##################################################################################
 
 ##################### CHECKING IF VARIABLES ARE CORRECT ##########################
 variables_check="Please check your script variables"
 temp_directory="$(echo "$(dirname "$temp_folder")")"
+third_party_log_directory="$(echo "$(dirname "$third_party_log")")"
 errors_file="$script_path/torrentexpander_errors.log"
 if [ "$torrent" ] && [ ! "$current_folder" ]; then
 	torrent_directory="$(echo "$(dirname "$torrent")/")"
@@ -362,82 +361,21 @@ fi
 
 if [ -f "$errors_file" ]; then rm -f "$errors_file"; fi
 
-if [ ! -d "$destination_folder" ]; then
-	echo "Your destination folder is incorrect please edit your torrentexpander_settings.ini file" >> "$errors_file"
-	if [ "$has_display" == "yes" ]; then echo "Your destination folder is incorrect please edit your torrentexpander_settings.ini file";  fi
-	quit_on_error="yes"
-fi
-if [ ! -d "$temp_directory" ]; then
-	echo "Your temp folder path is incorrect please edit your torrentexpander_settings.ini file" >> "$errors_file"
-	if [ "$has_display" == "yes" ]; then echo "Your temp folder path is incorrect please edit your torrentexpander_settings.ini file";  fi
-	quit_on_error="yes"
-fi
-if [ -d "$temp_folder" ]; then
-	echo "Temp folder already exists. Please delete it or edit your torrentexpander_settings.ini file" >> "$errors_file"
-	if [ "$has_display" == "yes" ]; then echo "Temp folder already exists. Please delete it or edit your torrentexpander_settings.ini file";  fi
-	quit_on_error="yes"
-fi
-if [ "$torrent_directory" == "$destination_folder" ]; then
-	echo "Your destination folder should be different from the one where your torrent is located. Please edit your torrentexpander_settings.ini file" >> "$errors_file"
-	if [ "$has_display" == "yes" ]; then echo "Your destination folder should be different from the one where your torrent is located. Please edit your torrentexpander_settings.ini file";  fi
-	quit_on_error="yes"
-fi
-if [ ! -d "$third_party_log_directory" ] && [ "$third_party_log" != "no" ]; then
-	echo "Your third party log path is incorrect please edit your torrentexpander_settings.ini file" >> "$errors_file"
-	if [ "$has_display" == "yes" ]; then echo "Your third party log path is incorrect please edit your torrentexpander_settings.ini file";  fi
-	quit_on_error="yes"
-fi
-if [ ! -x "$unrar_bin" ]; then
-	echo "Your Unrar path is incorrect please edit your torrentexpander_settings.ini file" >> "$errors_file"
-	if [ "$has_display" == "yes" ]; then echo "Your Unrar path is incorrect please edit your torrentexpander_settings.ini file";  fi
-	quit_on_error="yes"
-fi
-if [ ! -x "$unzip_bin" ]; then
-	echo "Your Unzip path is incorrect please edit your torrentexpander_settings.ini file" >> "$errors_file"
-	if [ "$has_display" == "yes" ]; then echo "Your Unzip path is incorrect please edit your torrentexpander_settings.ini file";  fi
-	quit_on_error="yes"
-fi
-if [[ "$supported_extensions_rev" =~ rar ]] || [[ "$tv_show_extensions_rev" =~ rar ]] || [[ "$movies_extensions_rev" =~ rar ]] || [[ "$music_extensions_rev" =~ rar ]] || [[ "$supported_extensions_rev" =~ zip ]] || [[ "$tv_show_extensions_rev" =~ zip ]] || [[ "$movies_extensions_rev" =~ zip ]] || [[ "$music_extensions_rev" =~ zip ]]; then
-	echo "Your supported file extensions are incorrect please edit your torrentexpander_settings.ini file" >> "$errors_file"
-	if [ "$has_display" == "yes" ]; then echo "Your supported file extensions are incorrect please edit your torrentexpander_settings.ini file";  fi
-	quit_on_error="yes"
-fi
-if [ ! -d "$tv_shows_post_path" ] && [ "$tv_shows_post" != "no" ]; then
-	echo "Your TV Shows path is incorrect - TV Shows Post will be disabled" >> "$errors_file"
-	if [ "$has_display" == "yes" ]; then echo "Your TV Shows path is incorrect - TV Shows Post will be disabled";  fi
-	tv_shows_post="no"
-fi
-if [ ! -d "$music_post_path" ] && [ "$music_post" != "no" ]; then
-	echo "Your music path is incorrect - Music Post will be disabled" >> "$errors_file"
-	if [ "$has_display" == "yes" ]; then echo "Your music path is incorrect - Music Post will be disabled";  fi
-	music_post="no"
-fi
-if [ ! -d "$movies_post_path" ] && [ "$movies_post" != "no" ]; then
-	echo "Your movies path is incorrect - Movies Post will be disabled" >> "$errors_file"
-	if [ "$has_display" == "yes" ]; then echo "Your movies path is incorrect - Movies Post will be disabled";  fi
-	movies_post="no"
-fi
-if [ ! -x "$mkvdts2ac3_bin" ] && [ "$dts_post" == "yes" ]; then
-	echo "Path to mkvdts2ac3.sh is incorrect - DTS Post will be disabled" >> "$errors_file"
-	if [ "$has_display" == "yes" ]; then echo "Path to mkvdts2ac3.sh is incorrect - DTS Post will be disabled";  fi
-	dts_post="no"
-fi
-if [ ! -x "$ccd2iso_bin" ] && [ "$img_post" == "yes" ]; then
-	echo "Path to ccd2iso is incorrect - IMG to ISO Post will be disabled" >> "$errors_file"
-	if [ "$has_display" == "yes" ]; then echo "Path to ccd2iso is incorrect - IMG to ISO Post will be disabled";  fi
-	img_post="no"
-fi
-if [[ "$third_party_log" != "no" && -f "$third_party_log" ]] || [ "$alt_dest_enabled" == "yes" ]; then
-	if [ "$tv_shows_post" != "no" ]; then tv_shows_post="copy"; fi
-	if [ "$music_post" != "no" ]; then music_post="copy"; fi
-	if [ "$movies_post" != "no" ]; then movies_post="copy"; fi
-fi
-if [ "$quit_on_error" == "yes" ]; then
-	if [ "$has_display" == "yes" ]; then echo -e "\n\nThere's something wrong with your settings. Please review them now." && read -p "" && nano "$settings_file" && echo -e "\n\nYou're done with your setup\nThis script will exit now\nIf you need to edit your settings again just run $script_path/torrentexpander.sh -c"; fi
-	rm -f "$log_file"
-	exit
-fi
-
+if [ ! -d "$destination_folder" ]; then echo "Your destination folder is incorrect please edit your torrentexpander_settings.ini file" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Your destination folder is incorrect please edit your torrentexpander_settings.ini file"; fi; quit_on_error="yes"; fi
+if [ ! -d "$temp_directory" ]; then echo "Your temp folder path is incorrect please edit your torrentexpander_settings.ini file" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Your temp folder path is incorrect please edit your torrentexpander_settings.ini file"; fi; quit_on_error="yes"; fi
+if [ ! -d "$tv_shows_post_path" ] && [ "$tv_shows_post" != "no" ]; then	echo "Your TV Shows path is incorrect - TV Shows Post will be disabled" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Your TV Shows path is incorrect - TV Shows Post will be disabled"; fi; tv_shows_post="no"; fi
+if [ ! -d "$music_post_path" ] && [ "$music_post" != "no" ]; then echo "Your music path is incorrect - Music Post will be disabled" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Your music path is incorrect - Music Post will be disabled"; fi; music_post="no"; fi
+if [ ! -d "$movies_post_path" ] && [ "$movies_post" != "no" ]; then	echo "Your movies path is incorrect - Movies Post will be disabled" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Your movies path is incorrect - Movies Post will be disabled"; fi; movies_post="no"; fi
+if [ ! -d "$third_party_log_directory" ] && [ "$third_party_log" != "no" ]; then echo "Your third party log path is incorrect please edit your torrentexpander_settings.ini file" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Your third party log path is incorrect please edit your torrentexpander_settings.ini file"; fi; quit_on_error="yes"; fi
+if [ -d "$temp_folder" ]; then echo "Temp folder already exists. Please delete it or edit your torrentexpander_settings.ini file" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Temp folder already exists. Please delete it or edit your torrentexpander_settings.ini file"; fi; quit_on_error="yes"; fi
+if [ "$torrent_directory" == "$destination_folder" ]; then echo "Your destination folder should be different from the one where your torrent is located. Please edit your torrentexpander_settings.ini file" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Your destination folder should be different from the one where your torrent is located. Please edit your torrentexpander_settings.ini file"; fi; quit_on_error="yes"; fi
+if [ ! -x "$unrar_bin" ]; then echo "Your Unrar path is incorrect please edit your torrentexpander_settings.ini file" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Your Unrar path is incorrect please edit your torrentexpander_settings.ini file"; fi; quit_on_error="yes"; fi
+if [ ! -x "$unzip_bin" ]; then echo "Your Unzip path is incorrect please edit your torrentexpander_settings.ini file" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Your Unzip path is incorrect please edit your torrentexpander_settings.ini file"; fi; quit_on_error="yes"; fi
+if [ ! -x "$mkvdts2ac3_bin" ] && [ "$dts_post" == "yes" ]; then echo "Path to mkvdts2ac3.sh is incorrect - DTS Post will be disabled" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Path to mkvdts2ac3.sh is incorrect - DTS Post will be disabled"; fi; dts_post="no"; fi
+if [ ! -x "$ccd2iso_bin" ] && [ "$img_post" == "yes" ]; then echo "Path to ccd2iso is incorrect - IMG to ISO Post will be disabled" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Path to ccd2iso is incorrect - IMG to ISO Post will be disabled"; fi; img_post="no"; fi
+if [[ "$supported_extensions_rev" =~ rar ]] || [[ "$tv_show_extensions_rev" =~ rar ]] || [[ "$movies_extensions_rev" =~ rar ]] || [[ "$music_extensions_rev" =~ rar ]] || [[ "$supported_extensions_rev" =~ zip ]] || [[ "$tv_show_extensions_rev" =~ zip ]] || [[ "$movies_extensions_rev" =~ zip ]] || [[ "$music_extensions_rev" =~ zip ]]; then echo "Your supported file extensions are incorrect please edit your torrentexpander_settings.ini file" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Your supported file extensions are incorrect please edit your torrentexpander_settings.ini file"; fi; quit_on_error="yes"; fi
+if [[ "$third_party_log" != "no" && -f "$third_party_log" ]] || [ "$alt_dest_enabled" == "yes" ]; then if [ "$tv_shows_post" != "no" ]; then tv_shows_post="copy"; fi; if [ "$music_post" != "no" ]; then music_post="copy"; fi; if [ "$movies_post" != "no" ]; then movies_post="copy"; fi; fi
+if [ "$quit_on_error" == "yes" ]; then if [ "$has_display" == "yes" ]; then echo -e "\n\nThere's something wrong with your settings. Please review them now." && read -p "" && nano "$settings_file" && echo -e "\n\nYou're done with your setup\nThis script will exit now\nIf you need to edit your settings again just run $script_path/torrentexpander.sh -c"; fi; rm -f "$log_file"; exit; fi
 
 ##################################################################################
 step_number=0
@@ -493,7 +431,6 @@ for item in $(if [[ "$current_folder" && "$find_l_available" == "yes" ]]; then f
 		fi
 	fi
 done
-
 
 ## If archives within archives - Expanding and copying folders to the temp folder
 for item in $(find "$temp_folder_without_slash" -type d); do
@@ -551,7 +488,6 @@ if [[ $files -eq 1 ]]; then
 	folder_short=""
 fi
 
-
 ## If more than one file, create folder named as the initial one and move the resulting files there
 if [[ $files -gt 1 ]]; then for directory in $(find "$temp_folder_without_slash" -type d); do
 	if [ ! "$folder_short" ]; then folder_short=`echo "$torrent" | sed 's/\(.*\)\..*/\1/' | sed 's;.*/;;g'`; fi
@@ -575,7 +511,6 @@ for item in $(find "$destination_folder$folder_short" -type f | egrep -i "$suppo
 	echo "$item" >> "$log_file" && rm -rf "$temp_folder_without_slash"
 done
 fi
-
 
 ######################### Optional functionalities ################################
 
@@ -605,7 +540,6 @@ if [[ "$tv_shows_fix_numbering" == "yes" && "$(cat "$log_file" | egrep -i "([123
 	fi
 done
 fi
-
 
 ## Cleanup filenames
 if [[ "$has_display" == "yes" && "$clean_up_filenames" == "yes" ]]; then step_number=$(( $step_number + 1 )) && echo "Step $step_number : Cleaning up filenames";  fi
@@ -644,11 +578,9 @@ if [[ "$clean_up_filenames" == "yes" ]]; then for line in $(cat "$log_file"); do
 done
 fi
 
-
 if [[ "$folder_short" && "$tv_shows_fix_numbering" == "yes" && "$gnu_sed_available" != "yes" ]] || [[ "$folder_short" && "$clean_up_filenames" == "yes" && "$gnu_sed_available" != "yes" ]]; then folder_short=`echo "$(cat "$log_file" | sed -n '$p' | sed 's;.*/;;g')"`; sed -i '' '$d' "$log_file"
 elif [[ "$folder_short" && "$tv_shows_fix_numbering" == "yes" && "$gnu_sed_available" == "yes" ]] || [[ "$folder_short" && "$clean_up_filenames" == "yes" && "$gnu_sed_available" == "yes" ]]; then folder_short=`echo "$(cat "$log_file" | sed -n '$p' | sed 's;.*/;;g')"`; sed -i '$d' "$log_file"
 fi
-
 
 ## Convert DTS track from MKV files to AC3
 if [ "$has_display" == "yes" ] && [ "$dts_post" == "yes" ] && [ "$(cat "$log_file" | egrep -i "\.mkv$" )" ]; then step_number=$(( $step_number + 1 )) && echo "Step $step_number : Converting DTS track to AC3";  fi
@@ -686,7 +618,6 @@ for line in $(cat "$log_file"); do
 		echo "$iso" >> "$log_file"
 	fi
 done
-
 
 if [[ "$has_display" == "yes" && "$wii_post" == "yes" ]] || [[ "$has_display" == "yes" && "$tv_shows_post" != "no" ]] || [[ "$has_display" == "yes" && "$music_post" != "no" ]] || [[ "$has_display" == "yes" && "$movies_post" != "no" ]]; then step_number=$(( $step_number + 1 )) && echo "Step $step_number : Taking care of other optional features";  fi
 for line in $(cat "$log_file"); do
@@ -793,13 +724,11 @@ if [[ "$music_post" == "move" && $files_in_folder_short -eq 0 ]] || [[ "$tv_show
 	folder_short_deleted="yes"
 fi
 
-
 ## Use a source / destination log shared with a third party app - Add path to enable
 count=0 && files=$(( $count + $(cat "$log_file"|wc -l) ))
 if [[ $files -eq 1 ]] && [ "$third_party_log" != "no" ]; then echo "$(cat "$log_file")" > "$third_party_log"; fi
 if [[ $files -gt 1 ]] && [ "$third_party_log" != "no" ]; then folder_name=`echo "$destination_folder$folder_short"`; echo "$folder_name" > "$third_party_log"; fi
 if [ "$third_party_log" != "no" ] && [ "$user_perm_post" == "yes" ]; then chown "$user_perm_post":"$group_perm_post" "$third_party_log" && sudo chmod "$files_perm_post" "$third_party_log"; fi
-
 
 ## Edit files and folders permissions
 if [[ "$has_display" == "yes" && "$user_perm_post" != "no" ]] || [[ "$has_display" == "yes" && "$files_perm_post" != "no" ]]; then step_number=$(( $step_number + 1 )) && echo "Step $step_number : Setting permissions";  fi
@@ -822,7 +751,6 @@ for line in $(cat "$log_file"); do
 	fi
 done
 
-
 ## Reset timestamp (mtime)
 if [ "$has_display" == "yes" ] && [ "$reset_timestamp" == "yes" ]; then step_number=$(( $step_number + 1 )) && echo "Step $step_number : Resetting mtime";  fi
 for line in $(cat "$log_file"); do
@@ -831,7 +759,6 @@ for line in $(cat "$log_file"); do
 		touch "$line"
 	fi
 done
-
 
 ## Delete third party log if required
 if [ "$delete_third_party_log" == "yes" ] && [ "$third_party_log" != "no" ]; then rm -f "$third_party_log"; fi
