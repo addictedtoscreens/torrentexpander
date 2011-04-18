@@ -13,7 +13,6 @@ if [ "$1" == "-c" ]; then first_run="yes"; fi
 
 nice -n 15 echo > /dev/null 2>&1 && if [ "$?" == "0" ]; then nice_available="yes"; fi
 find -L / -maxdepth 1 > /dev/null 2>&1 && if [ "$?" == "0" ]; then find_l_available="yes"; fi
-sed -i "s;^$;^$;g" > /dev/null 2>&1; if [ "$?" == "4" ]; then gnu_sed_available="yes"; fi
 
 
 ##################################################################################
@@ -152,6 +151,8 @@ if [ "$has_display" == "yes" ] && [ ! -f "$settings_file" ]; then first_run="yes
 if [ ! -f "$settings_file" ]; then
 	touch "$settings_file"
 fi
+
+sed -i "s;^this_string_should_not_be_there$;^$;g" "$settings_file" > /dev/null 2>&1; if [ "$?" == "0" ]; then gnu_sed_available="yes"; fi
 
 check_settings=$(echo "$(cat "$settings_file")")
 
