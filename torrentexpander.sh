@@ -374,7 +374,7 @@ mkdir -p "$temp_folder"
 ## Expanding and copying folders to the temp folder
 if [ "$has_display" == "yes" ]; then step_number=$(( $step_number + 1 )) && echo "Step $step_number : Expanding / moving content of the torrent";  fi
 for item in $(if [[ "$current_folder" && "$find_l_available" == "yes" ]]; then find -L "$current_folder" -type d; elif [ "$current_folder" ]; then find "$current_folder" -type d; else [ "$torrent" ]; echo "$torrent"; fi); do
-	if [[ "$item" == */.AppleDouble ]] || [[ "$item" == */._* ]]; then
+	if [[ "$item" == */.AppleDouble ]] || [[ "$item" == */._* ]] || [[ "$item" == */.DS_Store* ]]; then
 		echo "" > /dev/null 2>&1
 	elif [[ "$(ls "$item" | egrep -i "\.rar$|\.001$")" ]]; then
 		if [[ "$(ls "$item" | egrep -i "part001\.rar$")" ]]; then rarFile=`ls "$item" | egrep -i "part001\.rar$"` && searchPath="$item/$rarFile";
@@ -393,7 +393,7 @@ for item in $(if [[ "$current_folder" && "$find_l_available" == "yes" ]]; then f
 		elif [[ "$unrar_bin" == *7z* ]]; then for f in $(echo -e "$searchPath"); do "$unrar_bin" x -y `echo "$f"` -o"$temp_folder" > /dev/null 2>&1; done
 		fi
 	fi
-	if [[ "$item" == */.AppleDouble ]] || [[ "$item" == */._* ]]; then
+	if [[ "$item" == */.AppleDouble ]] || [[ "$item" == */._* ]] || [[ "$item" == */.DS_Store* ]]; then
 		echo "" > /dev/null 2>&1
 	elif [[ "$(ls $item | egrep -i "\.zip$")" ]]; then
 		if [[ -d "$item" && "$(ls "$item" | egrep -i "\.zip$")" ]]; then searchPath=`find -L "$item" -maxdepth 1 ! -name "._*" -type f | egrep -i "\.zip$"`;
@@ -409,7 +409,7 @@ for item in $(if [[ "$current_folder" && "$find_l_available" == "yes" ]]; then f
 		elif [[ "$unzip_bin" == *7z* ]]; then for f in $(echo -e "$searchPath"); do "$unzip_bin" x -y `echo "$f"` -o"$temp_folder" > /dev/null 2>&1; done
 		fi
 	fi
-	if [[ "$item" == */.AppleDouble ]] || [[ "$item" == */._* ]]; then
+	if [[ "$item" == */.AppleDouble ]] || [[ "$item" == */._* ]] || [[ "$item" == */.DS_Store* ]]; then
 		echo "" > /dev/null 2>&1
 	elif [[ "$(ls $item | egrep -i -v "\.[0-9][0-9][0-9]$|\.r[0-9][0-9]$|\.rar$|\.001$|\.zip$")" ]]; then
 		if [[ -d "$item" && "$(ls "$item" | egrep -i -v "\.[0-9][0-9][0-9]$|\.r[0-9][0-9]$|\.rar$|\.001$|\.zip$")" && "$find_l_available" == "yes" ]]; then otherFiles=`find -L "$item" -maxdepth 1 ! -name "._*" -type f | egrep -i -v "\.[0-9][0-9][0-9]$|\.r[0-9][0-9]$|\.rar$|\.001$|\.zip$"` && dest_path=`echo "$item/" | sed "s;$current_folder/;$temp_folder;g"`
@@ -424,7 +424,7 @@ done
 
 ## If archives within archives - Expanding and copying folders to the temp folder
 for item in $(find "$temp_folder_without_slash" -type d); do
-	if [[ "$item" == */.AppleDouble ]] || [[ "$item" == */._* ]]; then
+	if [[ "$item" == */.AppleDouble ]] || [[ "$item" == */._* ]] || [[ "$item" == */.DS_Store* ]]; then
 		echo "" > /dev/null 2>&1
 	elif [[ "$(ls "$item" | egrep -i "\.rar$")" ]]; then
 		searchPath=`find -L "$item" -maxdepth 1 ! -name "._*" -type f | egrep -i "\.rar$"`;
@@ -438,7 +438,7 @@ for item in $(find "$temp_folder_without_slash" -type d); do
 		elif [[ "$unrar_bin" == *7z* ]]; then for f in $(echo -e "$searchPath"); do "$unrar_bin" x -y `echo "$f"` -o"$item" > /dev/null 2>&1; done
 		fi
 	fi
-	if [[ "$item" == */.AppleDouble ]] || [[ "$item" == */._* ]]; then
+	if [[ "$item" == */.AppleDouble ]] || [[ "$item" == */._* ]] || [[ "$item" == */.DS_Store* ]]; then
 		echo "" > /dev/null 2>&1
 	elif [[ "$(ls $item | egrep -i "\.zip$")" ]]; then
 		searchPath=`find -L "$item" -maxdepth 1 ! -name "._*" -type f | egrep -i "\.zip$"`;
@@ -457,15 +457,15 @@ done
 ## Delete Mac OS X invisible files and sample from temp folder
 for item in $(find "$temp_folder_without_slash"); do
 	item=`echo "$item"`
-	if [[ "$item" == */.AppleDouble* ]] || [[ "$item" == */._* ]]; then rm -rf "$item"
+	if [[ "$item" == */.AppleDouble* ]] || [[ "$item" == */._* ]] || [[ "$item" == */.DS_Store* ]]; then rm -rf "$item"
 	elif [[ "$(echo "$item" | egrep -i "^sample[^A-Za-z0-9_]" )" && "$(echo "$item" | egrep -i "\.avi$|\.mkv$|\.ts$" )" ]] || [[ "$(echo "$item" | egrep -i "[^A-Za-z0-9_]sample[^A-Za-z0-9_]" )" && "$(echo "$item" | egrep -i "\.avi$|\.mkv$|\.ts$" )" ]]; then rm -rf "$item"
 	fi
 done
 
 ## Count number of resulting files and exit if no supported file
 count=0 && files=$(( $count + $(find "$temp_folder_without_slash" -type f | egrep -i "$supported_extensions_rev" | wc -l) ))
-if [ "$has_display" == "yes" ] && [[ $files -eq 0 ]]; then if [ ! "$folder_short" ]; then folder_short=`echo "$torrent" | sed 's/\(.*\)\..*/\1/' | sed 's;.*/;;g'`; fi && mv "$temp_folder_without_slash" "$destination_folder$folder_short" && rm -f "$log_file" && echo "Sorry, I cannot detect any supported file" && exit;  fi
-if [[ $files -eq 0 ]]; then if [ ! "$folder_short" ]; then folder_short=`echo "$torrent" | sed 's/\(.*\)\..*/\1/' | sed 's;.*/;;g'`; fi && mv "$temp_folder_without_slash" "$destination_folder$folder_short" && rm -f "$log_file" && exit;  fi
+if [ "$has_display" == "yes" ] && [[ $files -eq 0 ]]; then if [ ! "$folder_short" ]; then folder_short=`echo "$torrent" | sed 's/\(.*\)\..*/\1/' | sed 's;.*/;;g'`; fi && mv "$temp_folder_without_slash" "$destination_folder$folder_short" && rm -f "$log_file" && echo "Sorry, I cannot detect any supported file" && if [[ "$delete_third_party_log" == "yes" && "$third_party_log" != "no" ]]; then rm -f "$third_party_log"; fi && exit;  fi
+if [[ $files -eq 0 ]]; then if [ ! "$folder_short" ]; then folder_short=`echo "$torrent" | sed 's/\(.*\)\..*/\1/' | sed 's;.*/;;g'`; fi && mv "$temp_folder_without_slash" "$destination_folder$folder_short" && rm -f "$log_file" && if [[ "$delete_third_party_log" == "yes" && "$third_party_log" != "no" ]]; then rm -f "$third_party_log"; fi && exit;  fi
 
 ## If only one resulting file rename it according to the initial torrent
 if [[ $files -eq 1 ]]; then
