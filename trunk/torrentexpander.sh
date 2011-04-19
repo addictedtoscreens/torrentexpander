@@ -256,11 +256,7 @@ if [ "$has_display" == "yes" ] && [ ! "$torrent" ]; then
 	while [[ $selected -eq 0 ]] ; do
 		count=-1 && echo "Select Torrent Source :" && echo "" && echo "$(pwd)" && echo ""
 		for item in $(echo -e "Select current folder\n..\n$(ls -1)"); do
-			count=$(( $count + 1 ))
-			var_name="sel$count"
-			var_val="$item"
-			eval ${var_name}=`echo -ne \""${var_val}"\"`
-			echo "$count - $item"
+			count=$(( $count + 1 )); var_name="sel$count"; var_val="$item"; eval ${var_name}=`echo -ne \""${var_val}"\"`; echo "$count - $item"
 		done
 		echo "" && echo "Type the ID of the Torrent Source :"
 		read answer && sel_item="$(echo "sel$answer")"
@@ -284,11 +280,7 @@ if [ "$has_display" == "yes" ] && [ ! "$alt_dest_enabled" ] && [ ! "$alt_destina
 	while [[ $selected -eq 0 ]] ; do
 		count=-1 && echo "" && echo "Select Destination Folder :" && echo "" && echo "$(pwd)" && echo ""
 		for item in $(echo -e "Select current folder\n..\n$(ls -1)"); do
-			count=$(( $count + 1 ))
-			var_name="sel$count"
-			var_val="$item"
-			eval ${var_name}=`echo -ne \""${var_val}"\"`
-			echo "$count  -  $item"
+			count=$(( $count + 1 )); var_name="sel$count"; var_val="$item"; eval ${var_name}=`echo -ne \""${var_val}"\"`; echo "$count  -  $item"
 		done
 		echo "" && echo "Type the ID of the Destination Folder :"
 		read answer && sel_item="$(echo "sel$answer")"
@@ -338,9 +330,10 @@ fi
 script_notif="torrentexpander is running"
 log_file="$(echo "$destination_folder$script_notif")"
 
+count=0
 while [ -f "$log_file" ]; do
 	if [ "$has_display" == "yes" ]; then echo "Waiting for another instance of the script to end . . . . . ."; fi
-	sleep 15
+	sleep 15; count=$(( count + 1 )); if [[ $count -gt 3600 ]]; then rm "$log_file" && exit; fi
 done
 
 if [ ! -f "$log_file" ]; then
