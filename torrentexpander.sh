@@ -63,7 +63,7 @@ find -L / -maxdepth 1 > /dev/null 2>&1 && if [ "$?" == "0" ]; then find_l_availa
 ## The destination folder is where files will be extracted
 ## I recommend using a different folder from the one where your torrents are located
 ##ÊA sub directory of your torrents directory is fine though.
-## If you really want to extract your torrents in-place and-or delete the
+## If you really want to extract your torrents in-place and delete the
 ## original torrent, switch destructive_mode to yes
 destination_folder="/path/to/your/destination/folder/"
 destructive_mode="no"
