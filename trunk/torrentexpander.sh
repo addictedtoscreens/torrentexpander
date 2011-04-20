@@ -61,9 +61,12 @@ find -L / -maxdepth 1 > /dev/null 2>&1 && if [ "$?" == "0" ]; then find_l_availa
 ########################### These variables are required #########################
 ################# On 1st run they will be stored in an ini file###################
 ## The destination folder is where files will be extracted
-## It MUST be different from the one where your torrents are located
-##ÊA sub directory of your torrents directory is fine though
+## I recommend using a different folder from the one where your torrents are located
+##ÊA sub directory of your torrents directory is fine though.
+## If you really want to extract your torrents in-place and-or delete the
+## original torrent, switch destructive_mode to yes
 destination_folder="/path/to/your/destination/folder/"
+destructive_mode="no"
 ################################ Software paths ##################################
 ################# Please check if these variables are correct ####################
 unrar_bin="/usr/bin/unrar"
@@ -160,7 +163,7 @@ if [[ "$check_settings" != *estination_folder=* || "$check_settings" == *estinat
 	# This line is for ubuntu systems when the desktop has a language specific name
 	if [ ! -d "$destination_folder" ]; then xdg-user-dir > /dev/null 2>&1 && if [ "$?" == "0" ]; then destination_folder="$(xdg-user-dir DESKTOP)"; fi; fi
 	# This line is for PopCornHour media players
-	if [ ! -d "$destination_folder" ] && [ -d "/share/Downloads" ]; then mkdir -p "/share/Downloads/expanded/" && destination_folder="/share/Downloads/expanded/"; fi
+	if [ ! -d "$destination_folder" ] && [ -d "/share/Downloads" ]; then destination_folder="/share/Video/"; fi
 fi
 if [[ "$check_settings" != *nrar_bin=* || "$check_settings" == *nrar_bin=incorrect_or_not_se* ]]; then
 	# Looking for unrar in the PATH variable or /Applications /nmt/apps /usr/local/bin directories
@@ -206,7 +209,7 @@ if [[ "$check_settings" != *hird_party_log=* && -d "$third_party_log_directory" 
 	echo "third_party_log="$third_party_log"" >> "$settings_file";
 elif [[ "$check_settings" != *hird_party_log=* ]]; then echo "third_party_log=no" >> "$settings_file"
 fi
-for c in $(echo -e "tv_shows_fix_numbering\nclean_up_filenames\nsubtitles_handling\nrepack_handling\nwii_post\nimg_post\ntv_shows_post\nmovies_post\nmusic_post\ndts_post\nuser_perm_post\ngroup_perm_post\nfiles_perm_post\nfolder_perm_post\nedit_perm_as_sudo\nreset_timestamp\nsupported_extensions\ntv_show_extensions\nmovies_extensions\nmusic_extensions"); do
+for c in $(echo -e "destructive_mode\ntv_shows_fix_numbering\nclean_up_filenames\nsubtitles_handling\nrepack_handling\nwii_post\nimg_post\ntv_shows_post\nmovies_post\nmusic_post\ndts_post\nuser_perm_post\ngroup_perm_post\nfiles_perm_post\nfolder_perm_post\nedit_perm_as_sudo\nreset_timestamp\nsupported_extensions\ntv_show_extensions\nmovies_extensions\nmusic_extensions"); do
 	pat="$(echo "$c" | sed "s;^.\(.*\)$;\*\1=\*;")"
 	if [[ "$check_settings" != $pat ]]; then echo "$c=${!c}" >> "$settings_file"; fi
 done
@@ -323,21 +326,6 @@ fi
 ######################### END TORRENT SOURCE SETUP ###############################
 ##################################################################################
 
-##################### CHECKING IF SCRIPT IS ALREADY RUNNING ######################
-script_notif="torrentexpander is running"
-log_file="$(echo "$destination_folder$script_notif")"
-
-count=0
-while [ -f "$log_file" ]; do
-	if [ "$has_display" == "yes" ]; then echo "Waiting for another instance of the script to end . . . . . ."; fi
-	sleep 15; count=$(( count + 1 )); if [[ $count -gt 3600 ]]; then rm "$log_file" && exit; fi
-done
-
-if [ ! -f "$log_file" ]; then
-	touch "$log_file"
-fi
-##################################################################################
-
 ##################### CHECKING IF VARIABLES ARE CORRECT ##########################
 variables_check="Please check your script variables"
 temp_directory="$(echo "$(dirname "$temp_folder")")"
@@ -358,16 +346,34 @@ if [ ! -d "$music_post_path" ] && [ "$music_post" != "no" ]; then echo "Your mus
 if [ ! -d "$movies_post_path" ] && [ "$movies_post" != "no" ]; then	echo "Your movies path is incorrect - Movies Post will be disabled" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Your movies path is incorrect - Movies Post will be disabled"; fi; movies_post="no"; fi
 if [ ! -d "$third_party_log_directory" ] && [ "$third_party_log" != "no" ]; then echo "Your third party log path is incorrect please edit your torrentexpander_settings.ini file" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Your third party log path is incorrect please edit your torrentexpander_settings.ini file"; fi; quit_on_error="yes"; fi
 if [ -d "$temp_folder" ]; then echo "Temp folder already exists. Please delete it or edit your torrentexpander_settings.ini file" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Temp folder already exists. Please delete it or edit your torrentexpander_settings.ini file"; fi; quit_on_error="yes"; fi
-if [ "$torrent_directory" == "$destination_folder" ]; then echo "Your destination folder should be different from the one where your torrent is located. Please edit your torrentexpander_settings.ini file" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Your destination folder should be different from the one where your torrent is located. Please edit your torrentexpander_settings.ini file"; fi; quit_on_error="yes"; fi
+if [ "$torrent_directory" == "$destination_folder" ] && [ "$destructive_mode" != "yes" ]; then echo "Your destination folder should be different from the one where your torrent is located. Please edit your torrentexpander_settings.ini file" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Your destination folder should be different from the one where your torrent is located. Please edit your torrentexpander_settings.ini file"; fi; quit_on_error="yes"; fi
 if [ ! -x "$unrar_bin" ]; then echo "Your Unrar path is incorrect please edit your torrentexpander_settings.ini file" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Your Unrar path is incorrect please edit your torrentexpander_settings.ini file"; fi; quit_on_error="yes"; fi
 if [ ! -x "$unzip_bin" ]; then echo "Your Unzip path is incorrect please edit your torrentexpander_settings.ini file" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Your Unzip path is incorrect please edit your torrentexpander_settings.ini file"; fi; quit_on_error="yes"; fi
 if [ ! -x "$mkvdts2ac3_bin" ] && [ "$dts_post" == "yes" ]; then echo "Path to mkvdts2ac3.sh is incorrect - DTS Post will be disabled" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Path to mkvdts2ac3.sh is incorrect - DTS Post will be disabled"; fi; dts_post="no"; fi
 if [ ! -x "$ccd2iso_bin" ] && [ "$img_post" == "yes" ]; then echo "Path to ccd2iso is incorrect - IMG to ISO Post will be disabled" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Path to ccd2iso is incorrect - IMG to ISO Post will be disabled"; fi; img_post="no"; fi
 if [[ "$supported_extensions_rev" =~ rar ]] || [[ "$tv_show_extensions_rev" =~ rar ]] || [[ "$movies_extensions_rev" =~ rar ]] || [[ "$music_extensions_rev" =~ rar ]] || [[ "$supported_extensions_rev" =~ zip ]] || [[ "$tv_show_extensions_rev" =~ zip ]] || [[ "$movies_extensions_rev" =~ zip ]] || [[ "$music_extensions_rev" =~ zip ]]; then echo "Your supported file extensions are incorrect please edit your torrentexpander_settings.ini file" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Your supported file extensions are incorrect please edit your torrentexpander_settings.ini file"; fi; quit_on_error="yes"; fi
 if [[ "$third_party_log" != "no" && -f "$third_party_log" ]] || [ "$alt_dest_enabled" == "yes" ]; then if [ "$tv_shows_post" != "no" ]; then tv_shows_post="copy"; fi; if [ "$music_post" != "no" ]; then music_post="copy"; fi; if [ "$movies_post" != "no" ]; then movies_post="copy"; fi; fi
-if [ "$quit_on_error" == "yes" ]; then if [ "$has_display" == "yes" ]; then echo -e "\n\nThere's something wrong with your settings. Please review them now." && read -p "" && nano "$settings_file" && echo -e "\n\nYou're done with your setup\nThis script will exit now\nIf you need to edit your settings again just run $script_path/torrentexpander.sh -c"; fi; rm -f "$log_file"; exit; fi
+if [ "$quit_on_error" == "yes" ]; then if [ "$has_display" == "yes" ]; then echo -e "\n\nThere's something wrong with your settings. Please review them now." && read -p "" && nano "$settings_file" && echo -e "\n\nYou're done with your setup\nThis script will exit now\nIf you need to edit your settings again just run $script_path/torrentexpander.sh -c"; fi; exit; fi
 
 ##################################################################################
+
+
+##################### CHECKING IF SCRIPT IS ALREADY RUNNING ######################
+script_notif="torrentexpander is running"
+log_file="$(echo "$destination_folder$script_notif")"
+
+count=0
+while [ -f "$log_file" ]; do
+	if [ "$has_display" == "yes" ]; then echo "Waiting for another instance of the script to end . . . . . ."; fi
+	sleep 15; count=$(( count + 1 )); if [[ $count -gt 3600 ]]; then rm "$log_file" && exit; fi
+done
+
+if [ ! -f "$log_file" ]; then
+	touch "$log_file"
+fi
+##################################################################################
+
+
 step_number=0
 mkdir -p "$temp_folder"
 
@@ -416,11 +422,17 @@ for item in $(if [[ "$current_folder" && "$find_l_available" == "yes" ]]; then f
 		elif [[ -d "$item" && "$(ls "$item" | egrep -i -v "\.[0-9][0-9][0-9]$|\.r[0-9][0-9]$|\.rar$|\.001$|\.zip$")" ]]; then otherFiles=`find "$item" -maxdepth 1 ! -name "._*" -type f | egrep -i -v "\.[0-9][0-9][0-9]$|\.r[0-9][0-9]$|\.rar$|\.001$|\.zip$"` && dest_path=`echo "$item/" | sed "s;$current_folder/;$temp_folder;g"`
 		elif [[ "$(echo "$item" | egrep -i -v "\.[0-9][0-9][0-9]$|\.r[0-9][0-9]$|\.rar$|\.001$|\.zip$")" ]]; then otherFiles=`echo "$item" | egrep -i -v "\.[0-9][0-9][0-9]$|\.r[0-9][0-9]$|\.rar$|\.001$|\.zip$"` && dest_path=`echo "$temp_folder"`
 		fi
-		if [ "$nice_available" == "yes" ]; then for f in $(echo -e "$otherFiles"); do otherFile=`echo "$f"`; mkdir -p "$dest_path"; nice -n 15 cp -f "$otherFile" "$dest_path"; done
-		elif [ "$nice_available" != "yes" ]; then for f in $(echo -e "$otherFiles"); do otherFile=`echo "$f"`; mkdir -p "$dest_path"; cp -f "$otherFile" "$dest_path"; done
+		if [[ "$nice_available" == "yes" && "$destructive_mode" != "yes" ]]; then for f in $(echo -e "$otherFiles"); do otherFile=`echo "$f"`; mkdir -p "$dest_path"; nice -n 15 cp -f "$otherFile" "$dest_path"; done
+		elif [[ "$nice_available" != "yes" && "$destructive_mode" != "yes" ]]; then for f in $(echo -e "$otherFiles"); do otherFile=`echo "$f"`; mkdir -p "$dest_path"; cp -f "$otherFile" "$dest_path"; done
+		elif [ "$destructive_mode" == "yes" ]; then for f in $(echo -e "$otherFiles"); do otherFile=`echo "$f"`; mkdir -p "$dest_path"; nice -n 15 mv -f "$otherFile" "$dest_path"; done
 		fi
 	fi
 done
+
+## If destructive_mode is enabled, remove original torrent
+cd "$destination_folder"
+if [[ "$has_display" == "yes" && "$destructive_mode" == "yes" ]]; then step_number=$(( $step_number + 1 )) && echo "Step $step_number : Deleting original torrent";  fi
+if [[ "$destructive_mode" == "yes" && "$current_folder" ]]; then rm -rf "$current_folder"; elif [[ "$destructive_mode" == "yes" && "$torrent" && -f "$torrent" ]]; then rm -f "$torrent"; fi
 
 ## If archives within archives - Expanding and copying folders to the temp folder
 for item in $(find "$temp_folder_without_slash" -type d); do
