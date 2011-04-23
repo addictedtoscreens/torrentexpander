@@ -82,8 +82,8 @@ movies_extensions="avi,mkv,divx,iso,img,srt,idx,sub"
 music_extensions="mp3,m4a,wav"
 ##################### Movies detection patterns - Comma separated ################
 ##################### You must have at least one pattern enabled #################
-movies_detect_patterns="TS,Workprint,SCR,DVDSCR,R5,DVDRip,BDRip,BRRip,DVDR,720p,1080p"
-other_movies_patterns="proper,repack,pdtv,hdtv,xvid,webrip,web-dl"
+movies_detect_patterns="TS,Workprint,TVRip,SCR,DVDSCR,R5,DVDRip,BDRip,BRRip,DVDR,720p,1080p"
+other_movies_patterns="proper,repack,pdtv,hdtv,xvid,webrip,web-dl,readnfo,ntsc,pal"
 ####################### Optional functionalities variables #######################
 #################### Set these variables to "no" to disable ######################
 ## Fix numbering for TV Shows - Switch variable to "yes" to enable
