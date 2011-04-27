@@ -17,7 +17,7 @@ find -L / -maxdepth 1 > /dev/null 2>&1 && if [ "$?" == "0" ]; then find_l_availa
 
 ##################################################################################
 ##                   TORRENTEXPANDER 
-##                   v0.15
+##                   v0.16
 ##
 ## You can use and modify this script to your convenience
 ## Any suggestion on how to improve this script will be welcome
@@ -83,7 +83,7 @@ music_extensions="mp3,m4a,wav"
 ##################### Movies detection patterns - Comma separated ################
 ##################### You must have at least one pattern enabled #################
 movies_detect_patterns="TS,Workprint,TVRip,SCR,DVDSCR,R5,DVDRip,BDRip,BRRip,DVDR,720p,1080p"
-other_movies_patterns="proper,repack,pdtv,hdtv,xvid,webrip,web-dl,readnfo,ntsc,pal"
+other_movies_patterns="proper,repack,rerip,pdtv,hdtv,xvid,webrip,web-dl,readnfo,ntsc,pal"
 ####################### Optional functionalities variables #######################
 #################### Set these variables to "no" to disable ######################
 ## Fix numbering for TV Shows - Switch variable to "yes" to enable
@@ -519,15 +519,15 @@ fi
 if [[ "$folder_short" && "$tv_shows_fix_numbering" == "yes" ]] || [[ "$folder_short" && "$clean_up_filenames" == "yes" ]]; then echo "$destination_folder$folder_short" >> "$log_file"; fi
 
 ## Try to solve TV Shown Numbering issues
-if [[ "$has_display" == "yes" && "$tv_shows_fix_numbering" == "yes" && "$(cat "$log_file" | egrep -i "([123456789])([xX])([0-9])([0-9])")" ]] || [[ "$has_display" == "yes" && "$tv_shows_fix_numbering" == "yes" && "$(cat "$log_file" | egrep -i "([01])([0-9])([0-9])([0-9])([^pPiI])")" ]] || [[ "$has_display" == "yes" && "$tv_shows_fix_numbering" == "yes" && "$(cat "$log_file" | egrep -i "([^eE])([12345689])([012345])([0-9])([^0123456789pPiI])")" ]]; then step_number=$(( $step_number + 1 )) && echo "Step $step_number : Trying to solve TV Shows numbering issues";  fi
-if [[ "$tv_shows_fix_numbering" == "yes" && "$(cat "$log_file" | egrep -i "([123456789])([xX])([0-9])([0-9])")" ]] || [[ "$tv_shows_fix_numbering" == "yes" && "$(cat "$log_file" | egrep -i "([01])([0-9])([0-9])([0-9])([^pPiI])")" ]] || [[ "$tv_shows_fix_numbering" == "yes" && "$(cat "$log_file" | egrep -i "([^eE])([12345689])([012345])([0-9])([^0123456789pPiI])")" ]]; then for line in $(cat "$log_file"); do
+if [[ "$has_display" == "yes" && "$tv_shows_fix_numbering" == "yes" && "$(cat "$log_file" | egrep -i "([123456789])([xX])([0-9])([0-9])")" ]] || [[ "$has_display" == "yes" && "$tv_shows_fix_numbering" == "yes" && "$(cat "$log_file" | egrep -i "([. _-])([01])([0-9])([0-3])([0-9])([^pPiI])")" ]] || [[ "$has_display" == "yes" && "$tv_shows_fix_numbering" == "yes" && "$(cat "$log_file" | egrep -i "([^eE])([12345689])([012345])([0-9])([^0123456789pPiI])")" ]]; then step_number=$(( $step_number + 1 )) && echo "Step $step_number : Trying to solve TV Shows numbering issues";  fi
+if [[ "$tv_shows_fix_numbering" == "yes" && "$(cat "$log_file" | egrep -i "([123456789])([xX])([0-9])([0-9])")" ]] || [[ "$tv_shows_fix_numbering" == "yes" && "$(cat "$log_file" | egrep -i "([. _-])([01])([0-9])([0-3])([0-9])([^pPiI])")" ]] || [[ "$tv_shows_fix_numbering" == "yes" && "$(cat "$log_file" | egrep -i "([^eE])([12345689])([012345])([0-9])([^0123456789pPiI])")" ]]; then for line in $(cat "$log_file"); do
 	item=`echo "$(basename "$line")"`;
 	ren_file=`echo "$item"`;
 	source=`echo "$line"`;
 	if [[ "$tv_shows_fix_numbering" == "yes" && "$(echo "$line" | egrep -i "([123456789])([xX])([0-9])([0-9])")" && "$(echo "$line" | egrep -i "$tv_show_extensions_rev")" ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] || [[ "$tv_shows_fix_numbering" == "yes" && "$(echo "$line" | egrep -i "([123456789])([xX])([0-9])([0-9])")" && -d "$line" ]]; then
 		ren_file=`echo "$item" | sed 's;\([123456789]\)\([xX]\)\([0-9]\)\([0-9]\);S0\1E\3\4;g'`;
-	elif [[ "$tv_shows_fix_numbering" == "yes" && "$(echo "$line" | egrep -i "([01])([0-9])([0-9])([0-9])([^pPiI])")" && "$(echo "$line" | egrep -i "$tv_show_extensions_rev")" ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] || [[ "$tv_shows_fix_numbering" == "yes" && "$(echo "$line" | egrep -i "([01])([0-9])([0-9])([0-9])([^pPiI])")" && -d "$line" ]]; then
-		ren_file=`echo "$item" | sed 's;\([01]\)\([0-9]\)\([0-9]\)\([0-9]\)\([^pPiI]\);S\1\2E\3\4\5;g'`;
+	elif [[ "$tv_shows_fix_numbering" == "yes" && "$(echo "$line" | egrep -i "([. _-])([01])([0-9])([0-3])([0-9])([^pPiI])")" && "$(echo "$line" | egrep -i "$tv_show_extensions_rev")" ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] || [[ "$tv_shows_fix_numbering" == "yes" && "$(echo "$line" | egrep -i "([. _-])([01])([0-9])([0-3])([0-9])([^pPiI])")" && -d "$line" ]]; then
+		ren_file=`echo "$item" | sed 's;\([. _-]\)\([01]\)\([0-9]\)\([0-3]\)\([0-9]\)\([^pPiI]\);\1S\2\3E\4\5\6;g'`;
 	elif [[ "$tv_shows_fix_numbering" == "yes" && "$(echo "$line" | egrep -i "([^eE])([12345689])([012345])([0-9])([^0123456789pPiI])")" && "$(echo "$line" | egrep -i "$tv_show_extensions_rev")" ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] || [[ "$tv_shows_fix_numbering" == "yes" && "$(echo "$line" | egrep -i "([^eE])([12345689])([012345])([0-9])([^0123456789pPiI])")" && -d "$line" ]]; then
 		ren_file=`echo "$item" | sed 's;\([^eE]\)\([12345689]\)\([012345]\)\([0-9]\)\([^0123456789pPiI]\);\1S0\2E\3\4\5;g'`;
 	fi
@@ -556,7 +556,7 @@ if [[ "$clean_up_filenames" == "yes" ]]; then for line in $(cat "$log_file"); do
 	for q in $(echo -e "$(echo "$movies_detect_patterns" | sed "s;,;\\\n;g")"); do if [ "$(echo "$title_clean_ter" | egrep -i "[. _-]$q[. _-]")" ]; then regexp_pat="$(echo "$q" | sed "s/[aA]/[aA]/g" | sed "s/[bB]/[bB]/g" | sed "s/[cC]/[cC]/g" | sed "s/[dD]/[dD]/g" | sed "s/[eE]/[eE]/g" | sed "s/[fF]/[fF]/g" | sed "s/[gG]/[gG]/g" | sed "s/[hH]/[hH]/g" | sed "s/[iI]/[iI]/g" | sed "s/[jJ]/[jJ]/g" | sed "s/[kK]/[kK]/g" | sed "s/[lL]/[lL]/g" | sed "s/[mM]/[mM]/g" | sed "s/[nN]/[nN]/g" | sed "s/[oO]/[oO]/g" | sed "s/[pP]/[pP]/g" | sed "s/[qQ]/[qQ]/g" | sed "s/[rR]/[rR]/g" | sed "s/[sS]/[sS]/g" | sed "s/[tT]/[tT]/g" | sed "s/[uU]/[uU]/g" | sed "s/[vV]/[vV]/g" | sed "s/[wW]/[wW]/g" | sed "s/[xX]/[xX]/g" | sed "s/[yY]/[yY]/g" | sed "s/[zZ]/[zZ]/g")"; quality=" ($q)"; title_clean_ter="$(echo "$title_clean_ter" | sed "s;$(echo "$title_clean_ter" | egrep -o "[. _-]$regexp_pat[. _-]").*;_;")"; fi; done
 	for i in $(echo -e "$(echo "$other_movies_patterns" | sed "s;,;\\\n;g")"); do if [ "$(echo "$title_clean_ter" | egrep -i "[. _-]$i[. _-]")" ]; then regexp_pat="$(echo "$i" | sed "s/[aA]/[aA]/g" | sed "s/[bB]/[bB]/g" | sed "s/[cC]/[cC]/g" | sed "s/[dD]/[dD]/g" | sed "s/[eE]/[eE]/g" | sed "s/[fF]/[fF]/g" | sed "s/[gG]/[gG]/g" | sed "s/[hH]/[hH]/g" | sed "s/[iI]/[iI]/g" | sed "s/[jJ]/[jJ]/g" | sed "s/[kK]/[kK]/g" | sed "s/[lL]/[lL]/g" | sed "s/[mM]/[mM]/g" | sed "s/[nN]/[nN]/g" | sed "s/[oO]/[oO]/g" | sed "s/[pP]/[pP]/g" | sed "s/[qQ]/[qQ]/g" | sed "s/[rR]/[rR]/g" | sed "s/[sS]/[sS]/g" | sed "s/[tT]/[tT]/g" | sed "s/[uU]/[uU]/g" | sed "s/[vV]/[vV]/g" | sed "s/[wW]/[wW]/g" | sed "s/[xX]/[xX]/g" | sed "s/[yY]/[yY]/g" | sed "s/[zZ]/[zZ]/g")"; title_clean_ter="$(echo "$title_clean_ter" | sed "s;$(echo "$title_clean_ter" | egrep -o "[. _-]$regexp_pat[. _-]").*;_;")"; fi; done
 	title_clean_ter=`echo "$title_clean_ter" | sed "s/_*$//g"`
-	if [[ "$repack_handling" == "yes" && "$(echo "$item" | egrep -i "([. _])repack([. _])|([. _])proper([. _])")" ]]; then is_repack=" REPACK"; else is_repack=""; fi
+	if [[ "$repack_handling" == "yes" && "$(echo "$item" | egrep -i "([. _])repack([. _])|([. _])proper([. _])|([. _])rerip([. _])")" ]]; then is_repack=" REPACK"; else is_repack=""; fi
 	if [[ "$clean_up_filenames" == "yes" && "$(echo "$line" | egrep -i "([sS])([0-9])([0-9])([eE])([0-9])([0-9])")" && "$(echo "$line" | egrep -i "$tv_show_extensions_rev")" ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] || [[ "$clean_up_filenames" == "yes" && "$(echo "$line" | egrep -i "([sS])([0-9])([0-9])([eE])([0-9])([0-9])")" && -d "$source" ]]; then
 		if [ "$quality" != " (720p)" ] && [ "$quality" != " (1080p)" ]; then quality=""; fi
 		series_title=`echo "$title_clean_ter" | sed 's;.\([sS]\)\([0-9]\)\([0-9]\)\([eE]\)\([0-9]\)\([0-9]\).*;;'`;
