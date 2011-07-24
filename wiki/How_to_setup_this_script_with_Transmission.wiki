@@ -11,4 +11,4 @@ On the PopCornHour C200 / A200 / A210, you'll need to enable SSH access to your 
 *Also make sure that the user that runs Transmission has write permission on your destination_folder.*<br />
 
 With some versions of Transmission, you may need to use this line instead in Transmission's settings file :<br />
-"script-torrent-done-filename": "/path/to/torrentexpander.sh $TR_TORRENT_DIR/$TR_TORRENT_NAME" 
+"script-torrent-done-filename": "/path/to/torrentexpander.sh" 
