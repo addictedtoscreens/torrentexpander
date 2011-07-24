@@ -516,6 +516,7 @@ fi
 
 ######################### Optional functionalities ################################
 
+
 if [[ "$folder_short" && "$tv_shows_fix_numbering" == "yes" ]] || [[ "$folder_short" && "$clean_up_filenames" == "yes" ]]; then echo "$destination_folder$folder_short" >> "$log_file"; fi
 
 ## Try to solve TV Shown Numbering issues
@@ -535,13 +536,16 @@ if [[ "$tv_shows_fix_numbering" == "yes" && "$(cat "$log_file" | egrep -i "([123
 	ren_location=`echo "$(dirname "$source")/$ren_file"`;
 	ren_temp_location=`echo "$(dirname "$source")/$ren_file$bis"`;
 	source_bis=`echo "$line"`;
+	source_ter=$(echo "$line" | sed "s;\([][)(]\);\\\\\1;g") && source_ter=`echo "$source_ter"`;
+	ren_location_bis=$(echo "$ren_location" | sed "s;\([][)(]\);\\\\\1;g") && ren_location_bis=`echo "$ren_location_bis"`;
 	if [ "$has_display" == "yes" ] && [ "$item" != "$ren_file" ]; then echo "- Renaming $item to $ren_file";  fi
 	if [[ -d "$ren_location" && "$(dirname "$source")/" == "$destination_folder" && "$item" != "$ren_file" ]]; then mv -f "$source" "$ren_temp_location"; rm -rf "$ren_location"; source="$ren_temp_location"; fi
-	if [ "$item" != "$ren_file" ] && [ "$gnu_sed_available" != "yes" ]; then mv -f "$source" "$ren_location" && sed -i '' "s;^$source_bis;$ren_location;g" "$log_file"
-	elif [ "$item" != "$ren_file" ] && [ "$gnu_sed_available" == "yes" ]; then mv -f "$source" "$ren_location" && sed -i "s;^$source_bis;$ren_location;g" "$log_file"
+	if [ "$item" != "$ren_file" ] && [ "$gnu_sed_available" != "yes" ]; then mv -f "$source" "$ren_location" && sed -i '' "s;^$source_ter;$ren_location_bis;g" "$log_file"
+	elif [ "$item" != "$ren_file" ] && [ "$gnu_sed_available" == "yes" ]; then mv -f "$source" "$ren_location" && sed -i "s;^$source_ter;$ren_location_bis;g" "$log_file"
 	fi
 done
 fi
+
 
 ## Cleanup filenames
 if [[ "$has_display" == "yes" && "$clean_up_filenames" == "yes" ]]; then step_number=$(( $step_number + 1 )) && echo "Step $step_number : Cleaning up filenames";  fi
@@ -565,17 +569,19 @@ if [[ "$clean_up_filenames" == "yes" ]]; then for line in $(cat "$log_file"); do
 	elif [[ "$clean_up_filenames" == "yes" && "$(echo "$line" | egrep -i "([0-9])([0-9])([0-9])([0-9]).([0-9])([0-9]).([0-9])([0-9])")" && "$(echo "$line" | egrep -i "$tv_show_extensions_rev")" ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] || [[ "$clean_up_filenames" == "yes" && "$(echo "$line" | egrep -i "([0-9])([0-9])([0-9])([0-9]).([0-9])([0-9]).([0-9])([0-9])")" && -d "$source" ]]; then
 		talk_show_title=`echo "$title_clean_ter" | sed 's/\([0-9]\)\([0-9]\)\([0-9]\)\([0-9]\).\([0-9]\)\([0-9]\).\([0-9]\)\([0-9]\)/\1\2\3\4-\5\6-\7\8/g'`;
 		ren_file=`echo "$talk_show_title$quality$extension"`;
-	elif [[ "$clean_up_filenames" == "yes" && "$(echo "$line" | egrep -i "$movies_extensions_rev")" ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] || [[ "$clean_up_filenames" == "yes" && -d "$source" ]]; then
+	elif [[ "$clean_up_filenames" == "yes" && "$(echo "$line" | egrep -i "$movies_extensions_rev")" ]] && [[ $files -eq 1 ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] || [[ "$clean_up_filenames" == "yes" && -d "$source" ]]; then
 		ren_file=`echo "$title_clean_ter$quality$extension"`;
 	fi
 	bis="_bis"
 	ren_location=`echo "$(dirname "$source")/$ren_file"`;
 	ren_temp_location=`echo "$(dirname "$source")/$ren_file$bis"`;
 	source_bis=`echo "$line"`;
+	source_ter=$(echo "$line" | sed "s;\([][)(]\);\\\\\1;g") && source_ter=`echo "$source_ter"`;
+	ren_location_bis=$(echo "$ren_location" | sed "s;\([][)(]\);\\\\\1;g") && ren_location_bis=`echo "$ren_location_bis"`;
 	if [ "$has_display" == "yes" ] && [ "$item" != "$ren_file" ]; then echo "- Renaming $item to $ren_file";  fi
 	if [[ -d "$ren_location" && "$(dirname "$source")/" == "$destination_folder" && "$item" != "$ren_file" ]]; then mv -f "$source" "$ren_temp_location"; rm -rf "$ren_location"; source="$ren_temp_location"; fi
-	if [ "$item" != "$ren_file" ] && [ "$gnu_sed_available" != "yes" ]; then mv -f "$source" "$ren_location" && sed -i '' "s;^$source_bis;$ren_location;g" "$log_file"
-	elif [ "$item" != "$ren_file" ] && [ "$gnu_sed_available" == "yes" ]; then mv -f "$source" "$ren_location" && sed -i "s;^$source_bis;$ren_location;g" "$log_file"
+	if [ "$item" != "$ren_file" ] && [ "$gnu_sed_available" != "yes" ]; then mv -f "$source" "$ren_location" && sed -i '' "s;^$source_ter;$ren_location_bis;g" "$log_file"
+	elif [ "$item" != "$ren_file" ] && [ "$gnu_sed_available" == "yes" ]; then mv -f "$source" "$ren_location" && sed -i "s;^$source_ter;$ren_location_bis;g" "$log_file"
 	fi
 done
 fi
@@ -641,7 +647,7 @@ for line in $(cat "$log_file"); do
 		echo "$iso_file" > "$dvd_file"
 		echo "$dvd_file" >> "$log_file"
 	## Copy or move TV Shows to a specific folder	
-	elif [ "$(echo "$line" | egrep -i "([. _])s([0-9])([0-9])e([0-9])([0-9])([. _])" )" ] && [ "$(echo "$line" | egrep -i "$tv_show_extensions_rev" )" ] && [ "$tv_shows_post" == "copy" ]; then
+	elif [[ "$(echo "$line" | egrep -i "([. _])s([0-9])([0-9])e([0-9])([0-9])([. _])" )" || "$(echo "$line" | egrep -i "([0-9])([0-9])([0-9])([0-9]).([0-9])([0-9]).([0-9])([0-9])")" ]] && [ "$(echo "$line" | egrep -i "$tv_show_extensions_rev" )" ] && [ "$tv_shows_post" == "copy" ]; then
 		series_file=`echo "$line"`
 		item=`echo "$(basename "$series_file")"`
 		has_folder="$(if [ $(echo "$(dirname "$series_file")/") == "$destination_folder" ]; then echo "no"; else echo "yes"; fi)"
@@ -653,7 +659,7 @@ for line in $(cat "$log_file"); do
 			if [ "$has_display" == "yes" ]; then echo "- Copying $item to your TV Shows Path";  fi
 			mkdir -p "$new_destination" && tv_show_post_dir_perm="$new_destination" && cp -f "$series_file" "$new_destination"
 		fi
-	elif [ "$(echo "$line" | egrep -i "([. _])s([0-9])([0-9])e([0-9])([0-9])([. _])" )" ] && [ "$(echo "$line" | egrep -i "$tv_show_extensions_rev" )" ] && [ "$tv_shows_post" == "move" ]; then
+	elif [[ "$(echo "$line" | egrep -i "([. _])s([0-9])([0-9])e([0-9])([0-9])([. _])" )" || "$(echo "$line" | egrep -i "([0-9])([0-9])([0-9])([0-9]).([0-9])([0-9]).([0-9])([0-9])")" ]] && [ "$(echo "$line" | egrep -i "$tv_show_extensions_rev" )" ] && [ "$tv_shows_post" == "move" ]; then
 		series_file=`echo "$line"`
 		item=`echo "$(basename "$series_file")"`
 		has_folder="$(if [ $(echo "$(dirname "$series_file")/") == "$destination_folder" ]; then echo "no"; else echo "yes"; fi)"
@@ -720,10 +726,9 @@ for line in $(cat "$log_file"); do
 		fi
 	fi
 done
-if [ -d "$folder_short" ]; then files_in_folder_short=$(ls -1 "$destination_folder$folder_short"|wc -l); fi
-if [[ "$music_post" == "move" && $files_in_folder_short -eq 0 ]] || [[ "$tv_shows_post" == "move" && $files_in_folder_short -eq 0 ]] || [[ "$movies_post" == "move" && $files_in_folder_short -eq 0 ]]; then
-	rm -rf "$destination_folder$folder_short"
-	folder_short_deleted="yes"
+if [[ "$folder_short" && -d "$destination_folder$folder_short" ]]; then
+	files_in_folder_short=$(ls -1 "$destination_folder$folder_short" | wc -l)
+	if [[ "$music_post" == "move" && $files_in_folder_short -eq 0 ]] || [[ "$tv_shows_post" == "move" && $files_in_folder_short -eq 0 ]] || [[ "$movies_post" == "move" && $files_in_folder_short -eq 0 ]]; then rm -rf "$destination_folder$folder_short" && folder_short_deleted="yes"; fi
 fi
 
 ## Use a source / destination log shared with a third party app - Add path to enable
