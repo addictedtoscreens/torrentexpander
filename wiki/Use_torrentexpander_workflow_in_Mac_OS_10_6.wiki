@@ -1,8 +1,0 @@
-- Download <a href="http://www.rarlab.com/rar/rarosx-4.0.0.tar.gz">Rar from Winrar's website</a>. Expand the rar folder and drag it to your /Applications/ folder<br />
-- Drag "torrentexpander.workflow" to /$HOME/Services/<br />
-- In Mac OS X Finder, Select the Finder / Services / Services Preferences menu and activate torrentexpander<br />
-<br />
-To use the this Service, right click a torrent file and select torrentexpander at the bottom of the menu.<br />
-Your torrent will expand on your desktop.<br />
-<br />
-You can edit your settings by running in your terminal : <br />/Library/Services/torrentexpander.workflow/Contents/Resources/torrentexpander.sh -c<br />
