@@ -17,7 +17,7 @@ find -L / -maxdepth 1 > /dev/null 2>&1 && if [ "$?" == "0" ]; then find_l_availa
 
 ##################################################################################
 ##                   TORRENTEXPANDER 
-##                   v0.16
+##                   v0.17
 ##
 ## You can use and modify this script to your convenience
 ## Any suggestion on how to improve this script will be welcome
@@ -82,7 +82,8 @@ movies_extensions="avi,mkv,divx,iso,img,srt,idx,sub"
 music_extensions="mp3,m4a,wav"
 ##################### Movies detection patterns - Comma separated ################
 ##################### You must have at least one pattern enabled #################
-movies_detect_patterns="TS,Workprint,TVRip,SCR,DVDSCR,R5,DVDRip,BDRip,BRRip,DVDR,720p,1080p"
+movies_detect_patterns="TS,TVRip,DVDSCR,R5,DVDRip,BDRip,BRRip,DVDR,720p,1080p"
+movies_detect_patterns_pt_2="Workprint,SCR"
 other_movies_patterns="proper,repack,rerip,pdtv,hdtv,xvid,webrip,web-dl,readnfo,ntsc,pal"
 ####################### Optional functionalities variables #######################
 #################### Set these variables to "no" to disable ######################
@@ -91,7 +92,7 @@ tv_shows_fix_numbering="yes"
 ## Cleanup Filenames - Switch variable to "yes" to enable
 clean_up_filenames="yes"
 ## Keep a dummy video file with the original filename for subtitles retrieval
-subtitles_handling="yes"
+subtitles_handling="no"
 ## Repack handling - Switch variable to "yes" to enable
 repack_handling="no"
 ## Create Wii Cuesheet - Switch variable to "yes" to enable
@@ -100,8 +101,10 @@ wii_post="no"
 img_post="no"
 ## Copy or move TV Shows to a specific folder - choose action (copy / move)
 ## and add path to enable
+## series files can also be sorted by /Series/Episode (ss) or /Series/Season/Episode (s)
 tv_shows_post="no"
 tv_shows_post_path="no"
+tv_shows_post_path_mode="no"
 ## Copy or move movies to a specific folder - choose action (copy / move)
 ## and add path to enable
 movies_post="no"
@@ -209,7 +212,7 @@ if [[ "$check_settings" != *hird_party_log=* && -d "$third_party_log_directory" 
 	echo "third_party_log="$third_party_log"" >> "$settings_file";
 elif [[ "$check_settings" != *hird_party_log=* ]]; then echo "third_party_log=no" >> "$settings_file"
 fi
-for c in $(echo -e "destructive_mode\ntv_shows_fix_numbering\nclean_up_filenames\nsubtitles_handling\nrepack_handling\nwii_post\nimg_post\ntv_shows_post\nmovies_post\nmusic_post\ndts_post\nuser_perm_post\ngroup_perm_post\nfiles_perm_post\nfolder_perm_post\nedit_perm_as_sudo\nreset_timestamp\nsupported_extensions\ntv_show_extensions\nmovies_extensions\nmusic_extensions"); do
+for c in $(echo -e "destructive_mode\ntv_shows_fix_numbering\nclean_up_filenames\nsubtitles_handling\nrepack_handling\nwii_post\nimg_post\ntv_shows_post\ntv_shows_post_path_mode\nmovies_post\nmusic_post\ndts_post\nuser_perm_post\ngroup_perm_post\nfiles_perm_post\nfolder_perm_post\nedit_perm_as_sudo\nreset_timestamp\nsupported_extensions\ntv_show_extensions\nmovies_extensions\nmusic_extensions"); do
 	pat="$(echo "$c" | sed "s;^.\(.*\)$;\*\1=\*;")"
 	if [[ "$check_settings" != $pat ]]; then echo "$c=${!c}" >> "$settings_file"; fi
 done
@@ -234,6 +237,7 @@ tv_show_extensions_rev="\.$(echo $tv_show_extensions | sed 's;,;\$\|\\\.;g')$"
 movies_extensions_rev="\.$(echo $movies_extensions | sed 's;,;\$\|\\\.;g')$"
 music_extensions_rev="\.$(echo $music_extensions | sed 's;,;\$\|\\\.;g')$"
 movies_detect_patterns_rev="[^[:alnum:]]$(echo $movies_detect_patterns | sed 's;,;[^[:alnum:]]|[^[:alnum:]];g')[^[:alnum:]]"
+movies_detect_patterns_pt_2_rev="[^[:alnum:]]$(echo $movies_detect_patterns_pt_2 | sed 's;,;[^[:alnum:]]|[^[:alnum:]];g')[^[:alnum:]]"
 
 ##################################################################################
 ############################### Setup Assistant ##################################
@@ -476,15 +480,16 @@ done
 
 ## Count number of resulting files and exit if no supported file
 count=0 && files=$(( $count + $(find "$temp_folder_without_slash" -type f | egrep -i "$supported_extensions_rev" | wc -l) ))
-if [ "$has_display" == "yes" ] && [[ $files -eq 0 ]]; then if [ ! "$folder_short" ]; then folder_short=`echo "$torrent" | sed 's/\(.*\)\..*/\1/' | sed 's;.*/;;g'`; fi && mv "$temp_folder_without_slash" "$destination_folder$folder_short" && rm -f "$log_file" && echo "Sorry, I cannot detect any supported file" && if [[ "$delete_third_party_log" == "yes" && "$third_party_log" != "no" ]]; then rm -f "$third_party_log"; fi && exit;  fi
-if [[ $files -eq 0 ]]; then if [ ! "$folder_short" ]; then folder_short=`echo "$torrent" | sed 's/\(.*\)\..*/\1/' | sed 's;.*/;;g'`; fi && mv "$temp_folder_without_slash" "$destination_folder$folder_short" && rm -f "$log_file" && if [[ "$delete_third_party_log" == "yes" && "$third_party_log" != "no" ]]; then rm -f "$third_party_log"; fi && exit;  fi
+if [ "$has_display" == "yes" ] && [[ $files -eq 0 ]]; then if [ ! "$folder_short" ]; then folder_short=`echo "$torrent" | sed 's/\(.*\)\..*/\1/' | sed 's;.*/;;g'`; fi && mv "$temp_folder_without_slash" "$destination_folder$folder_short" && rm -f "$log_file" && echo "Sorry, I cannot detect any supported file" && if [[ "$delete_third_party_log" == "yes" && "$third_party_log" != "no" ]]; then rm -f "$third_party_log"; fi && exit
+elif [[ $files -eq 0 ]]; then if [ ! "$folder_short" ]; then folder_short=`echo "$torrent" | sed 's/\(.*\)\..*/\1/' | sed 's;.*/;;g'`; fi && mv "$temp_folder_without_slash" "$destination_folder$folder_short" && rm -f "$log_file" && if [[ "$delete_third_party_log" == "yes" && "$third_party_log" != "no" ]]; then rm -f "$third_party_log"; fi && exit
+fi
 
 ## If only one resulting file rename it according to the initial torrent
 if [[ $files -eq 1 ]]; then
 	if [ ! "$folder_short" ]; then folder_short=`echo "$torrent" | sed 's/\(.*\)\..*/\1/' | sed 's;.*/;;g'`; fi
 	item=`echo "$(find "$temp_folder_without_slash" -type f | egrep -i "$supported_extensions_rev")"`;
 	extension=`echo "$item" | sed 's;.*\.;.;'`;
-	mv "$item" "$destination_folder$folder_short$extension" && echo "$destination_folder$folder_short$extension" >> "$log_file" && rm -rf "$temp_folder_without_slash"
+	mv "$item" "$temp_folder$folder_short$extension" && echo "$temp_folder$folder_short$extension" >> "$log_file"
 	subtitles_dest=`echo "$subtitles_directory/$(basename "$item")"`
 	if [[ "$subtitles_mode" != "yes" && "$subtitles_handling" == "yes" && "$(echo "$item" | egrep -i "\.avi$|\.mkv$|\.divx$")" ]]; then mkdir -p "$subtitles_directory" && echo "$folder_short$extension" > "$subtitles_dest"; fi
 	folder_short=""
@@ -498,26 +503,26 @@ if [[ $files -gt 1 ]]; then for directory in $(find "$temp_folder_without_slash"
 		for f in $(echo -e "$audioFiles"); do
 			item=`echo "$directory/$f"`;
 			depth=$(( $(echo "$directory/" | sed "s;$torrent_directory;;g" | sed "s;[^/];;g" | wc -c) - 1 ))
-			if [[ $depth -eq 1 ]]; then destination_name="$destination_folder$folder_short/"; elif [[ $depth -gt 1 ]]; then destination_name="$destination_folder$folder_short/$(echo "$item" | sed "s;$temp_folder;;g" | sed "s;/; - ;g")"; fi
-			mkdir -p "$destination_folder$folder_short/" && mv -f "$item" "$destination_name"
+			if [[ $depth -eq 1 ]]; then destination_name="$temp_folder$folder_short/"; elif [[ $depth -gt 1 ]]; then destination_name="$temp_folder$folder_short/$(echo "$item" | sed "s;$temp_folder;;g" | sed "s;/; - ;g")"; fi
+			mkdir -p "$temp_folder$folder_short/" && mv -f "$item" "$destination_name"
 		done
 	elif [ "$(ls $directory | egrep -i "$supported_extensions_rev" )" ]; then
 		otherFiles=`ls $directory | egrep -i "$supported_extensions_rev"`;
-		for f in $(echo -e "$otherFiles"); do item=`echo "$directory/$f"`; mkdir -p "$destination_folder$folder_short/" && mv -f "$item" "$destination_folder$folder_short/"; done
+		for f in $(echo -e "$otherFiles"); do item=`echo "$directory/$f"`; mkdir -p "$temp_folder$folder_short/" && mv -f "$item" "$temp_folder$folder_short/"; done
 	fi
 done
-for item in $(find "$destination_folder$folder_short" -type f | egrep -i "$supported_extensions_rev"); do
+for item in $(find "$temp_folder$folder_short" -type f | egrep -i "$supported_extensions_rev"); do
 	subtitles_dest=`echo "$subtitles_directory/$(basename "$item")"`
 	already_subtitles=`echo "$(echo "$item" | sed 's/\(.*\)\..*/\1\.srt/')"`
 	if [[ "$subtitles_mode" != "yes" && "$subtitles_handling" == "yes" && ! -f "$already_subtitles" && "$(echo "$item" | egrep -i "\.avi$|\.mkv$|\.divx$")" ]]; then mkdir -p "$subtitles_directory" && echo "$(basename "$item")" > "$subtitles_dest"; fi
-	echo "$item" >> "$log_file" && rm -rf "$temp_folder_without_slash"
+	echo "$item" >> "$log_file"
 done
 fi
 
 ######################### Optional functionalities ################################
 
 
-if [[ "$folder_short" && "$tv_shows_fix_numbering" == "yes" ]] || [[ "$folder_short" && "$clean_up_filenames" == "yes" ]]; then echo "$destination_folder$folder_short" >> "$log_file"; fi
+if [[ "$folder_short" && "$tv_shows_fix_numbering" == "yes" ]] || [[ "$folder_short" && "$clean_up_filenames" == "yes" ]]; then echo "$temp_folder$folder_short" >> "$log_file"; fi
 
 ## Try to solve TV Shown Numbering issues
 if [[ "$has_display" == "yes" && "$tv_shows_fix_numbering" == "yes" && "$(cat "$log_file" | egrep -i "([123456789])([xX])([0-9])([0-9])")" ]] || [[ "$has_display" == "yes" && "$tv_shows_fix_numbering" == "yes" && "$(cat "$log_file" | egrep -i "([. _-])([01])([0-9])([0-3])([0-9])([^pPiI])")" ]] || [[ "$has_display" == "yes" && "$tv_shows_fix_numbering" == "yes" && "$(cat "$log_file" | egrep -i "([^eE])([12345689])([012345])([0-9])([^0123456789pPiI])")" ]]; then step_number=$(( $step_number + 1 )) && echo "Step $step_number : Trying to solve TV Shows numbering issues";  fi
@@ -539,7 +544,7 @@ if [[ "$tv_shows_fix_numbering" == "yes" && "$(cat "$log_file" | egrep -i "([123
 	source_ter=$(echo "$line" | sed "s;\([][)(]\);\\\\\1;g") && source_ter=`echo "$source_ter"`;
 	ren_location_bis=$(echo "$ren_location" | sed "s;\([][)(]\);\\\\\1;g") && ren_location_bis=`echo "$ren_location_bis"`;
 	if [ "$has_display" == "yes" ] && [ "$item" != "$ren_file" ]; then echo "- Renaming $item to $ren_file";  fi
-	if [[ -d "$ren_location" && "$(dirname "$source")/" == "$destination_folder" && "$item" != "$ren_file" ]]; then mv -f "$source" "$ren_temp_location"; rm -rf "$ren_location"; source="$ren_temp_location"; fi
+	if [[ -d "$ren_location" && "$(dirname "$source")/" == "$temp_folder" && "$item" != "$ren_file" ]]; then mv -f "$source" "$ren_temp_location"; rm -rf "$ren_location"; source="$ren_temp_location"; fi
 	if [ "$item" != "$ren_file" ] && [ "$gnu_sed_available" != "yes" ]; then mv -f "$source" "$ren_location" && sed -i '' "s;^$source_ter;$ren_location_bis;g" "$log_file"
 	elif [ "$item" != "$ren_file" ] && [ "$gnu_sed_available" == "yes" ]; then mv -f "$source" "$ren_location" && sed -i "s;^$source_ter;$ren_location_bis;g" "$log_file"
 	fi
@@ -557,7 +562,7 @@ if [[ "$clean_up_filenames" == "yes" ]]; then for line in $(cat "$log_file"); do
 	if [ -d "$source" ]; then extension="" && title_clean=`echo "$item"`; else extension=`echo "$item" | sed 's;.*\.;.;'` && title_clean=`echo "$item" | sed 's/\(.*\)\..*/\1/'`; fi
 	title_clean_bis=`echo "$title_clean" | sed 's/\([\._]\)\([^ ]\)/ \2/g' | sed "s/^/_/g" | sed "s/$/_/g" | sed "s/A/a/g" | sed "s/B/b/g" | sed "s/C/c/g" | sed "s/D/d/g" | sed "s/E/e/g" | sed "s/F/f/g" | sed "s/G/g/g" | sed "s/H/h/g" | sed "s/I/i/g" | sed "s/J/j/g" | sed "s/K/k/g" | sed "s/L/l/g" | sed "s/M/m/g" | sed "s/N/n/g" | sed "s/O/o/g" | sed "s/P/p/g" | sed "s/Q/q/g" | sed "s/R/r/g" | sed "s/S/s/g" | sed "s/T/t/g" | sed "s/U/u/g" | sed "s/V/v/g" | sed "s/W/w/g" | sed "s/X/x/g" | sed "s/Y/y/g" | sed "s/Z/z/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*a/\1\2\3A/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*b/\1\2\3B/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*c/\1\2\3C/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*d/\1\2\3D/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*e/\1\2\3E/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*f/\1\2\3F/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*g/\1\2\3G/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*h/\1\2\3H/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*i/\1\2\3I/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*j/\1\2\3J/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*k/\1\2\3K/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*l/\1\2\3L/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*m/\1\2\3M/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*n/\1\2\3N/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*o/\1\2\3O/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*p/\1\2\3P/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*q/\1\2\3Q/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*r/\1\2\3R/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*s/\1\2\3S/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*t/\1\2\3T/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*u/\1\2\3U/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*v/\1\2\3V/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*w/\1\2\3W/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*x/\1\2\3X/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*y/\1\2\3Y/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*z/\1\2\3Z/g" | sed "s/^_//g"`;
 	title_clean_ter="$title_clean_bis"
-	for q in $(echo -e "$(echo "$movies_detect_patterns" | sed "s;,;\\\n;g")"); do if [ "$(echo "$title_clean_ter" | egrep -i "[. _-]$q[. _-]")" ]; then regexp_pat="$(echo "$q" | sed "s/[aA]/[aA]/g" | sed "s/[bB]/[bB]/g" | sed "s/[cC]/[cC]/g" | sed "s/[dD]/[dD]/g" | sed "s/[eE]/[eE]/g" | sed "s/[fF]/[fF]/g" | sed "s/[gG]/[gG]/g" | sed "s/[hH]/[hH]/g" | sed "s/[iI]/[iI]/g" | sed "s/[jJ]/[jJ]/g" | sed "s/[kK]/[kK]/g" | sed "s/[lL]/[lL]/g" | sed "s/[mM]/[mM]/g" | sed "s/[nN]/[nN]/g" | sed "s/[oO]/[oO]/g" | sed "s/[pP]/[pP]/g" | sed "s/[qQ]/[qQ]/g" | sed "s/[rR]/[rR]/g" | sed "s/[sS]/[sS]/g" | sed "s/[tT]/[tT]/g" | sed "s/[uU]/[uU]/g" | sed "s/[vV]/[vV]/g" | sed "s/[wW]/[wW]/g" | sed "s/[xX]/[xX]/g" | sed "s/[yY]/[yY]/g" | sed "s/[zZ]/[zZ]/g")"; quality=" ($q)"; title_clean_ter="$(echo "$title_clean_ter" | sed "s;$(echo "$title_clean_ter" | egrep -o "[. _-]$regexp_pat[. _-]").*;_;")"; fi; done
+	for q in $(echo -e "$(echo "$movies_detect_patterns,$movies_detect_patterns_pt_2" | sed "s;,;\\\n;g")"); do if [ "$(echo "$title_clean_ter" | egrep -i "[. _-]$q[. _-]")" ]; then regexp_pat="$(echo "$q" | sed "s/[aA]/[aA]/g" | sed "s/[bB]/[bB]/g" | sed "s/[cC]/[cC]/g" | sed "s/[dD]/[dD]/g" | sed "s/[eE]/[eE]/g" | sed "s/[fF]/[fF]/g" | sed "s/[gG]/[gG]/g" | sed "s/[hH]/[hH]/g" | sed "s/[iI]/[iI]/g" | sed "s/[jJ]/[jJ]/g" | sed "s/[kK]/[kK]/g" | sed "s/[lL]/[lL]/g" | sed "s/[mM]/[mM]/g" | sed "s/[nN]/[nN]/g" | sed "s/[oO]/[oO]/g" | sed "s/[pP]/[pP]/g" | sed "s/[qQ]/[qQ]/g" | sed "s/[rR]/[rR]/g" | sed "s/[sS]/[sS]/g" | sed "s/[tT]/[tT]/g" | sed "s/[uU]/[uU]/g" | sed "s/[vV]/[vV]/g" | sed "s/[wW]/[wW]/g" | sed "s/[xX]/[xX]/g" | sed "s/[yY]/[yY]/g" | sed "s/[zZ]/[zZ]/g")"; quality=" ($q)"; title_clean_ter="$(echo "$title_clean_ter" | sed "s;$(echo "$title_clean_ter" | egrep -o "[. _-]$regexp_pat[. _-]").*;_;")"; fi; done
 	for i in $(echo -e "$(echo "$other_movies_patterns" | sed "s;,;\\\n;g")"); do if [ "$(echo "$title_clean_ter" | egrep -i "[. _-]$i[. _-]")" ]; then regexp_pat="$(echo "$i" | sed "s/[aA]/[aA]/g" | sed "s/[bB]/[bB]/g" | sed "s/[cC]/[cC]/g" | sed "s/[dD]/[dD]/g" | sed "s/[eE]/[eE]/g" | sed "s/[fF]/[fF]/g" | sed "s/[gG]/[gG]/g" | sed "s/[hH]/[hH]/g" | sed "s/[iI]/[iI]/g" | sed "s/[jJ]/[jJ]/g" | sed "s/[kK]/[kK]/g" | sed "s/[lL]/[lL]/g" | sed "s/[mM]/[mM]/g" | sed "s/[nN]/[nN]/g" | sed "s/[oO]/[oO]/g" | sed "s/[pP]/[pP]/g" | sed "s/[qQ]/[qQ]/g" | sed "s/[rR]/[rR]/g" | sed "s/[sS]/[sS]/g" | sed "s/[tT]/[tT]/g" | sed "s/[uU]/[uU]/g" | sed "s/[vV]/[vV]/g" | sed "s/[wW]/[wW]/g" | sed "s/[xX]/[xX]/g" | sed "s/[yY]/[yY]/g" | sed "s/[zZ]/[zZ]/g")"; title_clean_ter="$(echo "$title_clean_ter" | sed "s;$(echo "$title_clean_ter" | egrep -o "[. _-]$regexp_pat[. _-]").*;_;")"; fi; done
 	title_clean_ter=`echo "$title_clean_ter" | sed "s/_*$//g"`
 	if [[ "$repack_handling" == "yes" && "$(echo "$item" | egrep -i "([. _])repack([. _])|([. _])proper([. _])|([. _])rerip([. _])")" ]]; then is_repack=" REPACK"; else is_repack=""; fi
@@ -579,7 +584,7 @@ if [[ "$clean_up_filenames" == "yes" ]]; then for line in $(cat "$log_file"); do
 	source_ter=$(echo "$line" | sed "s;\([][)(]\);\\\\\1;g") && source_ter=`echo "$source_ter"`;
 	ren_location_bis=$(echo "$ren_location" | sed "s;\([][)(]\);\\\\\1;g") && ren_location_bis=`echo "$ren_location_bis"`;
 	if [ "$has_display" == "yes" ] && [ "$item" != "$ren_file" ]; then echo "- Renaming $item to $ren_file";  fi
-	if [[ -d "$ren_location" && "$(dirname "$source")/" == "$destination_folder" && "$item" != "$ren_file" ]]; then mv -f "$source" "$ren_temp_location"; rm -rf "$ren_location"; source="$ren_temp_location"; fi
+	if [[ -d "$ren_location" && "$(dirname "$source")/" == "$temp_folder" && "$item" != "$ren_file" ]]; then mv -f "$source" "$ren_temp_location"; rm -rf "$ren_location"; source="$ren_temp_location"; fi
 	if [ "$item" != "$ren_file" ] && [ "$gnu_sed_available" != "yes" ]; then mv -f "$source" "$ren_location" && sed -i '' "s;^$source_ter;$ren_location_bis;g" "$log_file"
 	elif [ "$item" != "$ren_file" ] && [ "$gnu_sed_available" == "yes" ]; then mv -f "$source" "$ren_location" && sed -i "s;^$source_ter;$ren_location_bis;g" "$log_file"
 	fi
@@ -590,164 +595,91 @@ if [[ "$folder_short" && "$tv_shows_fix_numbering" == "yes" && "$gnu_sed_availab
 elif [[ "$folder_short" && "$tv_shows_fix_numbering" == "yes" && "$gnu_sed_available" == "yes" ]] || [[ "$folder_short" && "$clean_up_filenames" == "yes" && "$gnu_sed_available" == "yes" ]]; then folder_short=`echo "$(cat "$log_file" | sed -n '$p' | sed 's;.*/;;g')"`; sed -i '$d' "$log_file"
 fi
 
-## Convert DTS track from MKV files to AC3
-if [ "$has_display" == "yes" ] && [ "$dts_post" == "yes" ] && [ "$(cat "$log_file" | egrep -i "\.mkv$" )" ]; then step_number=$(( $step_number + 1 )) && echo "Step $step_number : Converting DTS track to AC3";  fi
-for line in $(cat "$log_file"); do
-	if [ "$(echo "$line" | egrep -i "\.mkv$" )" ] && [ "$dts_post" == "yes" ]; then
-		mkv=`echo "$line"`;
-		if [ "$has_display" == "yes" ]; then "$mkvdts2ac3_bin" -w "$temp_folder" -k "$mkv" && rm -rf "$temp_folder"; fi
-		if [ ! "$has_display" ]; then "$mkvdts2ac3_bin" -w "$temp_folder" -k "$mkv" && rm -rf "$temp_folder" > /dev/null 2>&1; fi
-	fi
-done
 
-## Convert img disc images to iso disc images
-if [ "$has_display" == "yes" ] && [ "$(echo "$line" | egrep -i "\.img$" )" ] && [ "$img_post" == "yes" ]; then step_number=$(( $step_number + 1 )) && echo "Step $step_number : Converting IMG disc image to ISO";  fi
+## Convert DTS track from MKV files to AC3, img disc images to iso disc images and creates a folder and a cuesheet for Wii backups
+if [ "$has_display" == "yes" ] && [[ "$dts_post" == "yes" || "$img_post" == "yes" || "$wii_post" == "yes" ]] && [ "$(cat "$log_file" | egrep -i "\.mkv$|\.img$|\.wii")" ]; then step_number=$(( $step_number + 1 )) && echo "Step $step_number : Converting DTS track to AC3, IMG to ISO and Creating Wii Cuesheet";  fi
 for line in $(cat "$log_file"); do
-	if [ "$(echo "$line" | egrep -i "\.img$" )" ] && [ "$img_post" == "yes" ]; then
-		img=`echo "$line"`
-		has_folder="$(if [ $(echo "$(dirname "$img")/") == "$destination_folder" ]; then echo "no"; else echo "yes"; fi)"
-		folder_short=`echo "$line" | sed 's/\(.*\)\..*/\1/' | sed 's;.*/;;g'`
-		img_file=`echo "$(basename "$line")"`
-		new_folder=`echo "$destination_folder$folder_short/"`
-		new_location=`echo "$destination_folder$folder_short/$img_file"`
-		if [ "$has_folder" == "no" ]; then
-			mkdir -p "$new_folder" && mv -f "$img" "$new_folder"
-			if [ "$gnu_sed_available" != "yes" ]; then sed -i '' "s;$img;$new_location;g" "$log_file"; elif [ "$gnu_sed_available" == "yes" ]; then sed -i "s;$img;$new_location;g" "$log_file"; fi
-			img=`echo "$new_location"`
-		fi
-		iso=`echo "$destination_folder$folder_short/$folder_short.iso"`
-		if [ "$has_display" == "yes" ]; then echo "- Converting $img_file to an ISO";  fi
-		if [ "$has_display" == "yes" ]; then "$ccd2iso_bin" "$img" "$iso"; else "$ccd2iso_bin" "$img" "$iso" > /dev/null 2>&1; fi
+	source_trimmed=`echo "$line" | sed 's/\(.*\)\..*/\1/' | sed 's;.*/;;g'`
+	source_file=`echo "$line"`
+	source_filename=`echo "$(basename "$line")"`
+	source_dir=`echo "$(dirname "$line")"`
+	if [ "$(echo "$line" | egrep -i "\.mkv$" )" ] && [ "$dts_post" == "yes" ]; then
+		if [ "$has_display" == "yes" ]; then echo "- Converting $source_filename from DTS to AC3";  fi
+		if [ "$has_display" == "yes" ]; then "$mkvdts2ac3_bin" -w "$temp_folder" -k "$source_file"; else "$mkvdts2ac3_bin" -w "$temp_folder" -k "$source_file"; fi
+	elif [ "$(echo "$line" | egrep -i "\.img$" )" ] && [ "$img_post" == "yes" ]; then
+		iso=`echo "$source_dir/$source_trimmed.iso"`
+		if [ "$has_display" == "yes" ]; then echo "- Converting $source_filename to an ISO";  fi
+		if [ "$has_display" == "yes" ]; then "$ccd2iso_bin" "$source_file" "$iso"; else "$ccd2iso_bin" "$source_file" "$iso" > /dev/null 2>&1; fi
 		iso_size="$(stat -c %s "$iso")"
 		if [ "$iso_size" -lt 1000 ]; then
-			if [ "$has_display" == "yes" ]; then echo "Actually $img_file is probably already an ISO";  fi
-			rm -f "$iso" && cp -f "$img" "$iso"
+			if [ "$has_display" == "yes" ]; then echo "Actually $source_filename is probably already an ISO";  fi
+			rm -f "$iso" && mv -f "$source_file" "$iso"
+		else rm "$source_file"
+		if [ "$gnu_sed_available" != "yes" ]; then sed -i '' "s;$source_file;$iso;g" "$log_file"; else sed -i "s;$source_file;$iso;g" "$log_file"; fi
 		fi
-		echo "$iso" >> "$log_file"
+	elif [ "$(echo "$line" | egrep -i "\.wii" )" ] && [ "$(echo "$line" | egrep -i "\.iso$" )" ] && [ "$wii_post" == "yes" ]; then
+		source_trimmed=`echo "$line" | sed 's/\(.*\)\..*/\1/' | sed 's;.*/;;g'`
+		new_folder=`echo "$temp_folder$source_trimmed/"`
+		dvd_file=`echo "$new_folder$source_trimmed.dvd"`
+		if [ ! "$folder_short" ] && [ "$gnu_sed_available" != "yes" ]; then
+			mkdir -p "$new_folder" && mv -f "$source_file" "$new_folder" && sed -i '' "s;$source_file;$new_folder$source_filename;g" "$log_file"
+		elif [ ! "$folder_short" ] && [ "$gnu_sed_available" == "yes" ]; then
+			mkdir -p "$new_folder" && mv -f "$source_file" "$new_folder" && sed -i "s;$source_file;$new_folder$source_filename;g" "$log_file"
+		fi
+		if [ "$has_display" == "yes" ]; then echo "- Creating a Cuesheet for $source_filename";  fi
+		echo "$source_filename" > "$dvd_file"
+		echo "$dvd_file" >> "$log_file"
 	fi
 done
 
-if [[ "$has_display" == "yes" && "$wii_post" == "yes" ]] || [[ "$has_display" == "yes" && "$tv_shows_post" != "no" ]] || [[ "$has_display" == "yes" && "$music_post" != "no" ]] || [[ "$has_display" == "yes" && "$movies_post" != "no" ]]; then step_number=$(( $step_number + 1 )) && echo "Step $step_number : Taking care of other optional features";  fi
+## Copy or move TV Shows, movies and music to a specific folder
+if [ "$has_display" == "yes" ] && [[ "$tv_shows_post" != "no" || "$music_post" != "no" || "$movies_post" != "no" ]]; then step_number=$(( $step_number + 1 )) && echo "Step $step_number : Taking care of TV Shows, Music and Movie files";  fi
+additional_permissions="additional_permissions"
 for line in $(cat "$log_file"); do
-	## Create a folder and a cuesheet for Wii backups
-	if [ "$(echo "$line" | egrep -i "\.wii" )" ] && [ "$(echo "$line" | egrep -i "\.iso$" )" ] && [ "$wii_post" == "yes" ]; then
-		wii=`echo "$line"`;
-		has_folder="$(if [ $(echo "$(dirname "$wii")/") == "$destination_folder" ]; then echo "no"; else echo "yes"; fi)"
-		folder_short=`echo "$wii" | sed 's/\(.*\)\..*/\1/' | sed 's;.*/;;g'`
-		new_folder=`echo "$destination_folder$folder_short/"`
-		iso_file=`echo "$(basename "$wii")"`
-		dvd_file=`echo "$new_folder$folder_short.dvd"`
-		new_iso_file_path=`echo "$destination_folder$folder_short/$iso_file"`
-		if [ "$has_folder" == "no" ] && [ "$gnu_sed_available" != "yes" ]; then
-			mkdir -p "$new_folder" && mv -f "$wii" "$new_folder" && sed -i '' "s;$wii;$new_iso_file_path;g" "$log_file"
-		elif [ "$has_folder" == "no" ] && [ "$gnu_sed_available" == "yes" ]; then
-			mkdir -p "$new_folder" && mv -f "$wii" "$new_folder" && sed -i "s;$wii;$new_iso_file_path;g" "$log_file"
-		fi
-		if [ "$has_display" == "yes" ]; then echo "- Creating a Cuesheet for $iso_file";  fi
-		echo "$iso_file" > "$dvd_file"
-		echo "$dvd_file" >> "$log_file"
-	## Copy or move TV Shows to a specific folder	
-	elif [[ "$(echo "$line" | egrep -i "([. _])s([0-9])([0-9])e([0-9])([0-9])([. _])" )" || "$(echo "$line" | egrep -i "([0-9])([0-9])([0-9])([0-9]).([0-9])([0-9]).([0-9])([0-9])")" ]] && [ "$(echo "$line" | egrep -i "$tv_show_extensions_rev" )" ] && [ "$tv_shows_post" == "copy" ]; then
-		series_file=`echo "$line"`
-		item=`echo "$(basename "$series_file")"`
-		has_folder="$(if [ $(echo "$(dirname "$series_file")/") == "$destination_folder" ]; then echo "no"; else echo "yes"; fi)"
-		new_destination=`echo "$tv_shows_post_path$folder_short/"`
-		if [ "$has_folder" == "no" ]; then
-			if [ "$has_display" == "yes" ]; then echo "- Copying $item to your TV Shows Path";  fi
-			cp -f "$series_file" "$tv_shows_post_path" && tv_show_post_perm="$tv_shows_post_path$(basename "$series_file")"
-		else
-			if [ "$has_display" == "yes" ]; then echo "- Copying $item to your TV Shows Path";  fi
-			mkdir -p "$new_destination" && tv_show_post_dir_perm="$new_destination" && cp -f "$series_file" "$new_destination"
-		fi
-	elif [[ "$(echo "$line" | egrep -i "([. _])s([0-9])([0-9])e([0-9])([0-9])([. _])" )" || "$(echo "$line" | egrep -i "([0-9])([0-9])([0-9])([0-9]).([0-9])([0-9]).([0-9])([0-9])")" ]] && [ "$(echo "$line" | egrep -i "$tv_show_extensions_rev" )" ] && [ "$tv_shows_post" == "move" ]; then
-		series_file=`echo "$line"`
-		item=`echo "$(basename "$series_file")"`
-		has_folder="$(if [ $(echo "$(dirname "$series_file")/") == "$destination_folder" ]; then echo "no"; else echo "yes"; fi)"
-		source_folder=`echo "$destination_folder$folder_short/"`
-		new_destination=`echo "$tv_shows_post_path$folder_short/"`
-		if [ "$has_folder" == "no" ]; then
-			if [ "$has_display" == "yes" ]; then echo "- Moving $item to your TV Shows Path";  fi
-			mv -f "$series_file" "$tv_shows_post_path" && tv_show_post_perm="$tv_shows_post_path$(basename "$series_file")" && if [ "$gnu_sed_available" != "yes" ]; then sed -i '' "s;$series_file;$tv_shows_post_path$item;g" "$log_file"; elif [ "$gnu_sed_available" == "yes" ]; then sed -i "s;$series_file;$tv_shows_post_path$item;g" "$log_file"; fi
-		else
-			if [ "$has_display" == "yes" ]; then echo "- Moving $item to your TV Shows Path";  fi
-			tv_show_post_dir_perm="$new_destination" && mkdir -p "$new_destination" && mv -f "$series_file" "$new_destination" && if [ "$gnu_sed_available" != "yes" ]; then sed -i '' "s;$source_folder;$new_destination;g" "$log_file"; elif [ "$gnu_sed_available" == "yes" ]; then sed -i "s;$source_folder;$new_destination;g" "$log_file"; fi
-		fi
-	## Copy Music files to a specific folder	
-	elif [ "$(echo "$line" | egrep -i "$music_extensions_rev" )" ] && [ "$music_post" == "copy" ]; then
-		music_file=`echo "$line"`
-		item=`echo "$(basename "$music_file")"`
-		has_folder="$(if [ $(echo "$(dirname "$music_file")/") == "$destination_folder" ]; then echo "no"; else echo "yes"; fi)"
-		new_destination=`echo "$music_post_path$folder_short/"`
-		if [ "$has_folder" == "no" ]; then
-			if [ "$has_display" == "yes" ]; then echo "- Copying $item to your Music Path";  fi
-			cp -f "$music_file" "$music_post_path" && music_post_perm="$music_post_path$(basename "$music_file")"
-		else
-			if [ "$has_display" == "yes" ]; then echo "- Copying $item to your Music Path";  fi
-			mkdir -p "$new_destination" && music_post_dir_perm="$new_destination" && cp -f "$music_file" "$new_destination"
-		fi
-	elif [ "$(echo "$line" | egrep -i "$music_extensions_rev" )" ] && [ "$music_post" == "move" ]; then
-		music_file=`echo "$line"`
-		item=`echo "$(basename "$music_file")"`
-		has_folder="$(if [ $(echo "$(dirname "$music_file")/") == "$destination_folder" ]; then echo "no"; else echo "yes"; fi)"
-		source_folder=`echo "$destination_folder$folder_short/"`
-		new_destination=`echo "$music_post_path$folder_short/"`
-		if [ "$has_folder" == "no" ]; then
-			if [ "$has_display" == "yes" ]; then echo "- Moving $item to your Music Path";  fi
-			mv -f "$music_file" "$music_post_path" && music_post_perm="$music_post_path$(basename "$music_file")" && if [ "$gnu_sed_available" != "yes" ]; then sed -i '' "s;$music_file;$music_post_path$item;g" "$log_file"; elif [ "$gnu_sed_available" == "yes" ]; then sed -i "s;$music_file;$music_post_path$item;g" "$log_file"; fi
-		else
-			if [ "$has_display" == "yes" ]; then echo "- Moving $item to your Music Path";  fi
-			music_post_dir_perm="$new_destination" && mkdir -p "$new_destination" && mv -f "$music_file" "$new_destination" && if [ "$gnu_sed_available" != "yes" ]; then sed -i '' "s;$source_folder;$new_destination;g" "$log_file"; elif [ "$gnu_sed_available" == "yes" ]; then sed -i "s;$source_folder;$new_destination;g" "$log_file"; fi
-		fi
-	## Copy movies to a specific folder	
-	elif [ "$(echo "$line" | egrep -i "$movies_detect_patterns_rev" )" ] && [ "$(echo "$line" | egrep -i "$movies_extensions_rev" )" ] && [ "$movies_post" == "copy" ]; then
-		movie_file=`echo "$line"`
-		item=`echo "$(basename "$movie_file")"`
-		has_folder="$(if [ $(echo "$(dirname "$movie_file")/") == "$destination_folder" ]; then echo "no"; else echo "yes"; fi)"
-		new_destination=`echo "$movies_post_path$folder_short/"`
-		if [ "$has_folder" == "no" ]; then
-			if [ "$has_display" == "yes" ]; then echo "- Copying $item to your Movies Path";  fi
-			cp -f "$movie_file" "$movies_post_path" && movies_post_perm="$movies_post_path$(basename "$movie_file")"
-		else
-			if [ "$has_display" == "yes" ]; then echo "- Copying $item to your Movies Path";  fi
-			mkdir -p "$new_destination" && movies_post_dir_perm=`echo "$new_destination"` && cp -f "$movie_file" "$new_destination"
-		fi
-	elif [ "$(echo "$line" | egrep -i "$movies_detect_patterns_rev" )" ] && [ "$(echo "$line" | egrep -i "$movies_extensions_rev" )" ] && [ "$movies_post" == "move" ]; then
-		movie_file=`echo "$line"`
-		item=`echo "$(basename "$movie_file")"`
-		has_folder="$(if [ $(echo "$(dirname "$movie_file")/") == "$destination_folder" ]; then echo "no"; else echo "yes"; fi)"
-		source_folder=`echo "$destination_folder$folder_short/"`
-		new_destination=`echo "$movies_post_path$folder_short/"`
-		if [ "$has_folder" == "no" ]; then
-			if [ "$has_display" == "yes" ]; then echo "- Moving $item to your Movies Path";  fi
-			mv -f "$movie_file" "$movies_post_path" && movies_post_perm="$movies_post_path$(basename "$movie_file")" && if [ "$gnu_sed_available" != "yes" ]; then sed -i '' "s;$movie_file;$movies_post_path$item;g" "$log_file"; elif [ "$gnu_sed_available" == "yes" ]; then sed -i "s;$movie_file;$movies_post_path$item;g" "$log_file"; fi
-		else
-			if [ "$has_display" == "yes" ]; then echo "- Moving $item to your Movies Path";  fi
-			movies_post_dir_perm="$new_destination" && mkdir -p "$new_destination" &&  mv -f "$movie_file" "$new_destination" && if [ "$gnu_sed_available" != "yes" ]; then sed -i '' "s;$source_folder;$new_destination;g" "$log_file"; elif [ "$gnu_sed_available" == "yes" ]; then sed -i "s;$source_folder;$new_destination;g" "$log_file"; fi
-		fi
+	source_file=`echo "$line"`
+	source_filename=`echo "$(basename "$line")"`
+	if [ "$(echo "$line" | egrep -i "$music_extensions_rev" )" ] && [ "$music_post" != "no" ]; then new_destination=`echo "$music_post_path"`
+	elif [[ "$(echo "$line" | egrep -i "$movies_detect_patterns_rev" )" ||Ê"$(echo "$line" | egrep -i "$movies_detect_patterns_pt_2_rev" )" ]] && [ "$(echo "$line" | egrep -i "$movies_extensions_rev" )" ] && [ "$movies_post" != "no" ]; then new_destination=`echo "$movies_post_path"`
+	fi
+
+	series_title=`echo "$source_filename" | sed 's;\(.*\).\([sS]\)\([0-9]\)\([0-9]\)\([eE]\)\([0-9]\)\([0-9]\).*;\1;' | sed 's;\(.*\).\([0-9]\)\([0-9]\)\([0-9]\)\([0-9]\).\([0-9]\)\([0-9]\).\([0-9]\)\([0-9]\).*;\1;'`;
+	series_season=`echo "$source_filename" | sed 's;\(.*\).\([sS]\)\([0-9]\)\([0-9]\)\([eE]\)\([0-9]\)\([0-9]\).*;Season \3\4;g'`;
+
+	if [[ "$(echo "$line" | egrep -i "([. _])s([0-9])([0-9])e([0-9])([0-9])([. _])" )" || "$(echo "$line" | egrep -i "([. _])([0-9])([0-9])([0-9])([0-9]).([0-9])([0-9]).([0-9])([0-9])([. _])")" ]] && [ "$(echo "$line" | egrep -i "$tv_show_extensions_rev" )" ] && [[ "$tv_shows_post" != "no" && "$tv_shows_post_path_mode" == "no" ]]; then new_destination=`echo "$tv_shows_post_path"`; fi
+	if [ "$folder_short" ]; then new_destination=`echo "$new_destination$folder_short/"`; fi
+
+	if [[ "$(echo "$line" | egrep -i "([. _])s([0-9])([0-9])e([0-9])([0-9])([. _])" )" || "$(echo "$line" | egrep -i "([. _])([0-9])([0-9])([0-9])([0-9]).([0-9])([0-9]).([0-9])([0-9])([. _])")" ]] && [ "$(echo "$line" | egrep -i "$tv_show_extensions_rev" )" ] && [[ "$tv_shows_post" != "no" && "$tv_shows_post_path_mode" == "s" ]]; then new_destination=`echo "$tv_shows_post_path$series_title/"`; fi
+	if [[ "$(echo "$line" | egrep -i "([. _])([0-9])([0-9])([0-9])([0-9]).([0-9])([0-9]).([0-9])([0-9])([. _])" )" ]] && [ "$(echo "$line" | egrep -i "$tv_show_extensions_rev" )" ] && [[ "$tv_shows_post" != "no" && "$tv_shows_post_path_mode" == "ss" ]]; then new_destination=`echo "$tv_shows_post_path$series_title/"`; fi
+	if [[ "$(echo "$line" | egrep -i "([. _])s([0-9])([0-9])e([0-9])([0-9])([. _])" )" ]] && [ "$(echo "$line" | egrep -i "$tv_show_extensions_rev" )" ] && [[ "$tv_shows_post" != "no" && "$tv_shows_post_path_mode" == "ss" ]]; then new_destination=`echo "$tv_shows_post_path$series_title/$series_season/"`; fi
+	
+	if [[ "$(echo "$line" | egrep -i "([. _])s([0-9])([0-9])e([0-9])([0-9])([. _])" )" || "$(echo "$line" | egrep -i "([. _])([0-9])([0-9])([0-9])([0-9]).([0-9])([0-9]).([0-9])([0-9])([. _])")" ]] && [[ "$(echo "$line" | egrep -i "$tv_show_extensions_rev")" && "$tv_shows_post" == "copy" ]]; then mkdir -p "$new_destination" && if [ "$has_display" == "yes" ]; then echo "- Copying $source_filename to $new_destination";  fi && cp "$source_file" "$new_destination" && echo "$new_destination$source_filename" >> "$temp_folder$additional_permissions"
+	elif [[ "$(echo "$line" | egrep -i "([. _])s([0-9])([0-9])e([0-9])([0-9])([. _])" )" || "$(echo "$line" | egrep -i "([. _])([0-9])([0-9])([0-9])([0-9]).([0-9])([0-9]).([0-9])([0-9])([. _])")" ]] && [[ "$(echo "$line" | egrep -i "$tv_show_extensions_rev")" && "$tv_shows_post" == "move" && "$gnu_sed_available" != "yes" ]]; then mkdir -p "$new_destination" && if [ "$has_display" == "yes" ]; then echo "- Moving $source_filename to $new_destination";  fi && mv "$source_file" "$new_destination" && echo "$new_destination$source_filename" >> "$temp_folder$additional_permissions" && sed -i '' "s;$source_file;$new_destination$source_filename;g" "$log_file"
+	elif [[ "$(echo "$line" | egrep -i "([. _])s([0-9])([0-9])e([0-9])([0-9])([. _])" )" || "$(echo "$line" | egrep -i "([. _])([0-9])([0-9])([0-9])([0-9]).([0-9])([0-9]).([0-9])([0-9])([. _])")" ]] && [[ "$(echo "$line" | egrep -i "$tv_show_extensions_rev")" && "$tv_shows_post" == "move" && "$gnu_sed_available" == "yes" ]]; then mkdir -p "$new_destination" && if [ "$has_display" == "yes" ]; then echo "- Moving $source_filename to $new_destination";  fi && mv "$source_file" "$new_destination" && echo "$new_destination$source_filename" >> "$temp_folder$additional_permissions" && sed -i "s;$source_file;$new_destination$source_filename;g" "$log_file"
+	elif [[ "$(echo "$line" | egrep -i "$music_extensions_rev")" && "$music_post" == "copy" ]] || [[ "$(echo "$line" | egrep -i "$movies_extensions_rev")" && "$movies_post" == "copy" ]]; then mkdir -p "$new_destination" && if [ "$has_display" == "yes" ]; then echo "- Copying $source_filename to $new_destination";  fi && cp "$source_file" "$new_destination" && echo "$new_destination$source_filename" >> "$temp_folder$additional_permissions"
+	elif [[ "$(echo "$line" | egrep -i "$music_extensions_rev")" && "$music_post" == "move" && "$gnu_sed_available" != "yes" ]] || [[ "$(echo "$line" | egrep -i "$movies_extensions_rev")" && "$movies_post" == "move" && "$gnu_sed_available" != "yes" ]]; then mkdir -p "$new_destination" && if [ "$has_display" == "yes" ]; then echo "- Moving $source_filename to $new_destination";  fi && mv "$source_file" "$new_destination" && echo "$new_destination$source_filename" >> "$temp_folder$additional_permissions" && sed -i '' "s;$source_file;$new_destination$source_filename;g" "$log_file"
+	elif [[ "$(echo "$line" | egrep -i "$music_extensions_rev")" && "$music_post" == "move" && "$gnu_sed_available" == "yes" ]] || [[ "$(echo "$line" | egrep -i "$movies_extensions_rev")" && "$movies_post" == "move" && "$gnu_sed_available" == "yes" ]]; then mkdir -p "$new_destination" && if [ "$has_display" == "yes" ]; then echo "- Moving $source_filename to $new_destination";  fi && mv "$source_file" "$new_destination" && echo "$new_destination$source_filename" >> "$temp_folder$additional_permissions" && sed -i "s;$source_file;$new_destination$source_filename;g" "$log_file"
 	fi
 done
-if [[ "$folder_short" && -d "$destination_folder$folder_short" ]]; then
-	files_in_folder_short=$(ls -1 "$destination_folder$folder_short" | wc -l)
-	if [[ "$music_post" == "move" && $files_in_folder_short -eq 0 ]] || [[ "$tv_shows_post" == "move" && $files_in_folder_short -eq 0 ]] || [[ "$movies_post" == "move" && $files_in_folder_short -eq 0 ]]; then rm -rf "$destination_folder$folder_short" && folder_short_deleted="yes"; fi
+if [[ "$folder_short" && -d "$temp_folder$folder_short" ]]; then
+	files_in_folder_short=$(ls -1 "$temp_folder$folder_short" | wc -l)
+	if [[ "$music_post" == "move" && $files_in_folder_short -eq 0 ]] || [[ "$tv_shows_post" == "move" && $files_in_folder_short -eq 0 ]] || [[ "$movies_post" == "move" && $files_in_folder_short -eq 0 ]]; then folder_short="" && folder_short_deleted="yes"; fi
 fi
 
-## Use a source / destination log shared with a third party app - Add path to enable
-count=0 && files=$(( $count + $(cat "$log_file"|wc -l) ))
-if [[ $files -eq 1 ]] && [ "$third_party_log" != "no" ]; then echo "$(cat "$log_file")" > "$third_party_log"; fi
-if [[ $files -gt 1 ]] && [ "$third_party_log" != "no" ]; then folder_name=`echo "$destination_folder$folder_short"`; echo "$folder_name" > "$third_party_log"; fi
-if [ "$third_party_log" != "no" ] && [ "$user_perm_post" == "yes" ]; then chown "$user_perm_post":"$group_perm_post" "$third_party_log" && sudo chmod "$files_perm_post" "$third_party_log"; fi
-
 ## Edit files and folders permissions
+if [ ! -f "$temp_folder$additional_permissions" ]; then echo "" > "$temp_folder$additional_permissions"; fi
 if [[ "$has_display" == "yes" && "$user_perm_post" != "no" ]] || [[ "$has_display" == "yes" && "$files_perm_post" != "no" ]]; then step_number=$(( $step_number + 1 )) && echo "Step $step_number : Setting permissions";  fi
-if [ "$music_post_perm" ]; then echo "$music_post_perm" >> "$log_file"; fi
-if [ "$tv_show_post_perm" ]; then echo "$tv_show_post_perm" >> "$log_file"; fi
-if [ "$movies_post_perm" ]; then echo "$movies_post_perm" >> "$log_file"; fi
-if [ "$folder_short" ] && [ "$folder_short_deleted" != "yes" ]; then echo "$destination_folder$folder_short" >> "$log_file"; fi
-if [ "$music_post_dir_perm" ] && [ "$music_post" != "move" ]; then echo "$music_post_dir_perm" >> "$log_file" && ls -f -1 "$music_post_dir_perm"*.* >> "$log_file"; fi
-if [ "$tv_show_post_dir_perm" ] && [ "$tv_shows_post" != "move" ]; then echo "$tv_show_post_dir_perm" >> "$log_file" && ls -f -1 "$tv_show_post_dir_perm"*.* >> "$log_file"; fi
-if [ "$movies_post_dir_perm" ] && [ "$movies_post" != "move" ]; then echo "$movies_post_dir_perm" >> "$log_file" && ls -f -1 "$movies_post_dir_perm"*.* >> "$log_file"; fi
 
 for line in $(cat "$log_file"); do
+	if [[ "$user_perm_post" != "no" && "$group_perm_post" != "no" ]] || [[ "$files_perm_post" != "no" && "$folder_perm_post" != "no" ]]; then
+		item=`echo "$line"`
+		if [[ -f "$item" && "$edit_perm_as_sudo" == "yes" && "$user_perm_post" != "no" && "$group_perm_post" != "no" && $(id -u) -eq 0 ]] || [[ -f "$item" && "$edit_perm_as_sudo" == "yes" && "$user_perm_post" != "no" && "$group_perm_post" != "no" && "$has_display" == "yes" ]] || [[ -d "$item" && "$edit_perm_as_sudo" == "yes" && "$user_perm_post" != "no" && "$group_perm_post" != "no" && $(id -u) -eq 0 ]] || [[ -d "$item" && "$edit_perm_as_sudo" == "yes" && "$user_perm_post" != "no" && "$group_perm_post" != "no" && "$has_display" == "yes" ]]; then sudo chown "$user_perm_post":"$group_perm_post" "$item"; fi
+		if [[ -f "$item" && "$edit_perm_as_sudo" == "yes" && "$files_perm_post" != "no" && $(id -u) -eq 0 ]] || [[ -f "$item" && "$edit_perm_as_sudo" == "yes" && "$files_perm_post" != "no" && "$has_display" == "yes" ]]; then sudo chmod "$files_perm_post" "$item"; fi
+		if [[ -f "$item" && "$edit_perm_as_sudo" == "no" && "$files_perm_post" != "no" ]]; then chmod "$files_perm_post" "$item"; fi
+		if [[ -d "$item" && "$edit_perm_as_sudo" == "yes" && "$folder_perm_post" != "no" && $(id -u) -eq 0 ]] || [[ -d "$item" && "$edit_perm_as_sudo" == "yes" && "$folder_perm_post" != "no" && "$has_display" == "yes" ]]; then sudo chmod "$folder_perm_post" "$item"; fi
+		if [[ -d "$item" && "$edit_perm_as_sudo" == "no" && "$folder_perm_post" != "no" ]]; then chmod "$folder_perm_post" "$item"; fi
+	fi
+done
+for line in $(cat "$temp_folder$additional_permissions"); do
 	if [[ "$user_perm_post" != "no" && "$group_perm_post" != "no" ]] || [[ "$files_perm_post" != "no" && "$folder_perm_post" != "no" ]]; then
 		item=`echo "$line"`
 		if [[ -f "$item" && "$edit_perm_as_sudo" == "yes" && "$user_perm_post" != "no" && "$group_perm_post" != "no" && $(id -u) -eq 0 ]] || [[ -f "$item" && "$edit_perm_as_sudo" == "yes" && "$user_perm_post" != "no" && "$group_perm_post" != "no" && "$has_display" == "yes" ]] || [[ -d "$item" && "$edit_perm_as_sudo" == "yes" && "$user_perm_post" != "no" && "$group_perm_post" != "no" && $(id -u) -eq 0 ]] || [[ -d "$item" && "$edit_perm_as_sudo" == "yes" && "$user_perm_post" != "no" && "$group_perm_post" != "no" && "$has_display" == "yes" ]]; then sudo chown "$user_perm_post":"$group_perm_post" "$item"; fi
@@ -766,6 +698,30 @@ for line in $(cat "$log_file"); do
 		touch "$line"
 	fi
 done
+for line in $(cat "$temp_folder$additional_permissions"); do
+	if [ "$reset_timestamp" == "yes" ]; then
+		item=`echo "$line"`
+		touch "$line"
+	fi
+done
+
+## Move content of temp folder to destination folder
+item=`echo "$(find "$temp_folder_without_slash" -type f | egrep -i "$supported_extensions_rev")"`
+if [ "$folder_short" ]; then mv "$temp_folder$folder_short" "$destination_folder"
+elif [ ! "$folder_short" ]; then
+	for line in $(cat "$log_file"); do
+		item=`echo "$line"`
+		if [[ "$(echo "$line" | egrep -i "$supported_extensions_rev")" && "$(echo "$line" | egrep -i "$temp_folder")" ]]; then mv "$item" "$destination_folder"; fi
+	done
+fi
+if [[ "$gnu_sed_available" != "yes" ]]; then rm -rf "$temp_folder_without_slash" && sed -i '' "s;^$temp_folder;$destination_folder;g" "$log_file"; else rm -rf "$temp_folder_without_slash" && sed -i "s;^$temp_folder;$destination_folder;g" "$log_file"; fi
+
+
+## Use a source / destination log shared with a third party app - Add path to enable
+count=0 && files=$(( $count + $(cat "$log_file"|wc -l) ))
+if [[ $files -eq 1 ]] && [ "$third_party_log" != "no" ]; then echo "$(cat "$log_file")" > "$third_party_log"; fi
+if [[ $files -gt 1 ]] && [ "$third_party_log" != "no" ]; then folder_name=`echo "$destination_folder$folder_short"`; echo "$folder_name" > "$third_party_log"; fi
+if [ "$third_party_log" != "no" ] && [ "$user_perm_post" == "yes" ]; then chown "$user_perm_post":"$group_perm_post" "$third_party_log" && sudo chmod "$files_perm_post" "$third_party_log"; fi
 
 ## Delete third party log if required
 if [ "$delete_third_party_log" == "yes" ] && [ "$third_party_log" != "no" ]; then rm -f "$third_party_log"; fi
