@@ -632,8 +632,8 @@ for line in $(cat "$log_file"); do
 			if [ "$has_display" == "yes" ]; then echo "Actually $source_filename is probably already an ISO";  fi
 			rm -f "$iso" && mv -f "$source_file" "$iso"
 		else rm "$source_file"
-		if [ "$gnu_sed_available" != "yes" ]; then sed -i '' "s;$source_file;$iso;g" "$log_file"; else sed -i "s;$source_file;$iso;g" "$log_file"; fi
 		fi
+		if [ "$gnu_sed_available" != "yes" ]; then sed -i '' "s;$source_file;$iso;g" "$log_file"; else sed -i "s;$source_file;$iso;g" "$log_file"; fi
 	elif [ "$(echo "$line" | egrep -i "([. _-])wii([. _-])" )" ] && [ "$(echo "$line" | egrep -i "\.iso$" )" ] && [ "$wii_post" == "yes" ]; then
 		source_trimmed=`echo "$line" | sed 's/\(.*\)\..*/\1/' | sed 's;.*/;;g'`
 		new_folder=`echo "$temp_folder$source_trimmed/"`
