@@ -84,7 +84,7 @@ music_extensions="mp3,m4a,wav"
 ##################### You must have at least one pattern enabled #################
 movies_detect_patterns="TS,TVRip,DVDSCR,R5,DVDRip,BDRip,BRRip,DVDR,720p,1080p"
 movies_detect_patterns_pt_2="Workprint,SCR"
-other_movies_patterns="proper,repack,rerip,pdtv,hdtv,xvid,webrip,web-dl,readnfo,ntsc,pal,limited,uncut,unrated"
+other_movies_patterns="proper,repack,rerip,pdtv,hdtv,xvid,webrip,web-dl,readnfo,ntsc,pal,limited,uncut,unrated,internal"
 scene_patterns="aaf"
 ####################### Optional functionalities variables #######################
 #################### Set these variables to "no" to disable ######################
