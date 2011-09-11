@@ -608,6 +608,7 @@ if [[ "$clean_up_filenames" == "yes" ]]; then for line in $(cat "$log_file"); do
 done
 fi
 
+
 if [[ "$folder_short" && "$tv_shows_fix_numbering" == "yes" && "$gnu_sed_available" != "yes" ]] || [[ "$folder_short" && "$clean_up_filenames" == "yes" && "$gnu_sed_available" != "yes" ]]; then folder_short=`echo "$(cat "$log_file" | sed -n '$p' | sed 's;.*/;;g')"`; sed -i '' '$d' "$log_file"
 elif [[ "$folder_short" && "$tv_shows_fix_numbering" == "yes" && "$gnu_sed_available" == "yes" ]] || [[ "$folder_short" && "$clean_up_filenames" == "yes" && "$gnu_sed_available" == "yes" ]]; then folder_short=`echo "$(cat "$log_file" | sed -n '$p' | sed 's;.*/;;g')"`; sed -i '$d' "$log_file"
 fi
@@ -686,6 +687,7 @@ fi
 
 
 ## Edit files and folders permissions
+if [ "$folder_short" ]; then echo "$temp_folder$folder_short" >> "$log_file"; fi
 if [ ! -f "$temp_folder$additional_permissions" ]; then echo "" > "$temp_folder$additional_permissions"; fi
 if [[ "$has_display" == "yes" && "$user_perm_post" != "no" ]] || [[ "$has_display" == "yes" && "$files_perm_post" != "no" ]]; then step_number=$(( $step_number + 1 )) && echo "Step $step_number : Setting permissions";  fi
 
@@ -709,6 +711,7 @@ for line in $(cat "$temp_folder$additional_permissions"); do
 		if [[ -d "$item" && "$edit_perm_as_sudo" == "no" && "$folder_perm_post" != "no" ]]; then chmod "$folder_perm_post" "$item"; fi
 	fi
 done
+
 
 ## Reset timestamp (mtime)
 if [ "$has_display" == "yes" ] && [ "$reset_timestamp" == "yes" ]; then step_number=$(( $step_number + 1 )) && echo "Step $step_number : Resetting mtime";  fi
