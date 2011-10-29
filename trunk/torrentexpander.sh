@@ -17,7 +17,7 @@ find -L / -maxdepth 1 > /dev/null 2>&1 && if [ "$?" == "0" ]; then find_l_availa
 
 ##################################################################################
 ##                   TORRENTEXPANDER 
-##                   v0.17
+##                   v0.18
 ##
 ## You can use and modify this script to your convenience
 ## Any suggestion on how to improve this script will be welcome
@@ -84,14 +84,16 @@ music_extensions="mp3,m4a,wav"
 ##################### You must have at least one pattern enabled #################
 movies_detect_patterns="TS,TVRip,DVDSCR,R5,DVDRip,BDRip,BRRip,DVDR,720p,1080p"
 movies_detect_patterns_pt_2="Workprint,SCR"
-other_movies_patterns="proper,repack,rerip,pdtv,hdtv,xvid,webrip,web-dl,readnfo,ntsc,pal,limited,ws,uncut,unrated,internal"
+other_movies_patterns="proper,repack,rerip,pdtv,hdtv,xvid,webrip,web-dl,readnfo,ntsc,pal,limited,ws,uncut,unrated,internal,480p"
 scene_patterns="aaf"
 ####################### Optional functionalities variables #######################
 #################### Set these variables to "no" to disable ######################
 ## Fix numbering for TV Shows - Switch variable to "yes" to enable
 tv_shows_fix_numbering="yes"
 ## Cleanup Filenames - Switch variable to "yes" to enable
+## 2 different schemas - type1 = Movie (year).ext - type2 = Movie Year (quality).ext
 clean_up_filenames="yes"
+movies_rename_schema="type_1"
 ## Keep a dummy video file with the original filename for subtitles retrieval
 subtitles_handling="no"
 ## Repack handling - Switch variable to "yes" to enable
@@ -216,7 +218,7 @@ if [[ "$check_settings" != *hird_party_log=* && -d "$third_party_log_directory" 
 	echo "third_party_log="$third_party_log"" >> "$settings_file";
 elif [[ "$check_settings" != *hird_party_log=* ]]; then echo "third_party_log=no" >> "$settings_file"
 fi
-for c in $(echo -e "destructive_mode\ntv_shows_fix_numbering\nclean_up_filenames\nsubtitles_handling\nrepack_handling\nwii_post\nimg_post\ntv_shows_post\ntv_shows_post_path_mode\nmovies_post\nforce_single_file_movies_folder\nmusic_post\ndts_post\nuser_perm_post\ngroup_perm_post\nfiles_perm_post\nfolder_perm_post\nedit_perm_as_sudo\nreset_timestamp\nsupported_extensions\ntv_show_extensions\nmovies_extensions\nmusic_extensions"); do
+for c in $(echo -e "destructive_mode\ntv_shows_fix_numbering\nclean_up_filenames\nmovies_rename_schema\nsubtitles_handling\nrepack_handling\nwii_post\nimg_post\ntv_shows_post\ntv_shows_post_path_mode\nmovies_post\nforce_single_file_movies_folder\nmusic_post\ndts_post\nuser_perm_post\ngroup_perm_post\nfiles_perm_post\nfolder_perm_post\nedit_perm_as_sudo\nreset_timestamp\nsupported_extensions\ntv_show_extensions\nmovies_extensions\nmusic_extensions"); do
 	pat="$(echo "$c" | sed "s;^.\(.*\)$;\*\1=\*;")"
 	if [[ "$check_settings" != $pat ]]; then echo "$c=${!c}" >> "$settings_file"; fi
 done
@@ -581,6 +583,7 @@ if [[ "$clean_up_filenames" == "yes" ]]; then for line in $(cat "$log_file"); do
 	for i in $(echo -e "$(echo "$other_movies_patterns" | sed "s;,;\\\n;g")"); do if [ "$(echo "$title_clean_ter" | egrep -i "[. _-]$i[. _-]")" ]; then regexp_pat="$(echo "$i" | sed "s/[aA]/[aA]/g" | sed "s/[bB]/[bB]/g" | sed "s/[cC]/[cC]/g" | sed "s/[dD]/[dD]/g" | sed "s/[eE]/[eE]/g" | sed "s/[fF]/[fF]/g" | sed "s/[gG]/[gG]/g" | sed "s/[hH]/[hH]/g" | sed "s/[iI]/[iI]/g" | sed "s/[jJ]/[jJ]/g" | sed "s/[kK]/[kK]/g" | sed "s/[lL]/[lL]/g" | sed "s/[mM]/[mM]/g" | sed "s/[nN]/[nN]/g" | sed "s/[oO]/[oO]/g" | sed "s/[pP]/[pP]/g" | sed "s/[qQ]/[qQ]/g" | sed "s/[rR]/[rR]/g" | sed "s/[sS]/[sS]/g" | sed "s/[tT]/[tT]/g" | sed "s/[uU]/[uU]/g" | sed "s/[vV]/[vV]/g" | sed "s/[wW]/[wW]/g" | sed "s/[xX]/[xX]/g" | sed "s/[yY]/[yY]/g" | sed "s/[zZ]/[zZ]/g")"; title_clean_ter="$(echo "$title_clean_ter" | sed "s;$(echo "$title_clean_ter" | egrep -o "[. _-]$regexp_pat[. _-]").*;_;")"; fi; done
 	title_clean_ter="$(echo "$title_clean_ter" | sed "s/^/_/g")"
 	for i in $(echo -e "$(echo "$scene_patterns" | sed "s;,;\\\n;g")"); do if [ "$(echo "$title_clean_ter" | egrep -i "[. _-]$i[. _-]")" ]; then regexp_pat="$(echo "$i" | sed "s/[aA]/[aA]/g" | sed "s/[bB]/[bB]/g" | sed "s/[cC]/[cC]/g" | sed "s/[dD]/[dD]/g" | sed "s/[eE]/[eE]/g" | sed "s/[fF]/[fF]/g" | sed "s/[gG]/[gG]/g" | sed "s/[hH]/[hH]/g" | sed "s/[iI]/[iI]/g" | sed "s/[jJ]/[jJ]/g" | sed "s/[kK]/[kK]/g" | sed "s/[lL]/[lL]/g" | sed "s/[mM]/[mM]/g" | sed "s/[nN]/[nN]/g" | sed "s/[oO]/[oO]/g" | sed "s/[pP]/[pP]/g" | sed "s/[qQ]/[qQ]/g" | sed "s/[rR]/[rR]/g" | sed "s/[sS]/[sS]/g" | sed "s/[tT]/[tT]/g" | sed "s/[uU]/[uU]/g" | sed "s/[vV]/[vV]/g" | sed "s/[wW]/[wW]/g" | sed "s/[xX]/[xX]/g" | sed "s/[yY]/[yY]/g" | sed "s/[zZ]/[zZ]/g")"; title_clean_ter="$(echo "$title_clean_ter" | sed "s;[. _-]$regexp_pat[. _-];_;")"; fi; done
+	title_clean_ter_other_pat=`echo "$title_clean_ter" | sed "s/^_//g" | sed "s/\(.*\) \([0-9][0-9][0-9][0-9]\)_*$/\1 (\2)/g"`
 	title_clean_ter=`echo "$title_clean_ter" | sed "s/^_//g" | sed "s/_*$//g"`
 	if [[ "$repack_handling" == "yes" && "$(echo "$item" | egrep -i "([. _])repack([. _])|([. _])proper([. _])|([. _])rerip([. _])")" ]]; then is_repack=" REPACK"; else is_repack=""; fi
 	if [[ "$clean_up_filenames" == "yes" && "$(echo "$line" | egrep -i "([sS])([0-9])([0-9])([eE])([0-9])([0-9])")" && "$(echo "$line" | egrep -i "$tv_show_extensions_rev")" ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] || [[ "$clean_up_filenames" == "yes" && "$(echo "$line" | egrep -i "([sS])([0-9])([0-9])([eE])([0-9])([0-9])")" && -d "$source" ]]; then
@@ -591,7 +594,9 @@ if [[ "$clean_up_filenames" == "yes" ]]; then for line in $(cat "$log_file"); do
 	elif [[ "$clean_up_filenames" == "yes" && "$(echo "$line" | egrep -i "([0-9])([0-9])([0-9])([0-9]).([0-9])([0-9]).([0-9])([0-9])")" && "$(echo "$line" | egrep -i "$tv_show_extensions_rev")" ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] || [[ "$clean_up_filenames" == "yes" && "$(echo "$line" | egrep -i "([0-9])([0-9])([0-9])([0-9]).([0-9])([0-9]).([0-9])([0-9])")" && -d "$source" ]]; then
 		talk_show_title=`echo "$title_clean_ter" | sed 's/\([0-9]\)\([0-9]\)\([0-9]\)\([0-9]\).\([0-9]\)\([0-9]\).\([0-9]\)\([0-9]\)/\1\2\3\4-\5\6-\7\8/g'`;
 		ren_file=`echo "$talk_show_title$quality$extension"`;
-	elif [[ "$clean_up_filenames" == "yes" && "$(echo "$line" | egrep -i "$movies_extensions_rev")" ]] && [[ $files -eq 1 ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] || [[ "$clean_up_filenames" == "yes" && -d "$source" ]]; then
+	elif [[ "$clean_up_filenames" == "yes" && "$movies_rename_schema" == "type_1" && "$(echo "$line" | egrep -i "$movies_extensions_rev")" ]] && [[ $files -eq 1 ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] || [[ "$clean_up_filenames" == "yes" && "$movies_rename_schema" == "type_1" && -d "$source" ]]; then
+		ren_file=`echo "$title_clean_ter_other_pat$extension"`;
+	elif [[ "$clean_up_filenames" == "yes" && "$movies_rename_schema" == "type_2" && "$(echo "$line" | egrep -i "$movies_extensions_rev")" ]] && [[ $files -eq 1 ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] || [[ "$clean_up_filenames" == "yes" && "$movies_rename_schema" == "type_2" && -d "$source" ]]; then
 		ren_file=`echo "$title_clean_ter$quality$extension"`;
 	fi
 	bis="_bis"
@@ -785,4 +790,3 @@ if [ "$has_display" == "yes" ]; then echo "That's All Folks";  fi
 
 export subtitles_mode=""
 IFS=$SAVEIFS
-
