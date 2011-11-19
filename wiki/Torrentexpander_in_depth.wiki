@@ -17,11 +17,11 @@ TORRENTEXPANDER 101
 -------------------------------
 
 
- There are various ways to run this script as a daemon :
- - It can be invoked with the command torrentexpander.sh "/Path/to/your/torrent"
- - It can be triggered by the Transmission torrent client
- - You can export torrent="/Path/to/your/torrent" and start torrentexpander.sh
- - If you want Flexget to trigger torrentexpander.sh, have it echo the torrent path to a file and start torrentexpander.sh. The third_party_log file will be used as a source file for torrentexpander.sh and the resulting files will then be listed in this third_party_log file.
+ There are various ways to run this script as a daemon :<br />
+ - It can be invoked with the command torrentexpander.sh "/Path/to/your/torrent"<br />
+ - It can be triggered by the Transmission torrent client<br />
+ - You can export torrent="/Path/to/your/torrent" and start torrentexpander.sh<br />
+ - If you want Flexget to trigger torrentexpander.sh, have it echo the torrent path to a file and start torrentexpander.sh. The third_party_log file will be used as a source file for torrentexpander.sh and the resulting files will then be listed in this third_party_log file.<br />
  - You can edit your settings in the torrentexpander_settings.ini file that will be created the first time this script is launched. You can also access your settings by starting this script with the command /path/to/torrentexpander.sh -c
 
  If you're running this script manually you ll get a basic GUI that will enable you to
@@ -29,95 +29,94 @@ TORRENTEXPANDER 101
  
 ---------------------
 
-Torrentexpander's way of dealing with filenames :
-You may have noticed that video files inside torrents often have stupid names.
-This was the main reason why I created torrentexpander.
-- If the torrent only contains one file, this file will be renamed after the folder / archive it's stored in (folder or archive names are much more reliable, especially when dealing with multipart archives)
-- If the torrent contains several files, those files won't be renamed
+Torrentexpander's way of dealing with filenames :<br />
+You may have noticed that video files inside torrents often have stupid names.<br />
+This was the main reason why I created torrentexpander.<br />
+- If the torrent only contains one file, this file will be renamed after the folder / archive it's stored in (folder or archive names are much more reliable, especially when dealing with multipart archives)<br />
+- If the torrent contains several files, those files won't be renamed<br />
 
 
 ---------------------
 
-Torrentexpander's way of dealing with non archives files :
-Not all torrents contain rar or zip archives.
-Torrentexpander will treat non compressed files the same way it deals with archives, only it doesn't expand them but instead copy or move them to the folder of your choice.
-If no supported_extensions files are found, Torrentexpander will exit once these files are copies / moved / expanded.
+Torrentexpander's way of dealing with non archives files :<br />
+Not all torrents contain rar or zip archives.<br />
+Torrentexpander will treat non compressed files the same way it deals with archives, only it doesn't expand them but instead copy or move them to the folder of your choice.<br />
+If no supported_extensions files are found, Torrentexpander will exit once these files are copies / moved / expanded.<br />
 
 ---------------------
 
- REQUIRED SOFTWARE 
- - unrar
- - unrar-nonfree
- - unzip
+ REQUIRED SOFTWARE<br />
+ - unrar<br />
+ - unrar-nonfree<br />
+ - unzip<br />
 
- SOFTWARE USED BY OPTIONAL FUNCTIONALITIES 
- - Convert DTS track from MKV files to AC3
- https://github.com/JakeWharton/mkvdts2ac3/blob/master/mkvdts2ac3.sh
- http://www.bunkus.org/videotools/mkvtoolnix/downloads.html
- http://www.videolan.org/developers/libdca.html
- http://aften.sourceforge.net/
- - Convert IMG to ISO 
- http://sourceforge.net/projects/ccd2iso/
+ SOFTWARE USED BY OPTIONAL FUNCTIONALITIES<br />
+ - Convert DTS track from MKV files to AC3<br />
+ https://github.com/JakeWharton/mkvdts2ac3/blob/master/mkvdts2ac3.sh<br />
+ http://www.bunkus.org/videotools/mkvtoolnix/downloads.html<br />
+ http://www.videolan.org/developers/libdca.html<br />
+ http://aften.sourceforge.net/<br />
+ - Convert IMG to ISO<br />
+ http://sourceforge.net/projects/ccd2iso/<br />
 
 
 
- USER VARIABLES 
+ USER VARIABLES <br />
  These variables are required on 1st run they will be stored in an ini file
 
- - The destination_folder is where files will be extracted (I recommend using a different folder from the one where your torrents are located) - A sub directory of your torrents directory is fine though.
- - If you really want to extract your torrents in-place and delete the original torrent, switch destructive_mode to yes
- - Software paths - if you set these variables before running the script for the first time, they will be saved in your torrentexpander_settings.ini file. Otherwise the script will try to "guess them"
+ - The destination_folder is where files will be extracted (I recommend using a different folder from the one where your torrents are located) - A sub directory of your torrents directory is fine though.<br />
+ - If you really want to extract your torrents in-place and delete the original torrent, switch destructive_mode to yes<br />
+ - Software paths - if you set these variables before running the script for the first time, they will be saved in your torrentexpander_settings.ini file. Otherwise the script will try to "guess them"<br />
  - Supported file extensions - Comma separated (You must have at least one extension enabled in each field and you shouldn't add either .rar or .zip in there)
       -> If a torrent doesn't contain any supported extension, torrentexpander will immediately exit once the torrent is unrared / unzipped
  - Movies detection patterns - Comma separated (You must have at least one pattern enabled)
       -> torrentexpander will try to guess if the video file in you torrent is a movie or a TV Show based on these patterns. I had to split them in two (movies_detect_patterns and movies_detect_patterns_pt_2) because of the length of the resulting regular expression
  - scene patterns is used for scenes that add their name at the beginning of the file name. This chain of text will be removed at the beginning of a video file's name
 
- Optional functionalities variables - Set these variables to "no" to disable 
- - torrentexpander will try to fix numbering for TV Shows (episode 101 instead of S01E01 for example)
+ Optional functionalities variables - Set these variables to "no" to disable<br />
+ - torrentexpander will try to fix numbering for TV Shows (episode 101 instead of S01E01 for example)<br />
  - Cleanup Filenames - Filenames are automatically capitalized, underscores and dots replaced by spaces.
     Also, the video file can be automatically renamed to suit your needs. 3 different patterns are available : 3 different schemas - type_1 = Movie (year).ext - type_2 = Movie Year (video_quality).ext - type_3 = Movie Year (audio_quality-video_quality).ext
  - Keep a dummy video file with the original filename for subtitles retrieval.
-    Some software rely only on the filename to fetch set subtitles. If you activate subtitles_handling, 0 bytes files will be stored in an specific folder so you that you can point your srt downloading software to this folder. On each run, torrentexpander will try to automatically rename / move the srt files stored in this folder to the same place your movies and TV Series were moved originally.
- - Due to the way torrentexpander works, if a TV series is named "episode S01E01 repack.avi", it will automatically be renamed "Episode S01E01.avi". If you activate repack_handling, the file will instead be renamed "Episode S01E01 Repack.avi"
- - Some software need a cuesheet to burn Wii ISO backup files. wii_post will generate this cue sheet for your convenience
- - I really don't like .IMG files, especially because they're often .ISO files with an .IMG extension. img_post will try to convert .IMG to .ISO. If it doesn't work, this means these are in fact .ISO files and they will be named accordingly.
+    Some software rely only on the filename to fetch set subtitles. If you activate subtitles_handling, 0 bytes files will be stored in an specific folder so you that you can point your srt downloading software to this folder. On each run, torrentexpander will try to automatically rename / move the srt files stored in this folder to the same place your movies and TV Series were moved originally.<br />
+ - Due to the way torrentexpander works, if a TV series is named "episode S01E01 repack.avi", it will automatically be renamed "Episode S01E01.avi". If you activate repack_handling, the file will instead be renamed "Episode S01E01 Repack.avi"<br />
+ - Some software need a cuesheet to burn Wii ISO backup files. wii_post will generate this cue sheet for your convenience<br />
+ - I really don't like .IMG files, especially because they're often .ISO files with an .IMG extension. img_post will try to convert .IMG to .ISO. If it doesn't work, this means these are in fact .ISO files and they will be named accordingly.<br />
  - Torrentexpander can copy or move TV Series to the folder of your choosing. It can store them to a series specific folder. Using tv_shows_post_path_mode, series files can also be sorted by /Series/Episode (s)
- or /Series/Season X/Episode (ss) or /Series/Season XX/Episode (sss)
+ or /Series/Season X/Episode (ss) or /Series/Season XX/Episode (sss)<br />
  - Torrentexpander can also copy or move movies to a folder of your choosing.
     By default, single files movies won't be stored in a surrounding folder. Multipart movies and/or movies with external subtitles will automatically be stored in a folder.
-      -> If you wan your movies folder to remain clean and tidy, you can also force folder creation for single file movies by setting force_single_file_movies_folder to yes
- - Torrentexpander can copy or move music to a specific folder too
- - Due to license cost, many media player can't handle DTS. Torrentexpander can convert DTS track from MKV files to AC3. To do that, the excellent mkvdts2ac3 will then be invoked. Your movie file will then contain a DTS and an AC3 track
- - Torrentexpander can edit files and folders permissions - If you don t know what that means set it all to "no"
- - If you're a Flexget user like me, you may like to use torrentexpander as an add-on to Flexget. Please take a look at the wiki to see how this works
+      -> If you want your movies folder to remain clean and tidy, you can also force folder creation for single file movies by setting force_single_file_movies_folder to yes
+ - Torrentexpander can copy or move music to a specific folder too<br />
+ - Due to license cost, many media player can't handle DTS. Torrentexpander can convert DTS track from MKV files to AC3. To do that, the excellent mkvdts2ac3 will then be invoked. Your movie file will then contain a DTS and an AC3 track<br />
+ - Torrentexpander can edit files and folders permissions - If you don t know what that means set it all to "no"<br />
+ - If you're a Flexget user like me, you may like to use torrentexpander as an add-on to Flexget. Please take a look at the wiki to see how this works<br />
  - Torrentexpander can reset the mime of the file, so that you can keep track of the latest files you downloaded.
 
 
 ---------------------
 
 
-Here's what happens when you run Torrentexpander :
- - Expanding and copying folders to the temp folder
- - If destructive_mode is enabled, remove original torrent
- - If archives within archives - Expanding and copying folders to the temp folder
- - Delete Mac OS X invisible files and sample from temp folder
- - Count number of resulting files and disable optional functionalities if no supported file
- - If only one resulting file rename it according to the initial torrent
- - If more than one file, create folder named as the initial one and move the resulting files there
- - Try to solve TV Shown Numbering issues
- - Cleanup filenames
- - Convert DTS track from MKV files to AC3, img disc images to iso disc images and creates a folder and a cuesheet for Wii backups
+Here's what happens when you run Torrentexpander :<br />
+ - Expanding and copying folders to the temp folder<br />
+ - If destructive_mode is enabled, remove original torrent<br />
+ - If archives within archives - Expanding and copying folders to the temp folder<br />
+ - Delete Mac OS X invisible files and sample from temp folder<br />
+ - Count number of resulting files and disable optional functionalities if no supported file<br />
+ - If only one resulting file rename it according to the initial torrent<br />
+ - If more than one file, create folder named as the initial one and move the resulting files there<br />
+ - Try to solve TV Shown Numbering issues<br />
+ - Cleanup filenames<br />
+ - Convert DTS track from MKV files to AC3, img disc images to iso disc images and creates a folder and a cuesheet for Wii backups<br />
  - Copy or move TV Shows, movies and music to a specific folder
 	- Getting default values for post
 	- Determining Series and Season for tv_shows_post_path_mode
 	- Reverting to default if tv_shows_post_path_mode is disabled
 	- Adding surrounding folder to the path
 	- Starting copying and moving
- - Deleting unnecessary surrounding folder
- - Edit files and folders permissions
- - Reset timestamp (mtime)
- - Move content of temp folder to destination folder
- - Use a source / destination log shared with a third party app - Add path to enable
-
+ - Deleting unnecessary surrounding folder<br />
+ - Edit files and folders permissions<br />
+ - Reset timestamp (mtime)<br />
+ - Move content of temp folder to destination folder<br />
+ - Use a source / destination log shared with a third party app - Add path to enable<br />
  - Subtitles routine. If srt files are found in the subtitles directory, they will be renamed and moved to the destination folder
