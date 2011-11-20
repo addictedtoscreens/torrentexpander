@@ -71,6 +71,7 @@ destructive_mode="no"
 ################# Please check if these variables are correct ####################
 unrar_bin="/usr/bin/unrar"
 unzip_bin="/usr/bin/unzip"
+wget_curl="usr/bin/wget"
 ccd2iso_bin="/usr/bin/ccd2iso"
 mkvdts2ac3_bin="/path/to/mkvdts2ac3.sh"
 ##################### Supported file extensions - Comma separated ################
@@ -83,17 +84,18 @@ music_extensions="mp3,m4a,wav"
 ##################### Movies detection patterns - Comma separated ################
 ##################### You must have at least one pattern enabled #################
 # movies_detect_patterns and movies_detect_patterns_pt_2 are the same - only splitted
-movies_detect_patterns="DVDRip,BDRip,BRRip,DVDR,720p,1080p"
+# scene patterns is used for scenes that add their name at the beginning of the file name
+movies_detect_patterns="HDTV,DVDRip,BDRip,BRRip,DVDR,720p,1080p"
 movies_detect_patterns_pt_2="TS,TVRip,DVDSCR,R5,Workprint,SCR,HDRip"
-other_movies_patterns="proper,repack,rerip,pdtv,hdtv,xvid,webrip,web-dl,readnfo,ntsc,pal,limited,ws,uncut,unrated,internal,480p,festival,bluray"
+other_movies_patterns="proper,repack,rerip,pdtv,hdtv,xvid,webrip,web-dl,readnfo,ntsc,pal,limited,ws,uncut,unrated,internal,480p,festival,bluray,italian"
 scene_patterns="aaf"
-audio_quality_patterns="AC3,DTS,LiNE,CAM AUDIO,MD,LD"
+audio_quality_patterns="AC3,DTS,LiNE,CAM AUDIO,MD,LD,Studio Audio"
 ####################### Optional functionalities variables #######################
 #################### Set these variables to "no" to disable ######################
 ## Fix numbering for TV Shows - Switch variable to "yes" to enable
 tv_shows_fix_numbering="yes"
 ## Cleanup Filenames - Switch variable to "yes" to enable
-## 2 different schemas - type_1 = Movie (year).ext - type_2 = Movie Year (video_quality).ext - type_3 = Movie Year (audio_quality-video_quality).ext
+## 3 different schemas - type_1 = Movie (year).ext - type_2 = Movie Year (video_quality).ext - type_3 = Movie Year (audio_quality-video_quality).ext
 clean_up_filenames="yes"
 movies_rename_schema="type_1"
 ## Keep a dummy video file with the original filename for subtitles retrieval
@@ -113,7 +115,7 @@ tv_shows_post_path="no"
 tv_shows_post_path_mode="no"
 ## Copy or move movies to a specific folder - choose action (copy / move)
 ## and add path to enable.
-##ÊYou can also force folder creation for single file movies by 
+##ÊYou can also force folder creation for single file movies by setting force_single_file_movies_folder to yes
 movies_post="no"
 movies_post_path="no"
 force_single_file_movies_folder="no"
@@ -121,6 +123,15 @@ force_single_file_movies_folder="no"
 ## and add path to enable
 music_post="no"
 music_post_path="no"
+## IMDB Integration - Mainly for NetworkedMediaTank
+## Id like to thank Loginbug for suggesting these imdb features and providing huge chunks of code
+imdb_poster="no"
+# Poster format could be: normal, large, small or full
+imdb_poster_format="normal"
+imdb_nfo="no"
+imdb_fanart="no"
+# Fanart format could be: thumb, poster, w1280, original
+imdb_fanart_format="w1280"
 ## Convert DTS track from MKV files to AC3 - Check mkvdts2ac3.sh path and switch variable to "yes" to enable
 dts_post="no"
 ## Edit files and folders permissions - If you don t know what that means set it all to "no"
@@ -189,12 +200,18 @@ if [[ "$check_settings" != *nzip_bin=* || "$check_settings" == *nzip_bin=incorre
 	# If unzip is unavailable, switch back to 7z
 	if [ ! -x "$unzip_bin" ] && [ -x "$(for d in $(echo -e "$(echo -e "$PATH" | sed "s;:;\\\n;g")\n/Applications\n/nmt/apps\n/usr/local/bin"); do if [ -d "$d" ]; then find "$d" -maxdepth 2 -name 7z; fi; done | sed -n -e '1p')" ]; then unzip_bin="$(for d in $(echo -e "$(echo -e "$PATH" | sed "s;:;\\\n;g")\n/Applications\n/nmt/apps\n/usr/local/bin"); do if [ -d "$d" ]; then find "$d" -maxdepth 2 -name 7z; fi; done | sed -n -e '1p')"; fi
 fi
+if [[ "$check_settings" != *get_curl=* || "$check_settings" == *get_curl=incorrect_or_not_se* ]]; then
+	# Looking for wget or curl in the PATH variable or /Applications /nmt/apps /usr/local/bin directories
+	if [ ! -x "$wget_curl" ] && [ -x "$(for d in $(echo -e "$(echo -e "$PATH" | sed "s;:;\\\n;g")\n/Applications\n/nmt/apps\n/usr/local/bin"); do if [ -d "$d" ]; then find "$d" -maxdepth 2 -name wget; fi; done | sed -n -e '1p')" ]; then wget_curl="$(for d in $(echo -e "$(echo -e "$PATH" | sed "s;:;\\\n;g")\n/Applications\n/nmt/apps\n/usr/local/bin"); do if [ -d "$d" ]; then find "$d" -maxdepth 2 -name wget; fi; done | sed -n -e '1p')"; fi
+	# If wget is unavailable, switch back to curl
+	if [ ! -x "$wget_curl" ] && [ -x "$(for d in $(echo -e "$(echo -e "$PATH" | sed "s;:;\\\n;g")\n/Applications\n/nmt/apps\n/usr/local/bin"); do if [ -d "$d" ]; then find "$d" -maxdepth 2 -name curl; fi; done | sed -n -e '1p')" ]; then wget_curl="$(for d in $(echo -e "$(echo -e "$PATH" | sed "s;:;\\\n;g")\n/Applications\n/nmt/apps\n/usr/local/bin"); do if [ -d "$d" ]; then find "$d" -maxdepth 2 -name curl; fi; done | sed -n -e '1p')"; fi
+fi
 if [[ "$check_settings" != *cd2iso_bin=* || "$check_settings" == *cd2iso_bin=incorrect_or_not_se* ]]; then
 	if [ ! -x "$ccd2iso_bin" ] && [ -x "$(for d in $(echo -e "$(echo -e "$PATH" | sed "s;:;\\\n;g")\n/nmt/apps\n/Applications"); do if [ -d "$d" ]; then find "$d" -maxdepth 2 -name ccd2iso; fi; done | sed -n -e '1p')" ]; then ccd2iso_bin="$(for d in $(echo -e "$(echo -e "$PATH" | sed "s;:;\\\n;g")\n/nmt/apps\n/Applications"); do if [ -d "$d" ]; then find "$d" -maxdepth 2 -name ccd2iso; fi; done | sed -n -e '1p')"; fi
 fi
 
 ## Inserting values into the settings file
-for c in $(echo -e "unrar_bin\nunzip_bin\nccd2iso_bin\nmkvdts2ac3_bin"); do
+for c in $(echo -e "unrar_bin\nunzip_bin\nwget_curl\nccd2iso_bin\nmkvdts2ac3_bin"); do
 	pat="$(echo "$c" | sed "s;^.\(.*\)$;\*\1=\*;")"
 	pat_two="$(echo "$c" | sed "s;^.\(.*\)$;\*\1=incorrect_or_not_se\*;")"
 	if [[ "$check_settings" != $pat && -x "${!c}" ]] || [[ "$check_settings" == $pat_two && -x "${!c}" ]]; then
@@ -221,7 +238,7 @@ if [[ "$check_settings" != *hird_party_log=* && -d "$third_party_log_directory" 
 	echo "third_party_log="$third_party_log"" >> "$settings_file";
 elif [[ "$check_settings" != *hird_party_log=* ]]; then echo "third_party_log=no" >> "$settings_file"
 fi
-for c in $(echo -e "destructive_mode\ntv_shows_fix_numbering\nclean_up_filenames\nmovies_rename_schema\nsubtitles_handling\nrepack_handling\nwii_post\nimg_post\ntv_shows_post\ntv_shows_post_path_mode\nmovies_post\nforce_single_file_movies_folder\nmusic_post\ndts_post\nuser_perm_post\ngroup_perm_post\nfiles_perm_post\nfolder_perm_post\nedit_perm_as_sudo\nreset_timestamp\nsupported_extensions\ntv_show_extensions\nmovies_extensions\nmusic_extensions"); do
+for c in $(echo -e "destructive_mode\ntv_shows_fix_numbering\nclean_up_filenames\nmovies_rename_schema\nsubtitles_handling\nrepack_handling\nwii_post\nimg_post\ntv_shows_post\ntv_shows_post_path_mode\nmovies_post\nforce_single_file_movies_folder\nmusic_post\nimdb_poster\nimdb_poster_format\nimdb_nfo\nimdb_fanart\nimdb_fanart_format\ndts_post\nuser_perm_post\ngroup_perm_post\nfiles_perm_post\nfolder_perm_post\nedit_perm_as_sudo\nreset_timestamp\nsupported_extensions\ntv_show_extensions\nmovies_extensions\nmusic_extensions"); do
 	pat="$(echo "$c" | sed "s;^.\(.*\)$;\*\1=\*;")"
 	if [[ "$check_settings" != $pat ]]; then echo "$c=${!c}" >> "$settings_file"; fi
 done
@@ -364,6 +381,7 @@ if [ -d "$temp_folder" ]; then echo "Temp folder already exists. Please delete i
 if [ "$torrent_directory" == "$destination_folder" ] && [ "$destructive_mode" != "yes" ]; then echo "Your destination folder should be different from the one where your torrent is located. Please edit your torrentexpander_settings.ini file" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Your destination folder should be different from the one where your torrent is located. Please edit your torrentexpander_settings.ini file"; fi; quit_on_error="yes"; fi
 if [ ! -x "$unrar_bin" ]; then echo "Your Unrar path is incorrect please edit your torrentexpander_settings.ini file" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Your Unrar path is incorrect please edit your torrentexpander_settings.ini file"; fi; quit_on_error="yes"; fi
 if [ ! -x "$unzip_bin" ]; then echo "Your Unzip path is incorrect please edit your torrentexpander_settings.ini file" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Your Unzip path is incorrect please edit your torrentexpander_settings.ini file"; fi; quit_on_error="yes"; fi
+if [ ! -x "$wget_curl" ] && [[ "$imdb_poster" == "yes" || "$imdb_nfo" == "yes" || "$imdb_fanart" == "yes" ]]; then echo "Path to wget or curl is incorrect - IMDB features will be disabled" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Path to wget or curl is incorrect - IMDB features will be disabled"; fi; imdb_poster="no" && imdb_nfo="no" && imdb_fanart="no"; fi
 if [ ! -x "$mkvdts2ac3_bin" ] && [ "$dts_post" == "yes" ]; then echo "Path to mkvdts2ac3.sh is incorrect - DTS Post will be disabled" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Path to mkvdts2ac3.sh is incorrect - DTS Post will be disabled"; fi; dts_post="no"; fi
 if [ ! -x "$ccd2iso_bin" ] && [ "$img_post" == "yes" ]; then echo "Path to ccd2iso is incorrect - IMG to ISO Post will be disabled" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Path to ccd2iso is incorrect - IMG to ISO Post will be disabled"; fi; img_post="no"; fi
 if [[ "$supported_extensions_rev" =~ rar ]] || [[ "$tv_show_extensions_rev" =~ rar ]] || [[ "$movies_extensions_rev" =~ rar ]] || [[ "$music_extensions_rev" =~ rar ]] || [[ "$supported_extensions_rev" =~ zip ]] || [[ "$tv_show_extensions_rev" =~ zip ]] || [[ "$movies_extensions_rev" =~ zip ]] || [[ "$music_extensions_rev" =~ zip ]]; then echo "Your supported file extensions are incorrect please edit your torrentexpander_settings.ini file" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Your supported file extensions are incorrect please edit your torrentexpander_settings.ini file"; fi; quit_on_error="yes"; fi
@@ -603,10 +621,13 @@ if [[ "$clean_up_filenames" == "yes" ]]; then for line in $(cat "$log_file"); do
 		ren_file=`echo "$talk_show_title$quality$extension"`;
 	elif [[ "$clean_up_filenames" == "yes" && "$movies_rename_schema" == "type_1" && "$(echo "$line" | egrep -i "$movies_extensions_rev")" ]] && [[ $files -eq 1 ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] || [[ "$clean_up_filenames" == "yes" && "$movies_rename_schema" == "type_1" && -d "$source" ]]; then
 		ren_file=`echo "$title_clean_ter_other_pat$extension"`;
+		imdb_title=`echo "$(basename "$title_clean_ter_other_pat")" | sed "s; (\([12]\)\([0-9]\)\([0-9]\)\([0-9]\))$; %28\1\2\3\4%29;g" | sed "s; [aA][nN][dD] ; ;g" | sed "s; ;+;g"`;
 	elif [[ "$clean_up_filenames" == "yes" && "$movies_rename_schema" == "type_2" && "$(echo "$line" | egrep -i "$movies_extensions_rev")" ]] && [[ $files -eq 1 ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] || [[ "$clean_up_filenames" == "yes" && "$movies_rename_schema" == "type_2" && -d "$source" ]]; then
 		ren_file=`echo "$title_clean_ter$quality$extension"`;
+		imdb_title=`echo "$(basename "$title_clean_ter_other_pat")" | sed "s; (\([12]\)\([0-9]\)\([0-9]\)\([0-9]\))$; %28\1\2\3\4%29;g" | sed "s; [aA][nN][dD] ; ;g" | sed "s; ;+;g"`;
 	elif [[ "$clean_up_filenames" == "yes" && "$movies_rename_schema" == "type_3" && "$(echo "$line" | egrep -i "$movies_extensions_rev")" ]] && [[ $files -eq 1 ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] || [[ "$clean_up_filenames" == "yes" && "$movies_rename_schema" == "type_2" && -d "$source" ]]; then
 		ren_file=`echo "$title_clean_ter$quality_quality$extension"`;
+		imdb_title=`echo "$(basename "$title_clean_ter_other_pat")" | sed "s; (\([12]\)\([0-9]\)\([0-9]\)\([0-9]\))$; %28\1\2\3\4%29;g" | sed "s; [aA][nN][dD] ; ;g" | sed "s; ;+;g"`;
 	fi
 	bis="_bis"
 	ren_location=`echo "$(dirname "$source")/$ren_file"`;
@@ -623,10 +644,66 @@ done
 fi
 
 
-
 if [[ "$folder_short" && "$tv_shows_fix_numbering" == "yes" && "$gnu_sed_available" != "yes" ]] || [[ "$folder_short" && "$clean_up_filenames" == "yes" && "$gnu_sed_available" != "yes" ]]; then folder_short=`echo "$(cat "$log_file" | sed -n '$p' | sed 's;.*/;;g')"`; sed -i '' '$d' "$log_file"
 elif [[ "$folder_short" && "$tv_shows_fix_numbering" == "yes" && "$gnu_sed_available" == "yes" ]] || [[ "$folder_short" && "$clean_up_filenames" == "yes" && "$gnu_sed_available" == "yes" ]]; then folder_short=`echo "$(cat "$log_file" | sed -n '$p' | sed 's;.*/;;g')"`; sed -i '$d' "$log_file"
 fi
+
+
+
+if [ "$imdb_title" ] && [[ "$imdb_poster" == "yes" || "$imdb_nfo" == "yes" || "$imdb_fanart" == "yes" ]]; then
+	if [ "$has_display" == "yes" ]; then step_number=$(( $step_number + 1 )) && echo "Step $step_number : Generating NFO and downloading Poster";  fi
+	if [ "$imdb_poster_format" == "normal" ]; then poster_size="POSTER"
+	elif [ "$imdb_poster_format" == "small" ]; then poster_size="POSTER_SMALL"
+	elif [ "$imdb_poster_format" == "large" ]; then poster_size="POSTER_LARGE"
+	elif [ "$imdb_poster_format" == "full" ]; then poster_size="POSTER_FULL"
+	fi
+	if [[ "$wget_curl" == *wget* ]]; then
+		xml_cont=`echo "$(wget -q "http://labaia.hellospace.net/imdbWebService.php?m=$imdb_title&o=xml" -O -; wait)"`;
+		if [ "$xml_cont" ]; then
+			imdb_url=`echo "$(echo "$xml_cont" | grep "<IMDB_URL>" | sed 's/^[ \t]*//' | sed 's/[ \t]*$//' | sed 's/<[^>]*>//g')"`;
+			imdb_id=`echo "$(echo "$xml_cont" | grep "<TITLE_ID>" | sed 's/^[ \t]*//' | sed 's/[ \t]*$//' | sed 's/<[^>]*>//g')"`;
+			poster_url=`echo "$(echo "$xml_cont" | grep "<$poster_size>" | sed 's/^[ \t]*//' | sed 's/[ \t]*$//' | sed 's/<[^>]*>//g')"`;
+			# if [ "$imdb_fanart" == "yes" ]; then
+				# themoviedb_xml_cont=`echo "$(wget -q "http://api.themoviedb.org/2.1/Movie.imdbLookup/en/xml/57983e31fb435df4df77afb854740ea9/$imdb_id" -O -; wait)"`;
+				# fanart_url=`echo "$(cat "$themoviedb_xml_cont" | grep "backdrop" | grep "$imdb_fanart_format" | head -n 1 | cut -d'"' -f4)"`;
+				# wget -q "$fanart_url" -O "$temp_folder_without_slash/temp_fanart"; wait;
+			# fi
+			if [ "$imdb_poster" == "yes" ]; then wget -q "$poster_url" -O "$temp_folder_without_slash/temp_poster"; wait; fi
+			
+		fi
+	elif [[ "$wget_curl" == *curl* ]]; then
+		xml_cont=`echo "$(curl -silent -i "http://labaia.hellospace.net/imdbWebService.php?m=$imdb_title&o=xml"; wait)"`;
+		if [ "$xml_cont" ]; then
+			imdb_url=`echo "$(echo "$xml_cont" | grep "<IMDB_URL>" | sed 's/^[ \t]*//' | sed 's/[ \t]*$//' | sed 's/<[^>]*>//g')"`;
+			imdb_id=`echo "$(echo "$xml_cont" | grep "<TITLE_ID>" | sed 's/^[ \t]*//' | sed 's/[ \t]*$//' | sed 's/<[^>]*>//g')"`;
+			poster_url=`echo "$(echo "$xml_cont" | grep "<$poster_size>" | sed 's/^[ \t]*//' | sed 's/[ \t]*$//' | sed 's/<[^>]*>//g')"`;
+			# if [ "$imdb_fanart" == "yes" ]; then
+				# themoviedb_xml_cont=`echo "$(curl -silent -i "http://api.themoviedb.org/2.1/Movie.imdbLookup/en/xml/57983e31fb435df4df77afb854740ea9/$imdb_id"; wait)"`;
+				# fanart_url=`echo "$(cat "$themoviedb_xml_cont" | grep "backdrop" | grep "$imdb_fanart_format" | head -n 1 | cut -d'"' -f4)"`;
+				# curl -silent -o "$temp_folder_without_slash/temp_fanart" "$fanart_url"; wait;
+			# fi
+			if [ "$imdb_poster" == "yes" ]; then curl -silent -o "$temp_folder_without_slash/temp_poster" "$poster_url"; wait; fi
+		fi
+	fi
+	if [ ! "$folder_short" ] && [ "$xml_cont" ]; then folder_short=`echo "$(basename "$(cat "$log_file")")" | sed 's/\(.*\)\..*/\1/' | sed 's;.*/;;g'` && mkdir -p "$temp_folder$folder_short/" && mv -f "$(cat "$log_file")" "$temp_folder$folder_short/"; fi
+	if [ "$xml_cont" ]; then
+		for item in $(find "$temp_folder$folder_short" -type f | egrep -i "$movies_extensions_rev"); do
+			nfo_file=`echo "$item" | sed 's/\(.*\)\..*/\1.nfo/'`;
+			poster=`echo "$item" | sed 's/\(.*\)\..*/\1.jpg/'`;
+			fanart=`echo "$item" | sed 's/\(.*\)\..*/\1.fanart.jpg/'`;
+			if [ "$imdb_nfo" == "yes" ]; then echo "$imdb_url" > "$nfo_file"; fi
+			if [ -f "$temp_folder_without_slash/temp_poster" ] && [ "$imdb_poster" == "yes" ]; then cp -f "$temp_folder_without_slash/temp_poster" "$poster"; fi
+			# if [ -f "$temp_folder_without_slash/temp_poster" ] && [ "$imdb_fanart" == "yes" ]; then cp -f "$temp_folder_without_slash/temp_fanart" "$fanart"; fi
+		done
+		# fanart part should go there
+	fi
+	if [ -f "$temp_folder_without_slash/temp_poster" ]; then rm "$temp_folder_without_slash/temp_poster"; fi
+	if [ -f "$temp_folder_without_slash/temp_fanart" ]; then rm "$temp_folder_without_slash/temp_poster"; fi
+	supported_extensions_rev="$supported_extensions_rev|\.nfo$|\.jpg$"
+	movies_extensions_rev="$movies_extensions_rev|\.nfo$|\.jpg$"
+	if [ ! "$folder_short" ]; then echo "$(find "$temp_folder$folder_short" -maxdepth 1 -mindepth 1 -type f | egrep -i "$supported_extensions_rev")" > "$log_file"; fi
+fi
+
 
 
 ## Convert DTS track from MKV files to AC3, img disc images to iso disc images and creates a folder and a cuesheet for Wii backups
