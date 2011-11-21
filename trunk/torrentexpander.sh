@@ -659,29 +659,29 @@ if [ "$imdb_title" ] && [[ "$imdb_poster" == "yes" || "$imdb_nfo" == "yes" || "$
 	elif [ "$imdb_poster_format" == "full" ]; then poster_size="POSTER_FULL"
 	fi
 	if [[ "$wget_curl" == *wget* ]]; then
-		xml_cont=`echo "$(wget -q "http://labaia.hellospace.net/imdbWebService.php?m=$imdb_title&o=xml" -O -; wait)"`;
+		xml_cont=`echo "$("$wget_curl" -q "http://labaia.hellospace.net/imdbWebService.php?m=$imdb_title&o=xml" -O -; wait)"`;
 		if [ "$xml_cont" ]; then
 			imdb_url=`echo "$(echo "$xml_cont" | grep "<IMDB_URL>" | sed 's/^[ \t]*//' | sed 's/[ \t]*$//' | sed 's/<[^>]*>//g')"`;
 			imdb_id=`echo "$(echo "$xml_cont" | grep "<TITLE_ID>" | sed 's/^[ \t]*//' | sed 's/[ \t]*$//' | sed 's/<[^>]*>//g')"`;
 			poster_url=`echo "$(echo "$xml_cont" | grep "<$poster_size>" | sed 's/^[ \t]*//' | sed 's/[ \t]*$//' | sed 's/<[^>]*>//g')"`;
 			# if [ "$imdb_fanart" == "yes" ]; then
-				# themoviedb_xml_cont=`echo "$(wget -q "http://api.themoviedb.org/2.1/Movie.imdbLookup/en/xml/57983e31fb435df4df77afb854740ea9/$imdb_id" -O -; wait)"`;
+				# themoviedb_xml_cont=`echo "$("$wget_curl" -q "http://api.themoviedb.org/2.1/Movie.imdbLookup/en/xml/57983e31fb435df4df77afb854740ea9/$imdb_id" -O -; wait)"`;
 				# fanart_url=`echo "$(cat "$themoviedb_xml_cont" | grep "backdrop" | grep "$imdb_fanart_format" | head -n 1 | cut -d'"' -f4)"`;
-				# wget -q "$fanart_url" -O "$temp_folder_without_slash/temp_fanart"; wait;
+				# "$wget_curl" -q "$fanart_url" -O "$temp_folder_without_slash/temp_fanart"; wait;
 			# fi
-			if [ "$imdb_poster" == "yes" ]; then wget -q "$poster_url" -O "$temp_folder_without_slash/temp_poster"; wait; fi
+			if [ "$imdb_poster" == "yes" ]; then "$wget_curl" -q "$poster_url" -O "$temp_folder_without_slash/temp_poster"; wait; fi
 			
 		fi
 	elif [[ "$wget_curl" == *curl* ]]; then
-		xml_cont=`echo "$(curl -silent -i "http://labaia.hellospace.net/imdbWebService.php?m=$imdb_title&o=xml"; wait)"`;
+		xml_cont=`echo "$("$wget_curl" -silent -i "http://labaia.hellospace.net/imdbWebService.php?m=$imdb_title&o=xml"; wait)"`;
 		if [ "$xml_cont" ]; then
 			imdb_url=`echo "$(echo "$xml_cont" | grep "<IMDB_URL>" | sed 's/^[ \t]*//' | sed 's/[ \t]*$//' | sed 's/<[^>]*>//g')"`;
 			imdb_id=`echo "$(echo "$xml_cont" | grep "<TITLE_ID>" | sed 's/^[ \t]*//' | sed 's/[ \t]*$//' | sed 's/<[^>]*>//g')"`;
 			poster_url=`echo "$(echo "$xml_cont" | grep "<$poster_size>" | sed 's/^[ \t]*//' | sed 's/[ \t]*$//' | sed 's/<[^>]*>//g')"`;
 			# if [ "$imdb_fanart" == "yes" ]; then
-				# themoviedb_xml_cont=`echo "$(curl -silent -i "http://api.themoviedb.org/2.1/Movie.imdbLookup/en/xml/57983e31fb435df4df77afb854740ea9/$imdb_id"; wait)"`;
+				# themoviedb_xml_cont=`echo "$("$wget_curl" -silent -i "http://api.themoviedb.org/2.1/Movie.imdbLookup/en/xml/57983e31fb435df4df77afb854740ea9/$imdb_id"; wait)"`;
 				# fanart_url=`echo "$(cat "$themoviedb_xml_cont" | grep "backdrop" | grep "$imdb_fanart_format" | head -n 1 | cut -d'"' -f4)"`;
-				# curl -silent -o "$temp_folder_without_slash/temp_fanart" "$fanart_url"; wait;
+				# "$wget_curl" -silent -o "$temp_folder_without_slash/temp_fanart" "$fanart_url"; wait;
 			# fi
 			if [ "$imdb_poster" == "yes" ]; then curl -silent -o "$temp_folder_without_slash/temp_poster" "$poster_url"; wait; fi
 		fi
