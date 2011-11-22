@@ -562,7 +562,9 @@ fi
 ######################### Optional functionalities ################################
 
 
-if [[ "$folder_short" && "$tv_shows_fix_numbering" == "yes" ]] || [[ "$folder_short" && "$clean_up_filenames" == "yes" ]]; then echo "$temp_folder$folder_short" >> "$log_file"; fi
+if [[ "$imdb_poster" == "yes" || "$imdb_nfo" == "yes" || "$imdb_fanart" == "yes" ]]; then imdb_funct_on="yes"; fi
+
+if [[ "$folder_short" && "$tv_shows_fix_numbering" == "yes" ]] || [[ "$folder_short" && "$clean_up_filenames" == "yes" ]] || [[ "$folder_short" && "$imdb_funct_on" == "yes" ]]; then echo "$temp_folder$folder_short" >> "$log_file"; fi
 
 ## Try to solve TV Shown Numbering issues
 if [[ "$has_display" == "yes" && "$tv_shows_fix_numbering" == "yes" && "$(cat "$log_file" | egrep -i "([123456789])([xX])([0-9])([0-9])")" ]] || [[ "$has_display" == "yes" && "$tv_shows_fix_numbering" == "yes" && "$(cat "$log_file" | egrep -i "([. _-])([01])([0-9])([0-3])([0-9])([^pPiI])")" ]] || [[ "$has_display" == "yes" && "$tv_shows_fix_numbering" == "yes" && "$(cat "$log_file" | egrep -i "([^eE])([12345689])([0123])([0-9])([^0123456789pPiI])")" ]]; then step_number=$(( $step_number + 1 )) && echo "Step $step_number : Trying to solve TV Shows numbering issues";  fi
@@ -594,7 +596,7 @@ fi
 
 ## Cleanup filenames
 if [[ "$has_display" == "yes" && "$clean_up_filenames" == "yes" ]]; then step_number=$(( $step_number + 1 )) && echo "Step $step_number : Cleaning up filenames";  fi
-if [[ "$clean_up_filenames" == "yes" ]]; then for line in $(cat "$log_file"); do
+if [ "$clean_up_filenames" == "yes" ] || [ "$imdb_funct_on" == "yes" ]; then for line in $(cat "$log_file"); do
 	item=`echo "$(basename "$line")"`;
 	ren_file=`echo "$item"`;
 	source=`echo "$line"`;
@@ -612,21 +614,21 @@ if [[ "$clean_up_filenames" == "yes" ]]; then for line in $(cat "$log_file"); do
 	title_clean_ter_other_pat=`echo "$title_clean_ter" | sed "s/^_//g" | sed "s/\(.*\) \([0-9][0-9][0-9][0-9]\)_*$/\1 (\2)/g"`
 	title_clean_ter=`echo "$title_clean_ter" | sed "s/^_//g" | sed "s/_*$//g"`
 	if [[ "$repack_handling" == "yes" && "$(echo "$item" | egrep -i "([. _])repack([. _])|([. _])proper([. _])|([. _])rerip([. _])")" ]]; then is_repack=" REPACK"; else is_repack=""; fi
-	if [[ "$clean_up_filenames" == "yes" && "$(echo "$line" | egrep -i "([sS])([0-9])([0-9])([eE])([0-9])([0-9])")" && "$(echo "$line" | egrep -i "$tv_show_extensions_rev")" ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] || [[ "$clean_up_filenames" == "yes" && "$(echo "$line" | egrep -i "([sS])([0-9])([0-9])([eE])([0-9])([0-9])")" && -d "$source" ]]; then
+	if [[ "$(echo "$line" | egrep -i "([sS])([0-9])([0-9])([eE])([0-9])([0-9])")" && "$(echo "$line" | egrep -i "$tv_show_extensions_rev")" ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] || [[ "$(echo "$line" | egrep -i "([sS])([0-9])([0-9])([eE])([0-9])([0-9])")" && -d "$source" ]]; then
 		if [ "$quality" != " (720p)" ] && [ "$quality" != " (1080p)" ]; then quality=""; fi
 		series_title=`echo "$title_clean_ter" | sed 's;.\([sS]\)\([0-9]\)\([0-9]\)\([eE]\)\([0-9]\)\([0-9]\).*;;'`;
 		series_episode=`echo "$item" | sed 's;.*\([sS]\)\([0-9]\)\([0-9]\)\([eE]\)\([0-9]\)\([0-9]\).*;S\2\3E\5\6;g'`;
 		ren_file=`echo "$series_title $series_episode$is_repack$quality$extension"`;
-	elif [[ "$clean_up_filenames" == "yes" && "$(echo "$line" | egrep -i "([0-9])([0-9])([0-9])([0-9]).([0-9])([0-9]).([0-9])([0-9])")" && "$(echo "$line" | egrep -i "$tv_show_extensions_rev")" ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] || [[ "$clean_up_filenames" == "yes" && "$(echo "$line" | egrep -i "([0-9])([0-9])([0-9])([0-9]).([0-9])([0-9]).([0-9])([0-9])")" && -d "$source" ]]; then
+	elif [[ "$(echo "$line" | egrep -i "([0-9])([0-9])([0-9])([0-9]).([0-9])([0-9]).([0-9])([0-9])")" && "$(echo "$line" | egrep -i "$tv_show_extensions_rev")" ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] || [[  "$(echo "$line" | egrep -i "([0-9])([0-9])([0-9])([0-9]).([0-9])([0-9]).([0-9])([0-9])")" && -d "$source" ]]; then
 		talk_show_title=`echo "$title_clean_ter" | sed 's/\([0-9]\)\([0-9]\)\([0-9]\)\([0-9]\).\([0-9]\)\([0-9]\).\([0-9]\)\([0-9]\)/\1\2\3\4-\5\6-\7\8/g'`;
 		ren_file=`echo "$talk_show_title$quality$extension"`;
-	elif [[ "$clean_up_filenames" == "yes" && "$movies_rename_schema" == "type_1" && "$(echo "$line" | egrep -i "$movies_extensions_rev")" ]] && [[ $files -eq 1 ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] || [[ "$clean_up_filenames" == "yes" && "$movies_rename_schema" == "type_1" && -d "$source" ]]; then
+	elif [[ "$movies_rename_schema" == "type_1" && "$(echo "$line" | egrep -i "$movies_extensions_rev")" ]] && [[ $files -eq 1 ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] || [[ "$movies_rename_schema" == "type_1" && -d "$source" ]]; then
 		ren_file=`echo "$title_clean_ter_other_pat$extension"`;
 		imdb_title=`echo "$(basename "$title_clean_ter_other_pat")" | sed "s; (\([12]\)\([0-9]\)\([0-9]\)\([0-9]\))$; %28\1\2\3\4%29;g" | sed "s; [aA][nN][dD] ; ;g" | sed "s; ;+;g"`;
-	elif [[ "$clean_up_filenames" == "yes" && "$movies_rename_schema" == "type_2" && "$(echo "$line" | egrep -i "$movies_extensions_rev")" ]] && [[ $files -eq 1 ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] || [[ "$clean_up_filenames" == "yes" && "$movies_rename_schema" == "type_2" && -d "$source" ]]; then
+	elif [[ "$movies_rename_schema" == "type_2" && "$(echo "$line" | egrep -i "$movies_extensions_rev")" ]] && [[ $files -eq 1 ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] || [[ "$movies_rename_schema" == "type_2" && -d "$source" ]]; then
 		ren_file=`echo "$title_clean_ter$quality$extension"`;
 		imdb_title=`echo "$(basename "$title_clean_ter_other_pat")" | sed "s; (\([12]\)\([0-9]\)\([0-9]\)\([0-9]\))$; %28\1\2\3\4%29;g" | sed "s; [aA][nN][dD] ; ;g" | sed "s; ;+;g"`;
-	elif [[ "$clean_up_filenames" == "yes" && "$movies_rename_schema" == "type_3" && "$(echo "$line" | egrep -i "$movies_extensions_rev")" ]] && [[ $files -eq 1 ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] || [[ "$clean_up_filenames" == "yes" && "$movies_rename_schema" == "type_2" && -d "$source" ]]; then
+	elif [[ "$movies_rename_schema" == "type_3" && "$(echo "$line" | egrep -i "$movies_extensions_rev")" ]] && [[ $files -eq 1 ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] || [[ "$movies_rename_schema" == "type_2" && -d "$source" ]]; then
 		ren_file=`echo "$title_clean_ter$quality_quality$extension"`;
 		imdb_title=`echo "$(basename "$title_clean_ter_other_pat")" | sed "s; (\([12]\)\([0-9]\)\([0-9]\)\([0-9]\))$; %28\1\2\3\4%29;g" | sed "s; [aA][nN][dD] ; ;g" | sed "s; ;+;g"`;
 	fi
@@ -636,17 +638,17 @@ if [[ "$clean_up_filenames" == "yes" ]]; then for line in $(cat "$log_file"); do
 	source_bis=`echo "$line"`;
 	source_ter=$(echo "$line" | sed "s;\([][]\);\\\\\1;g") && source_ter=`echo "$source_ter"`;
 	ren_location_bis=$(echo "$ren_location" | sed "s;\([][)(]\);\\\\\1;g") && ren_location_bis=`echo "$ren_location_bis"`;
-	if [ "$has_display" == "yes" ] && [ "$item" != "$ren_file" ]; then echo "- Renaming $item to $ren_file";  fi
-	if [[ -d "$ren_location" && "$(dirname "$source")/" == "$temp_folder" && "$item" != "$ren_file" ]]; then mv -f "$source" "$ren_temp_location"; rm -rf "$ren_location"; source="$ren_temp_location"; fi
-	if [ "$item" != "$ren_file" ] && [ "$gnu_sed_available" != "yes" ]; then mv -f "$source" "$ren_location" && sed -i '' "s;^$source_ter;$ren_location_bis;g" "$log_file"
-	elif [ "$item" != "$ren_file" ] && [ "$gnu_sed_available" == "yes" ]; then mv -f "$source" "$ren_location" && sed -i "s;^$source_ter;$ren_location_bis;g" "$log_file"
+	if [ "$clean_up_filenames" == "yes" ] && [ "$has_display" == "yes" ] && [ "$item" != "$ren_file" ]; then echo "- Renaming $item to $ren_file";  fi
+	if [ "$clean_up_filenames" == "yes" ] && [[ -d "$ren_location" && "$(dirname "$source")/" == "$temp_folder" && "$item" != "$ren_file" ]]; then mv -f "$source" "$ren_temp_location"; rm -rf "$ren_location"; source="$ren_temp_location"; fi
+	if [ "$clean_up_filenames" == "yes" ] && [ "$item" != "$ren_file" ] && [ "$gnu_sed_available" != "yes" ]; then mv -f "$source" "$ren_location" && sed -i '' "s;^$source_ter;$ren_location_bis;g" "$log_file"
+	elif [ "$clean_up_filenames" == "yes" ] && [ "$item" != "$ren_file" ] && [ "$gnu_sed_available" == "yes" ]; then mv -f "$source" "$ren_location" && sed -i "s;^$source_ter;$ren_location_bis;g" "$log_file"
 	fi
 done
 fi
 
 
-if [[ "$folder_short" && "$tv_shows_fix_numbering" == "yes" && "$gnu_sed_available" != "yes" ]] || [[ "$folder_short" && "$clean_up_filenames" == "yes" && "$gnu_sed_available" != "yes" ]]; then folder_short=`echo "$(cat "$log_file" | sed -n '$p' | sed 's;.*/;;g')"`; sed -i '' '$d' "$log_file"
-elif [[ "$folder_short" && "$tv_shows_fix_numbering" == "yes" && "$gnu_sed_available" == "yes" ]] || [[ "$folder_short" && "$clean_up_filenames" == "yes" && "$gnu_sed_available" == "yes" ]]; then folder_short=`echo "$(cat "$log_file" | sed -n '$p' | sed 's;.*/;;g')"`; sed -i '$d' "$log_file"
+if [[ "$folder_short" && "$tv_shows_fix_numbering" == "yes" && "$gnu_sed_available" != "yes" ]] || [[ "$folder_short" && "$clean_up_filenames" == "yes" && "$gnu_sed_available" != "yes" ]] || [[ "$folder_short" && "$imdb_funct_on" == "yes" && "$gnu_sed_available" != "yes" ]]; then folder_short=`echo "$(cat "$log_file" | sed -n '$p' | sed 's;.*/;;g')"`; sed -i '' '$d' "$log_file"
+elif [[ "$folder_short" && "$tv_shows_fix_numbering" == "yes" && "$gnu_sed_available" == "yes" ]] || [[ "$folder_short" && "$clean_up_filenames" == "yes" && "$gnu_sed_available" == "yes" ]] || [[ "$folder_short" && "$imdb_funct_on" == "yes" && "$gnu_sed_available" != "yes" ]]; then folder_short=`echo "$(cat "$log_file" | sed -n '$p' | sed 's;.*/;;g')"`; sed -i '$d' "$log_file"
 fi
 
 
