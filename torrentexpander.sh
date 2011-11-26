@@ -675,6 +675,7 @@ if [ "$imdb_title" ] && [[ "$imdb_poster" == "yes" || "$imdb_nfo" == "yes" || "$
 	fi
 	if [[ "$wget_curl" == *wget* ]]; then
 		xml_cont=`echo "$("$wget_curl" -q "http://labaia.hellospace.net/imdbWebService.php?m=$imdb_title&o=xml" -O -; wait)"`;
+		if [[ "$debug_mode" == "yes" ]]; then echo "IMDB XML URL: http://labaia.hellospace.net/imdbWebService.php?m=$imdb_title&o=xml" >> "$debug_log"; fi
 		if [ "$xml_cont" ]; then
 			imdb_url=`echo "$(echo "$xml_cont" | grep "<IMDB_URL>" | sed 's/^[ \t]*//' | sed 's/[ \t]*$//' | sed 's/<[^>]*>//g')"`;
 			if [[ "$debug_mode" == "yes" ]]; then echo "IMDB URL: $imdb_url" >> "$debug_log"; fi
@@ -686,6 +687,7 @@ if [ "$imdb_title" ] && [[ "$imdb_poster" == "yes" || "$imdb_nfo" == "yes" || "$
 			if [[ "$debug_mode" == "yes" && -f "$temp_folder_without_slash/temp_poster" ]]; then echo "IMDB Poster downloaded" >> "$debug_log"; fi
 			if [[ "$imdb_fanart" == "yes" && "$imdb_id" ]]; then
 				themoviedb_xml_cont=`echo "$("$wget_curl" -q "http://api.themoviedb.org/2.1/Movie.imdbLookup/en/xml/57983e31fb435df4df77afb854740ea9/$imdb_id" -O -; wait)"`;
+				if [[ "$debug_mode" == "yes" ]]; then echo "TMDB XML URL: http://api.themoviedb.org/2.1/Movie.imdbLookup/en/xml/57983e31fb435df4df77afb854740ea9/$imdb_id" >> "$debug_log"; fi
 				fanart_url=`echo "$(echo "$themoviedb_xml_cont" | grep "backdrop" | grep 'size="$imdb_fanart_format"' | sed q | sed 's;.*url="\(.*\.jpg\).*;\1;g')"`;
 				if [[ "$debug_mode" == "yes" ]]; then echo "TMDB fanart url: $fanart_url" >> "$debug_log"; fi
 				if [[ "$imdb_fanart" == "yes" && "$fanart_url" ]]; then "$wget_curl" -q "$fanart_url" -O "$temp_folder_without_slash/temp_fanart"; wait; fi
@@ -694,6 +696,7 @@ if [ "$imdb_title" ] && [[ "$imdb_poster" == "yes" || "$imdb_nfo" == "yes" || "$
 		fi
 	elif [[ "$wget_curl" == *curl* ]]; then
 		xml_cont=`echo "$("$wget_curl" -silent -i "http://labaia.hellospace.net/imdbWebService.php?m=$imdb_title&o=xml"; wait)"`;
+		if [[ "$debug_mode" == "yes" ]]; then echo "IMDB XML URL: http://labaia.hellospace.net/imdbWebService.php?m=$imdb_title&o=xml" >> "$debug_log"; fi
 		if [ "$xml_cont" ]; then
 			imdb_url=`echo "$(echo "$xml_cont" | grep "<IMDB_URL>" | sed 's/^[ \t]*//' | sed 's/[ \t]*$//' | sed 's/<[^>]*>//g')"`;
 			if [[ "$debug_mode" == "yes" ]]; then echo "IMDB URL: $imdb_url" >> "$debug_log"; fi
@@ -703,6 +706,7 @@ if [ "$imdb_title" ] && [[ "$imdb_poster" == "yes" || "$imdb_nfo" == "yes" || "$
 			if [[ "$debug_mode" == "yes" ]]; then echo "IMDB POSTER URL: $poster_url" >> "$debug_log"; fi
 			if [[ "$imdb_fanart" == "yes" && "$imdb_id" ]]; then
 				themoviedb_xml_cont=`echo "$("$wget_curl" -silent -i "http://api.themoviedb.org/2.1/Movie.imdbLookup/en/xml/57983e31fb435df4df77afb854740ea9/$imdb_id"; wait)"`;
+				if [[ "$debug_mode" == "yes" ]]; then echo "TMDB XML URL: http://api.themoviedb.org/2.1/Movie.imdbLookup/en/xml/57983e31fb435df4df77afb854740ea9/$imdb_id" >> "$debug_log"; fi
 				fanart_url=`echo "$(echo "$themoviedb_xml_cont" | grep "backdrop" | grep 'size="$imdb_fanart_format"' | sed q | sed 's;.*url="\(.*\.jpg\).*;\1;g')"`;
 				if [[ "$debug_mode" == "yes" ]]; then echo "TMDB fanart url: $fanart_url" >> "$debug_log"; fi
 				if [[ "$imdb_fanart" == "yes" && "$fanart_url" ]]; then "$wget_curl" -silent -o "$temp_folder_without_slash/temp_fanart" "$fanart_url"; wait; fi
@@ -718,12 +722,12 @@ if [ "$imdb_title" ] && [[ "$imdb_poster" == "yes" || "$imdb_nfo" == "yes" || "$
 			nfo_file=`echo "$item" | sed 's/\(.*\)\..*/\1.nfo/'`;
 			poster=`echo "$item" | sed 's/\(.*\)\..*/\1.jpg/'`;
 			fanart=`echo "$item" | sed 's/\(.*\)\..*/\1.fanart.jpg/'`;
-			if [ "$imdb_nfo" == "yes" ]; then echo "$imdb_url" > "$nfo_file"; fi
-			if [[ "$debug_mode" == "yes" && "$imdb_nfo" == "yes" ]]; then echo "NFO generated" >> "$debug_log"; fi
+			if [ "$imdb_url" ] && [ "$imdb_nfo" == "yes" ]; then echo "$imdb_url" > "$nfo_file"; fi
+			if [[ "$debug_mode" == "yes" && "$imdb_nfo" == "yes" ]]; then echo "NFO generated: $nfo_file" >> "$debug_log"; fi
 			if [ -f "$temp_folder_without_slash/temp_poster" ] && [ "$imdb_poster" == "yes" ]; then cp -f "$temp_folder_without_slash/temp_poster" "$poster"; fi
-			if [[ "$debug_mode" == "yes" && -f "$temp_folder_without_slash/temp_poster" ]]; then echo "IMDB Poster generated" >> "$debug_log"; fi
+			if [[ "$debug_mode" == "yes" && -f "$temp_folder_without_slash/temp_poster" ]]; then echo "IMDB Poster generated: $poster" >> "$debug_log"; fi
 			if [ -f "$temp_folder_without_slash/temp_fanart" ] && [ "$imdb_fanart" == "yes" ]; then cp -f "$temp_folder_without_slash/temp_fanart" "$fanart"; fi
-			if [[ "$debug_mode" == "yes" && -f "$temp_folder_without_slash/temp_fanart" ]]; then echo "Fanart Poster downloaded" >> "$debug_log"; fi
+			if [[ "$debug_mode" == "yes" && -f "$temp_folder_without_slash/temp_fanart" ]]; then echo "Fanart Poster downloaded: $fanart" >> "$debug_log"; fi
 		done
 	fi
 	if [ -f "$temp_folder_without_slash/temp_poster" ]; then rm "$temp_folder_without_slash/temp_poster"; fi
