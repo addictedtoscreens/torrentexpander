@@ -77,9 +77,9 @@ mkvdts2ac3_bin="/path/to/mkvdts2ac3.sh"
 ##################### Supported file extensions - Comma separated ################
 ########### You must have at least one extension enabled in each field ###########
 ############### DON T ADD RAR OR ZIP EXTENSIONS IN THESE FIELDS ##################
-supported_extensions="avi,mkv,divx,mp4,iso,img,mp3,m4a,wav,srt,idx,sub,dvd"
+supported_extensions="avi,mkv,divx,mp4,ts,iso,img,mp3,m4a,wav,srt,idx,sub,dvd"
 tv_show_extensions="avi,mkv,divx,mp4,srt,idx,sub"
-movies_extensions="avi,mkv,divx,mp4,iso,img,srt,idx,sub"
+movies_extensions="avi,mkv,divx,mp4,ts,iso,img,srt,idx,sub"
 music_extensions="mp3,m4a,wav"
 ##################### Movies detection patterns - Comma separated ################
 ##################### You must have at least one pattern enabled #################
@@ -144,6 +144,8 @@ edit_perm_as_sudo="no"
 third_party_log="no"
 ## Reset timestamp (mtime)
 reset_timestamp="no"
+## Debug mode (only used in a few routines)
+debug_mode="no"
 ############################ END USER VARIABLES ##################################
 ##################################################################################
 
@@ -164,6 +166,8 @@ while [ -h "$PRG" ] ; do
 done
 script_path=`dirname "$PRG"`
 settings_file="$script_path/torrentexpander_settings.ini"
+debug_log="$script_path/torrentexpander_debug.log"
+
 subtitles_directory="$script_path/torrentexpander_subtitles_dir"
 if [[ "$script_path" == *torrentexpander.workflow* ]]; then subtitles_handling="no"; fi
 
@@ -506,7 +510,7 @@ done
 for item in $(find "$temp_folder_without_slash"); do
 	item=`echo "$item"`
 	if [[ "$item" == */.AppleDouble* ]] || [[ "$item" == */._* ]] || [[ "$item" == */.DS_Store* ]]; then rm -rf "$item"
-	elif [[ "$(echo "$item" | egrep -i "^sample[^A-Za-z0-9_]" )" && "$(echo "$item" | egrep -i "\.avi$|\.mkv$|\.ts$" )" ]] || [[ "$(echo "$item" | egrep -i "[^A-Za-z0-9_]sample[^A-Za-z0-9_]" )" && "$(echo "$item" | egrep -i "\.avi$|\.mkv$|\.ts$" )" ]]; then rm -rf "$item"
+	elif [[ "$(echo "$item" | egrep -i "^sample[^A-Za-z0-9_]" )" && "$(echo "$item" | egrep -i "\.avi$|\.mkv$|\.divx$|\.mp4$|\.ts$" )" ]] || [[ "$(echo "$item" | egrep -i "[^A-Za-z0-9_]sample[^A-Za-z0-9_]" )" && "$(echo "$item" | egrep -i "\.avi$|\.mkv$|\.divx$|\.mp4$|\.ts$" )" ]]; then rm -rf "$item"
 	fi
 done
 
@@ -530,7 +534,7 @@ if [[ $files -eq 1 ]]; then
 	extension=`echo "$item" | sed 's;.*\.;.;'`;
 	if [[ "$item" != "$temp_folder$folder_short$extension" ]]; then mv "$item" "$temp_folder$folder_short$extension"; fi && echo "$temp_folder$folder_short$extension" >> "$log_file"
 	subtitles_dest=`echo "$subtitles_directory/$(basename "$item")"`
-	if [[ "$subtitles_mode" != "yes" && "$subtitles_handling" == "yes" && "$(echo "$item" | egrep -i "\.avi$|\.mkv$|\.divx$")" ]]; then mkdir -p "$subtitles_directory" && echo "$folder_short$extension" > "$subtitles_dest"; fi
+	if [[ "$subtitles_mode" != "yes" && "$subtitles_handling" == "yes" && "$(echo "$item" | egrep -i "\.avi$|\.mkv$|\.divx$|\.mp4$|\.ts$")" ]]; then mkdir -p "$subtitles_directory" && echo "$folder_short$extension" > "$subtitles_dest"; fi
 	folder_short=""
 fi
 
@@ -553,7 +557,7 @@ done
 for item in $(find "$temp_folder$folder_short" -type f | egrep -i "$supported_extensions_rev"); do
 	subtitles_dest=`echo "$subtitles_directory/$(basename "$item")"`
 	already_subtitles=`echo "$(echo "$item" | sed 's/\(.*\)\..*/\1\.srt/')"`
-	if [[ "$subtitles_mode" != "yes" && "$subtitles_handling" == "yes" && ! -f "$already_subtitles" && "$(echo "$item" | egrep -i "\.avi$|\.mkv$|\.divx$")" ]]; then mkdir -p "$subtitles_directory" && echo "$(basename "$item")" > "$subtitles_dest"; fi
+	if [[ "$subtitles_mode" != "yes" && "$subtitles_handling" == "yes" && ! -f "$already_subtitles" && "$(echo "$item" | egrep -i "\.avi$|\.mkv$|\.divx$|\.mp4$|\.ts$")" ]]; then mkdir -p "$subtitles_directory" && echo "$(basename "$item")" > "$subtitles_dest"; fi
 	echo "$item" >> "$log_file"
 done
 fi
@@ -596,7 +600,10 @@ fi
 
 ## Cleanup filenames
 if [[ "$has_display" == "yes" && "$clean_up_filenames" == "yes" ]]; then step_number=$(( $step_number + 1 )) && echo "Step $step_number : Cleaning up filenames";  fi
-if [ "$clean_up_filenames" == "yes" ] || [ "$imdb_funct_on" == "yes" ]; then for line in $(cat "$log_file"); do
+if [ "$clean_up_filenames" == "yes" ]; then temp_log_file="$(echo -n -e "$(cat "$log_file")")"
+	elif [ "$imdb_funct_on" == "yes" ]; then temp_log_file="$(echo -n -e "$(cat "$log_file" | sed -n '$p')")"
+fi
+if [ "$clean_up_filenames" == "yes" ] || [ "$imdb_funct_on" == "yes" ]; then for line in $(echo -n -e "$temp_log_file"); do
 	item=`echo "$(basename "$line")"`;
 	ren_file=`echo "$item"`;
 	source=`echo "$line"`;
@@ -651,10 +658,16 @@ if [[ "$folder_short" && "$tv_shows_fix_numbering" == "yes" && "$gnu_sed_availab
 elif [[ "$folder_short" && "$tv_shows_fix_numbering" == "yes" && "$gnu_sed_available" == "yes" ]] || [[ "$folder_short" && "$clean_up_filenames" == "yes" && "$gnu_sed_available" == "yes" ]] || [[ "$folder_short" && "$imdb_funct_on" == "yes" && "$gnu_sed_available" != "yes" ]]; then folder_short=`echo "$(cat "$log_file" | sed -n '$p' | sed 's;.*/;;g')"`; sed -i '$d' "$log_file"
 fi
 
-
+if [[ "$debug_mode" == "yes" ]]; then 
+	if [ ! -f "$debug_log" ]; then touch "$debug_log"; fi
+	echo "--> LOG START <--" >> "$debug_log"; 
+	echo "IMDB Title: $imdb_title" >> "$debug_log";
+	if [[ "$debug_mode" == "yes" ]] && [[ "$imdb_poster" == "yes" ]]; then echo "IMDB Poster format: $imdb_poster_format" >> "$debug_log"; fi
+	if [[ "$debug_mode" == "yes" ]] && [[ "$imdb_fanart" == "yes" ]]; then echo "Fanart Poster format: $imdb_fanart_format" >> "$debug_log"; fi
+fi
 
 if [ "$imdb_title" ] && [[ "$imdb_poster" == "yes" || "$imdb_nfo" == "yes" || "$imdb_fanart" == "yes" ]]; then
-	if [ "$has_display" == "yes" ]; then step_number=$(( $step_number + 1 )) && echo "Step $step_number : Generating NFO and downloading Poster";  fi
+	if [ "$has_display" == "yes" ]; then step_number=$(( $step_number + 1 )) && echo "Step $step_number : Generating NFO and downloading Poster"; fi
 	if [ "$imdb_poster_format" == "normal" ]; then poster_size="POSTER"
 	elif [ "$imdb_poster_format" == "small" ]; then poster_size="POSTER_SMALL"
 	elif [ "$imdb_poster_format" == "large" ]; then poster_size="POSTER_LARGE"
@@ -664,28 +677,39 @@ if [ "$imdb_title" ] && [[ "$imdb_poster" == "yes" || "$imdb_nfo" == "yes" || "$
 		xml_cont=`echo "$("$wget_curl" -q "http://labaia.hellospace.net/imdbWebService.php?m=$imdb_title&o=xml" -O -; wait)"`;
 		if [ "$xml_cont" ]; then
 			imdb_url=`echo "$(echo "$xml_cont" | grep "<IMDB_URL>" | sed 's/^[ \t]*//' | sed 's/[ \t]*$//' | sed 's/<[^>]*>//g')"`;
+			if [[ "$debug_mode" == "yes" ]]; then echo "IMDB URL: $imdb_url" >> "$debug_log"; fi
 			imdb_id=`echo "$(echo "$xml_cont" | grep "<TITLE_ID>" | sed 's/^[ \t]*//' | sed 's/[ \t]*$//' | sed 's/<[^>]*>//g')"`;
+			if [[ "$debug_mode" == "yes" ]]; then echo "IMDB ID: $imdb_id" >> "$debug_log"; fi
 			poster_url=`echo "$(echo "$xml_cont" | grep "<$poster_size>" | sed 's/^[ \t]*//' | sed 's/[ \t]*$//' | sed 's/<[^>]*>//g')"`;
-			# if [ "$imdb_fanart" == "yes" ]; then
-				# themoviedb_xml_cont=`echo "$("$wget_curl" -q "http://api.themoviedb.org/2.1/Movie.imdbLookup/en/xml/57983e31fb435df4df77afb854740ea9/$imdb_id" -O -; wait)"`;
-				# fanart_url=`echo "$(cat "$themoviedb_xml_cont" | grep "backdrop" | grep "$imdb_fanart_format" | head -n 1 | cut -d'"' -f4)"`;
-				# "$wget_curl" -q "$fanart_url" -O "$temp_folder_without_slash/temp_fanart"; wait;
-			# fi
-			if [ "$imdb_poster" == "yes" ]; then "$wget_curl" -q "$poster_url" -O "$temp_folder_without_slash/temp_poster"; wait; fi
-			
+			if [[ "$debug_mode" == "yes" ]]; then echo "IMDB POSTER URL: $poster_url" >> "$debug_log"; fi
+			if [[ "$imdb_poster" == "yes" && "$poster_url" ]]; then "$wget_curl" -q "$poster_url" -O "$temp_folder_without_slash/temp_poster"; wait; fi
+			if [[ "$debug_mode" == "yes" && -f "$temp_folder_without_slash/temp_poster" ]]; then echo "IMDB Poster downloaded" >> "$debug_log"; fi
+			if [[ "$imdb_fanart" == "yes" && "$imdb_id" ]]; then
+				themoviedb_xml_cont=`echo "$("$wget_curl" -q "http://api.themoviedb.org/2.1/Movie.imdbLookup/en/xml/57983e31fb435df4df77afb854740ea9/$imdb_id" -O -; wait)"`;
+				fanart_url=`echo "$(echo "$themoviedb_xml_cont" | grep "backdrop" | grep 'size="$imdb_fanart_format"' | sed q | sed 's;.*url="\(.*\.jpg\).*;\1;g')"`;
+				if [[ "$debug_mode" == "yes" ]]; then echo "TMDB fanart url: $fanart_url" >> "$debug_log"; fi
+				if [[ "$imdb_fanart" == "yes" && "$fanart_url" ]]; then "$wget_curl" -q "$fanart_url" -O "$temp_folder_without_slash/temp_fanart"; wait; fi
+				if [[ "$debug_mode" == "yes" && -f "$temp_folder_without_slash/temp_fanart" ]]; then echo "Fanart downloaded" >> "$debug_log"; fi
+			fi
 		fi
 	elif [[ "$wget_curl" == *curl* ]]; then
 		xml_cont=`echo "$("$wget_curl" -silent -i "http://labaia.hellospace.net/imdbWebService.php?m=$imdb_title&o=xml"; wait)"`;
 		if [ "$xml_cont" ]; then
 			imdb_url=`echo "$(echo "$xml_cont" | grep "<IMDB_URL>" | sed 's/^[ \t]*//' | sed 's/[ \t]*$//' | sed 's/<[^>]*>//g')"`;
+			if [[ "$debug_mode" == "yes" ]]; then echo "IMDB URL: $imdb_url" >> "$debug_log"; fi
 			imdb_id=`echo "$(echo "$xml_cont" | grep "<TITLE_ID>" | sed 's/^[ \t]*//' | sed 's/[ \t]*$//' | sed 's/<[^>]*>//g')"`;
+			if [[ "$debug_mode" == "yes" ]]; then echo "IMDB ID: $imdb_id" >> "$debug_log"; fi
 			poster_url=`echo "$(echo "$xml_cont" | grep "<$poster_size>" | sed 's/^[ \t]*//' | sed 's/[ \t]*$//' | sed 's/<[^>]*>//g')"`;
-			# if [ "$imdb_fanart" == "yes" ]; then
-				# themoviedb_xml_cont=`echo "$("$wget_curl" -silent -i "http://api.themoviedb.org/2.1/Movie.imdbLookup/en/xml/57983e31fb435df4df77afb854740ea9/$imdb_id"; wait)"`;
-				# fanart_url=`echo "$(cat "$themoviedb_xml_cont" | grep "backdrop" | grep "$imdb_fanart_format" | head -n 1 | cut -d'"' -f4)"`;
-				# "$wget_curl" -silent -o "$temp_folder_without_slash/temp_fanart" "$fanart_url"; wait;
-			# fi
-			if [ "$imdb_poster" == "yes" ]; then curl -silent -o "$temp_folder_without_slash/temp_poster" "$poster_url"; wait; fi
+			if [[ "$debug_mode" == "yes" ]]; then echo "IMDB POSTER URL: $poster_url" >> "$debug_log"; fi
+			if [[ "$imdb_fanart" == "yes" && "$imdb_id" ]]; then
+				themoviedb_xml_cont=`echo "$("$wget_curl" -silent -i "http://api.themoviedb.org/2.1/Movie.imdbLookup/en/xml/57983e31fb435df4df77afb854740ea9/$imdb_id"; wait)"`;
+				fanart_url=`echo "$(echo "$themoviedb_xml_cont" | grep "backdrop" | grep 'size="$imdb_fanart_format"' | sed q | sed 's;.*url="\(.*\.jpg\).*;\1;g')"`;
+				if [[ "$debug_mode" == "yes" ]]; then echo "TMDB fanart url: $fanart_url" >> "$debug_log"; fi
+				if [[ "$imdb_fanart" == "yes" && "$fanart_url" ]]; then "$wget_curl" -silent -o "$temp_folder_without_slash/temp_fanart" "$fanart_url"; wait; fi
+				if [[ "$debug_mode" == "yes" && -f "$temp_folder_without_slash/temp_fanart" ]]; then echo "Fanart downloaded" >> "$debug_log"; fi
+			fi
+			if [[ "$imdb_poster" == "yes" && "$poster_url" ]]; then curl -silent -o "$temp_folder_without_slash/temp_poster" "$poster_url"; wait; fi
+			if [[ "$debug_mode" == "yes" && -f "$temp_folder_without_slash/temp_poster" ]]; then echo "IMDB Poster downloaded" >> "$debug_log"; fi
 		fi
 	fi
 	if [ ! "$folder_short" ] && [ "$xml_cont" ]; then folder_short=`echo "$(basename "$(cat "$log_file")")" | sed 's/\(.*\)\..*/\1/' | sed 's;.*/;;g'` && mkdir -p "$temp_folder$folder_short/" && mv -f "$(cat "$log_file")" "$temp_folder$folder_short/"; fi
@@ -695,15 +719,18 @@ if [ "$imdb_title" ] && [[ "$imdb_poster" == "yes" || "$imdb_nfo" == "yes" || "$
 			poster=`echo "$item" | sed 's/\(.*\)\..*/\1.jpg/'`;
 			fanart=`echo "$item" | sed 's/\(.*\)\..*/\1.fanart.jpg/'`;
 			if [ "$imdb_nfo" == "yes" ]; then echo "$imdb_url" > "$nfo_file"; fi
+			if [[ "$debug_mode" == "yes" && "$imdb_nfo" == "yes" ]]; then echo "NFO generated" >> "$debug_log"; fi
 			if [ -f "$temp_folder_without_slash/temp_poster" ] && [ "$imdb_poster" == "yes" ]; then cp -f "$temp_folder_without_slash/temp_poster" "$poster"; fi
-			# if [ -f "$temp_folder_without_slash/temp_poster" ] && [ "$imdb_fanart" == "yes" ]; then cp -f "$temp_folder_without_slash/temp_fanart" "$fanart"; fi
+			if [[ "$debug_mode" == "yes" && -f "$temp_folder_without_slash/temp_poster" ]]; then echo "IMDB Poster generated" >> "$debug_log"; fi
+			if [ -f "$temp_folder_without_slash/temp_fanart" ] && [ "$imdb_fanart" == "yes" ]; then cp -f "$temp_folder_without_slash/temp_fanart" "$fanart"; fi
+			if [[ "$debug_mode" == "yes" && -f "$temp_folder_without_slash/temp_fanart" ]]; then echo "Fanart Poster downloaded" >> "$debug_log"; fi
 		done
-		# fanart part should go there
 	fi
 	if [ -f "$temp_folder_without_slash/temp_poster" ]; then rm "$temp_folder_without_slash/temp_poster"; fi
-	if [ -f "$temp_folder_without_slash/temp_fanart" ]; then rm "$temp_folder_without_slash/temp_poster"; fi
+	if [ -f "$temp_folder_without_slash/temp_fanart" ]; then rm "$temp_folder_without_slash/temp_fanart"; fi
 	supported_extensions_rev="$supported_extensions_rev|\.nfo$|\.jpg$"
 	movies_extensions_rev="$movies_extensions_rev|\.nfo$|\.jpg$"
+	if [[ "$debug_mode" == "yes" ]]; then echo "--> LOG END <--" >> "$debug_log"; fi
 	if [ ! "$folder_short" ]; then echo "$(find "$temp_folder$folder_short" -maxdepth 1 -mindepth 1 -type f | egrep -i "$supported_extensions_rev")" > "$log_file"; fi
 fi
 
@@ -718,7 +745,7 @@ for line in $(cat "$log_file"); do
 	source_dir=`echo "$(dirname "$line")"`
 	if [ "$(echo "$line" | egrep -i "\.mkv$" )" ] && [ "$dts_post" == "yes" ]; then
 		if [ "$has_display" == "yes" ]; then echo "- Converting $source_filename from DTS to AC3";  fi
-		if [ "$has_display" == "yes" ]; then "$mkvdts2ac3_bin" -w "$temp_folder" -k "$source_file"; else "$mkvdts2ac3_bin" -w "$temp_folder" -k "$source_file"; fi
+		if [ "$has_display" == "yes" ]; then "$mkvdts2ac3_bin" -w "$temp_folder" -k "$source_file"; else "$mkvdts2ac3_bin" -w "$temp_folder" -k "$source_file" > /dev/null 2>&1; fi
 	elif [ "$(echo "$line" | egrep -i "\.img$" )" ] && [ "$img_post" == "yes" ]; then
 		iso=`echo "$source_dir/$source_trimmed.iso"`
 		if [ "$has_display" == "yes" ]; then echo "- Converting $source_filename to an ISO";  fi
@@ -865,7 +892,7 @@ if [[ "$subtitles_mode" != "yes" && "$subtitles_handling" != "no" && -d "$subtit
  		line=`echo "$line"`
  		item=`echo "$(basename "$line")"`
  		item_bis=`echo "$item" | sed 's/\(.*\)\..*/\1/'`
- 		orig_file=`echo "$(find "$subtitles_directory" -name "$item_bis.*" -type f | egrep -i "\.avi$|\.mkv$|\.divx$")"`
+ 		orig_file=`echo "$(find "$subtitles_directory" -name "$item_bis.*" -type f | egrep -i "\.avi$|\.mkv$|\.divx$|\.mp4$|\.ts$")"`
  		new_line=`echo "$(cat "$orig_file" | sed '/^ *$/d' | sed 's/\(.*\)\..*/\1\.srt/')"`
  		if [ "$line" != "$new_line" ]; then mv "$line" "$new_line"; fi
  		"$script_path/torrentexpander.sh" "$new_line" "$destination_folder"
