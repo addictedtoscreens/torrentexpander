@@ -191,7 +191,7 @@ if [[ "$check_settings" != *estination_folder=* || "$check_settings" == *estinat
 	# This line is for ubuntu systems when the desktop has a language specific name
 	if [ ! -d "$destination_folder" ]; then xdg-user-dir > /dev/null 2>&1 && if [ "$?" == "0" ]; then destination_folder="$(xdg-user-dir DESKTOP)"; fi; fi
 	# This line is for PopCornHour media players
-	if [ ! -d "$destination_folder" ] && [ -d "/share/Downloads" ]; then destination_folder="/share/Video/"; fi
+	if [ ! -d "$destination_folder" ] && [ -d "/share/Downloads" ]; then destination_folder="/share/Downloads/Expanded"; fi
 fi
 if [[ "$check_settings" != *nrar_bin=* || "$check_settings" == *nrar_bin=incorrect_or_not_se* ]]; then
 	# Looking for unrar in the PATH variable or /Applications /nmt/apps /usr/local/bin directories
@@ -376,7 +376,8 @@ fi
 
 if [ -f "$errors_file" ]; then rm -f "$errors_file"; fi
 
-if [ ! -d "$destination_folder" ]; then echo "Your destination folder is incorrect please edit your torrentexpander_settings.ini file" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Your destination folder is incorrect please edit your torrentexpander_settings.ini file"; fi; quit_on_error="yes"; fi
+if [ ! -d "$(dirname "$destination_folder")" ]; then echo "Your destination folder is incorrect please edit your torrentexpander_settings.ini file" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Your destination folder is incorrect please edit your torrentexpander_settings.ini file"; fi; quit_on_error="yes"; fi
+if [ -d "$(dirname "$destination_folder")" ] && [ ! -d "$destination_folder" ]; then mkdir -p "$destination_folder"; fi
 if [ ! -d "$temp_directory" ]; then echo "Your temp folder path is incorrect please edit your torrentexpander_settings.ini file" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Your temp folder path is incorrect please edit your torrentexpander_settings.ini file"; fi; quit_on_error="yes"; fi
 if [ ! -d "$tv_shows_post_path" ] && [ "$tv_shows_post" != "no" ]; then	echo "Your TV Shows path is incorrect - TV Shows Post will be disabled" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Your TV Shows path is incorrect - TV Shows Post will be disabled"; fi; tv_shows_post="no"; fi
 if [ ! -d "$music_post_path" ] && [ "$music_post" != "no" ]; then echo "Your music path is incorrect - Music Post will be disabled" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Your music path is incorrect - Music Post will be disabled"; fi; music_post="no"; fi
@@ -718,7 +719,7 @@ if [ "$imdb_title" ] && [[ "$imdb_poster" == "yes" || "$imdb_nfo" == "yes" || "$
 	fi
 	if [ ! "$folder_short" ] && [ "$xml_cont" ]; then folder_short=`echo "$(basename "$(cat "$log_file")")" | sed 's/\(.*\)\..*/\1/' | sed 's;.*/;;g'` && mkdir -p "$temp_folder$folder_short/" && mv -f "$(cat "$log_file")" "$temp_folder$folder_short/"; fi
 	if [ "$xml_cont" ]; then
-		for item in $(find "$temp_folder$folder_short" -type f | egrep -i "$movies_extensions_rev"); do
+		for item in $(find "$temp_folder$folder_short" -type f | egrep -i "$(echo "\.$(echo "$movies_extensions" | sed "s;,srt;;" | sed "s;,idx;;" | sed "s;,sub;;" | sed 's;,;\$\|\\\.;g')$")"); do
 			nfo_file=`echo "$item" | sed 's/\(.*\)\..*/\1.nfo/'`;
 			poster=`echo "$item" | sed 's/\(.*\)\..*/\1.jpg/'`;
 			fanart=`echo "$item" | sed 's/\(.*\)\..*/\1.fanart.jpg/'`;
@@ -856,11 +857,34 @@ done
 
 
 ## Move content of temp folder to destination folder
-if [ "$folder_short" ]; then mv -f "$temp_folder$folder_short" "$destination_folder"
+if [ "$folder_short" ]; then
+	count=1
+	dest=`echo "$destination_folder$folder_short"`
+	while [ -d "$dest" ]; do
+		if [[ count -eq 1 ]]; then
+			dest=`echo "$destination_folder$folder_short"`;
+		else
+			dest=`echo "$destination_folder$folder_short [$count]"`;
+		fi
+		count=$(( count + 1 ))
+	done
+	mv -f "$temp_folder$folder_short" "$dest"
 elif [ ! "$folder_short" ]; then
 	for line in $(cat "$log_file"); do
-		item=`echo "$line"`
-		if [[ "$(echo "$line" | egrep -i "$supported_extensions_rev")" && "$(echo "$line" | egrep -i "$temp_folder")" ]]; then mv -f "$item" "$destination_folder"; fi
+		item=`echo "$line"`;
+		title_clean=`echo "$(basename "$item")" | sed 's/\(.*\)\..*/\1/'`
+		extension=`echo "$item" | sed 's;.*\.;.;'`
+		count=1
+		dest=`echo "$destination_folder$title_clean$extension"`
+		while [ -f "$dest" ]; do
+			if [[ count -eq 1 ]]; then
+				dest=`echo "$destination_folder$title_clean$extension"`;
+			else
+				dest=`echo "$destination_folder$title_clean [$count]$extension"`;
+			fi
+			count=$(( count + 1 ))
+		done
+		if [[ "$(echo "$line" | egrep -i "$supported_extensions_rev")" && "$(echo "$line" | egrep -i "$temp_folder")" && -f "$item" ]]; then mv -f "$item" "$dest"; fi
 	done
 fi
 if [[ "$gnu_sed_available" != "yes" ]]; then rm -rf "$temp_folder_without_slash" && sed -i '' "s;^$temp_folder;$destination_folder;g" "$log_file"; else rm -rf "$temp_folder_without_slash" && sed -i "s;^$temp_folder;$destination_folder;g" "$log_file"; fi
