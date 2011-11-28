@@ -7,7 +7,7 @@ You're done !
 ==Through text editor==
 
 You can also do it the command line way by editing Transmission's settings file <br />(_/$HOME/.config/Transmission/settings.json_  or   _/share/.transmission/settings.json_)
-and editing those two lines :<br />
+and editing those two lines :
 
 {{{
 "script-torrent-done-enabled": true,
