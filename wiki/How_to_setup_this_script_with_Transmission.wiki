@@ -1,4 +1,4 @@
-#labels Featured
+#labels Featured,Phase-Deploy
 In the transmission GUI, enable the "_call script when torrent is completed_" option and select the path to the torrentexpander.sh script. You're done !<br />
 <br />
 You can also do it the command line way by editing Transmission's settings file <br />(_/$HOME/.config/Transmission/settings.json_  or   _/share/.transmission/settings.json_)
@@ -14,4 +14,7 @@ On the PopcornHour C200 / A200 / A210, you'll need to enable SSH access to your 
 *Also make sure that the user that runs Transmission has write permission on your destination_folder.*<br />
 
 With some versions of Transmission, you may need to use this line instead in Transmission's settings file :<br />
-"script-torrent-done-filename": "/path/to/torrentexpander.sh" 
+
+{{{
+"script-torrent-done-filename": "/path/to/torrentexpander.sh"
+}}} 
