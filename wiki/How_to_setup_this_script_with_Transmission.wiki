@@ -6,7 +6,9 @@ You're done !
 
 ==Through text editor==
 
-You can also do it the command line way by editing Transmission's settings file <br />(_/$HOME/.config/Transmission/settings.json_  or   _/share/.transmission/settings.json_)
+You can also do it the command line way by editing Transmission's settings file:
+ * _/$HOME/.config/Transmission/settings.json_
+ * _/share/.transmission/settings.json_
 and editing those two lines :
 
 {{{
