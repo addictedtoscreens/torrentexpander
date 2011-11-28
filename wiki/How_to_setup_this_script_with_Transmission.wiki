@@ -1,7 +1,7 @@
 #labels Featured,Phase-Deploy
 ==Through Transmission interface==
 
-In the transmission GUI, enable the "_call script when torrent is completed_" option and select the path to the torrentexpander.sh script.
+In the transmission GUI, enable the "_call script when torrent is completed_" option and select the path to the torrentexpander.sh script.<p>
 You're done !
 
 ==Through text editor==
