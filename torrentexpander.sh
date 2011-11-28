@@ -74,7 +74,7 @@ find -L / -maxdepth 1 > /dev/null 2>&1 && if [ "$?" == "0" ]; then find_l_availa
 ################# On 1st run they will be stored in an ini file###################
 ## The destination folder is where files will be extracted
 ## I recommend using a different folder from the one where your torrents are located
-##ÊA sub directory of your torrents directory is fine though.
+## A sub directory of your torrents directory is fine though.
 ## If you really want to extract your torrents in-place and delete the
 ## original torrent, switch destructive_mode to yes
 destination_folder="/path/to/your/destination/folder/"
@@ -133,7 +133,7 @@ tv_shows_post_path="no"
 tv_shows_post_path_mode="no"
 ## Copy or move movies to a specific folder - choose action (copy / move)
 ## and add path to enable.
-##ÊYou can also force folder creation for single file movies by setting force_single_file_movies_folder to yes
+## You can also force folder creation for single file movies by setting force_single_file_movies_folder to yes
 movies_post="no"
 movies_post_path="no"
 force_single_file_movies_folder="no"
@@ -1003,7 +1003,7 @@ for line in $(cat "$log_file"); do
 	source_filename=`echo "$(basename "$line")"`
 	# Getting default values for post
 	if [ "$(echo "$line" | egrep -i "$music_extensions_rev" )" ] && [ "$music_post" != "no" ]; then new_destination=`echo "$music_post_path"`
-	elif [[ "$(echo "$line" | egrep -i "$movies_detect_patterns_rev" )" ||Ê"$(echo "$line" | egrep -i "$movies_detect_patterns_pt_2_rev" )" ]] && [ "$(echo "$line" | egrep -i "$movies_extensions_rev" )" ] && [ "$movies_post" != "no" ]; then new_destination=`echo "$movies_post_path"`
+	elif [[ "$(echo "$line" | egrep -i "$movies_detect_patterns_rev" )" || "$(echo "$line" | egrep -i "$movies_detect_patterns_pt_2_rev" )" ]] && [ "$(echo "$line" | egrep -i "$movies_extensions_rev" )" ] && [ "$movies_post" != "no" ]; then new_destination=`echo "$movies_post_path"`
 	fi
 	# Guessing path for /Series/Episode (s) or /Series/Season X/Episode (ss)
 	# or /Series/Season XX/Episode (sss) ordering
@@ -1047,13 +1047,15 @@ if [[ "$has_display" == "yes" && "$user_perm_post" != "no" ]] || [[ "$has_displa
 for line in $(cat "$log_file"); do
 	if [[ "$user_perm_post" != "no" && "$group_perm_post" != "no" ]] || [[ "$files_perm_post" != "no" && "$folder_perm_post" != "no" ]]; then
 		item=`echo "$line"`
-		# Chown files if run as sudo of if user interaction is available
+		# Chown files and directory if run as sudo of if user interaction is available
 		if [[ -f "$item" && "$edit_perm_as_sudo" == "yes" && "$user_perm_post" != "no" && "$group_perm_post" != "no" && $(id -u) -eq 0 ]] || [[ -f "$item" && "$edit_perm_as_sudo" == "yes" && "$user_perm_post" != "no" && "$group_perm_post" != "no" && "$has_display" == "yes" ]] || [[ -d "$item" && "$edit_perm_as_sudo" == "yes" && "$user_perm_post" != "no" && "$group_perm_post" != "no" && $(id -u) -eq 0 ]] || [[ -d "$item" && "$edit_perm_as_sudo" == "yes" && "$user_perm_post" != "no" && "$group_perm_post" != "no" && "$has_display" == "yes" ]]; then sudo chown "$user_perm_post":"$group_perm_post" "$item"; fi
+		# Chown files and directory if run as root of if user interaction is available but sudo unavailable
+		if [[ -f "$item" && "$edit_perm_as_sudo" != "yes" && "$user_perm_post" != "no" && "$group_perm_post" != "no" && $(id -u) -eq 0 ]] || [[ -f "$item" && "$edit_perm_as_sudo" != "yes" && "$user_perm_post" != "no" && "$group_perm_post" != "no" && "$has_display" == "yes" ]] || [[ -d "$item" && "$edit_perm_as_sudo" != "yes" && "$user_perm_post" != "no" && "$group_perm_post" != "no" && $(id -u) -eq 0 ]] || [[ -d "$item" && "$edit_perm_as_sudo" != "yes" && "$user_perm_post" != "no" && "$group_perm_post" != "no" && "$has_display" == "yes" ]]; then chown "$user_perm_post":"$group_perm_post" "$item"; fi
 		# Chmod files if run as sudo of if user interaction is available
 		if [[ -f "$item" && "$edit_perm_as_sudo" == "yes" && "$files_perm_post" != "no" && $(id -u) -eq 0 ]] || [[ -f "$item" && "$edit_perm_as_sudo" == "yes" && "$files_perm_post" != "no" && "$has_display" == "yes" ]]; then sudo chmod "$files_perm_post" "$item"; fi
 		# Chmod files if run at user level and no user interaction is available
 		if [[ -f "$item" && "$edit_perm_as_sudo" == "no" && "$files_perm_post" != "no" ]]; then chmod "$files_perm_post" "$item"; fi
-		# Chown directory if run as sudo of if user interaction is available
+		# Chmod directory if run as sudo of if user interaction is available
 		if [[ -d "$item" && "$edit_perm_as_sudo" == "yes" && "$folder_perm_post" != "no" && $(id -u) -eq 0 ]] || [[ -d "$item" && "$edit_perm_as_sudo" == "yes" && "$folder_perm_post" != "no" && "$has_display" == "yes" ]]; then sudo chmod "$folder_perm_post" "$item"; fi
 		# Chmod directory if run at user level and no user interaction is available
 		if [[ -d "$item" && "$edit_perm_as_sudo" == "no" && "$folder_perm_post" != "no" ]]; then chmod "$folder_perm_post" "$item"; fi
@@ -1063,13 +1065,15 @@ done
 for line in $(cat "$temp_folder$additional_permissions"); do
 	if [[ "$user_perm_post" != "no" && "$group_perm_post" != "no" ]] || [[ "$files_perm_post" != "no" && "$folder_perm_post" != "no" ]]; then
 		item=`echo "$line"`
-		# Chown files if run as sudo of if user interaction is available
+		# Chown files and directories if run as sudo of if user interaction is available
 		if [[ -f "$item" && "$edit_perm_as_sudo" == "yes" && "$user_perm_post" != "no" && "$group_perm_post" != "no" && $(id -u) -eq 0 ]] || [[ -f "$item" && "$edit_perm_as_sudo" == "yes" && "$user_perm_post" != "no" && "$group_perm_post" != "no" && "$has_display" == "yes" ]] || [[ -d "$item" && "$edit_perm_as_sudo" == "yes" && "$user_perm_post" != "no" && "$group_perm_post" != "no" && $(id -u) -eq 0 ]] || [[ -d "$item" && "$edit_perm_as_sudo" == "yes" && "$user_perm_post" != "no" && "$group_perm_post" != "no" && "$has_display" == "yes" ]]; then sudo chown "$user_perm_post":"$group_perm_post" "$item"; fi
+		# Chown files and directories if run as root of if user interaction is available but sudo unavailable
+		if [[ -f "$item" && "$edit_perm_as_sudo" != "yes" && "$user_perm_post" != "no" && "$group_perm_post" != "no" && $(id -u) -eq 0 ]] || [[ -f "$item" && "$edit_perm_as_sudo" != "yes" && "$user_perm_post" != "no" && "$group_perm_post" != "no" && "$has_display" == "yes" ]] || [[ -d "$item" && "$edit_perm_as_sudo" != "yes" && "$user_perm_post" != "no" && "$group_perm_post" != "no" && $(id -u) -eq 0 ]] || [[ -d "$item" && "$edit_perm_as_sudo" != "yes" && "$user_perm_post" != "no" && "$group_perm_post" != "no" && "$has_display" == "yes" ]]; then sudo chown "$user_perm_post":"$group_perm_post" "$item"; fi
 		# Chmod files if run as sudo of if user interaction is available
 		if [[ -f "$item" && "$edit_perm_as_sudo" == "yes" && "$files_perm_post" != "no" && $(id -u) -eq 0 ]] || [[ -f "$item" && "$edit_perm_as_sudo" == "yes" && "$files_perm_post" != "no" && "$has_display" == "yes" ]]; then sudo chmod "$files_perm_post" "$item"; fi
 		# Chmod files if run at user level and no user interaction is available
 		if [[ -f "$item" && "$edit_perm_as_sudo" == "no" && "$files_perm_post" != "no" ]]; then chmod "$files_perm_post" "$item"; fi
-		# Chown directory if run as sudo of if user interaction is available
+		# Chmod directory if run as sudo of if user interaction is available
 		if [[ -d "$item" && "$edit_perm_as_sudo" == "yes" && "$folder_perm_post" != "no" && $(id -u) -eq 0 ]] || [[ -d "$item" && "$edit_perm_as_sudo" == "yes" && "$folder_perm_post" != "no" && "$has_display" == "yes" ]]; then sudo chmod "$folder_perm_post" "$item"; fi
 		# Chmod directory if run at user level and no user interaction is available
 		if [[ -d "$item" && "$edit_perm_as_sudo" == "no" && "$folder_perm_post" != "no" ]]; then chmod "$folder_perm_post" "$item"; fi
