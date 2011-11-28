@@ -1,0 +1,32 @@
+#labels Featured,Phase-Deploy
+First of all download last version of this program and place it where you want. It's not a bad idea to place it in your home folder.
+Open the command line and paste these commands.
+
+{{{
+cd ~
+wget http://torrentexpander.googlecode.com/svn/trunk/torrentexpander.sh
+}}}
+
+You must change permissions set:
+
+{{{
+chmod +x torrentexpander.sh
+}}}
+
+Add this line to your .rtorrent.rc config file, using a text editor:
+
+{{{
+system.method.set_key = event.download.finished,torrentexpander,"execute=/path/to/your/torrentexpander.sh,$d.get_base_path=,$d.get_base_filename="
+}}}
+
+Insted of this, if you want use Torrentexapander only after you have finish to seed, use this (raccomanded):
+
+{{{
+system.method.set_key = event.download.closed,torrentexpander,"execute=/path/to/your/torrentexpander.sh,$d.get_base_path=,$d.get_base_filename="
+}}}
+
+Now you are ready to configure:
+
+{{{
+./torrentexpander.sh
+}}}
