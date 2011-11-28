@@ -13,7 +13,7 @@ You must change permissions set:
 chmod +x torrentexpander.sh
 }}}
 
-Add this line to your .rtorrent.rc config file, using a text editor:
+Add this line to your _~/.rtorrent.rc_ config file, using a text editor:
 
 {{{
 system.method.set_key = event.download.finished,torrentexpander,"execute=/path/to/your/torrentexpander.sh,$d.get_base_path=,$d.get_base_filename="
