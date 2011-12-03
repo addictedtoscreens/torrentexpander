@@ -508,9 +508,9 @@ if [[ "$wget_curl" == *wget* || "$wget_curl" == *curl* ]] && [[ "$auto_update_sc
 			tex_cont="$("$wget_curl" -silent -G "http://torrentexpander.googlecode.com/svn/trunk/torrentexpander.sh" | sed '1,12d')";
 		fi
 		if [ "$(echo "$tex_cont" | grep "# REQUIRED SOFTWARE #")" ]; then
-			if [[ "$check_settings" != *urrent_version=* ]]; then
-				echo "current_version=$release_vers" >> "$settings_file"
-			elif [[ $current_version -lt $release_vers ]]; then
+			if [[ "$check_settings" != *urrent_version=* ]]; then echo "current_version=$release_vers" >> "$settings_file"; fi
+			if [[ "$last_update" != *ast_update=* ]]; then echo "last_update=$date_today" >> "$settings_file"; fi
+			if [[ $current_version -lt $release_vers ]]; then
 				if [[ "$gnu_sed_available" != "yes" ]]; then sed -i '' "/current_version=/d" "$settings_file"; fi
 				if [[ "$gnu_sed_available" == "yes" ]]; then sed -i "/current_version=/d" "$settings_file"; fi
 				echo "current_version=$release_vers" >> "$settings_file"
