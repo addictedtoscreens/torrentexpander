@@ -495,7 +495,12 @@ if [[ "$wget_curl" == *wget* || "$wget_curl" == *curl* ]] && [[ "$auto_update_sc
 		rel_cont=`echo "$("$wget_curl" -silent -i "http://code.google.com/p/torrentexpander/source/browse/trunk"; wait)"`;
 	fi
 	release_vers="$(echo "$rel_cont" | egrep "trunk/torrentexpander.sh" | egrep ">[0-9][0-9][0-9]<" | sed "s;.*href=.trunk/torrentexpander.sh.>\([0-9][0-9][0-9]\)<.*;\1;")"
-	if [[ "$has_display" == "yes" && $current_version -eq $release_vers ]]; then echo "Torrentexpander is up to date";  fi
+	if [[ $current_version -eq $release_vers ]]; then
+		if [[ "$has_display" == "yes" ]]; then echo "Torrentexpander is up to date"; fi
+		if [[ "$gnu_sed_available" != "yes" ]]; then sed -i '' "/last_update=/d" "$settings_file"; fi
+		if [[ "$gnu_sed_available" == "yes" ]]; then sed -i "/last_update=/d" "$settings_file"; fi
+		echo "last_update=$date_today" >> "$settings_file"
+	fi
 	if [[ "$release_vers" && ! "$current_version" ]] || [[ "$release_vers" && $current_version -lt $release_vers ]]; then
 		if [[ "$wget_curl" == *wget* ]]; then
 			tex_cont="$("$wget_curl" -q "http://torrentexpander.googlecode.com/svn/trunk/torrentexpander.sh" -O -)";
@@ -509,9 +514,6 @@ if [[ "$wget_curl" == *wget* || "$wget_curl" == *curl* ]] && [[ "$auto_update_sc
 				if [[ "$gnu_sed_available" != "yes" ]]; then sed -i '' "/current_version=/d" "$settings_file"; fi
 				if [[ "$gnu_sed_available" == "yes" ]]; then sed -i "/current_version=/d" "$settings_file"; fi
 				echo "current_version=$release_vers" >> "$settings_file"
-				if [[ "$gnu_sed_available" != "yes" ]]; then sed -i '' "/last_update=/d" "$settings_file"; fi
-				if [[ "$gnu_sed_available" == "yes" ]]; then sed -i "/last_update=/d" "$settings_file"; fi
-				echo "last_update=$date_today" >> "$settings_file"
 			fi
 			echo "$tex_cont" > "$script_path/torrentexpander.sh"
 			. "$script_path/torrentexpander.sh" "$torrent" -d "$destination_folder"
