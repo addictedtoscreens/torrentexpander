@@ -514,7 +514,11 @@ if [[ "$wget_curl" == *wget* || "$wget_curl" == *curl* ]] && [[ "$auto_update_sc
 				if [[ "$gnu_sed_available" != "yes" ]]; then sed -i '' "/current_version=/d" "$settings_file"; fi
 				if [[ "$gnu_sed_available" == "yes" ]]; then sed -i "/current_version=/d" "$settings_file"; fi
 				echo "current_version=$release_vers" >> "$settings_file"
+				if [[ "$gnu_sed_available" != "yes" ]]; then sed -i '' "/last_update=/d" "$settings_file"; fi
+				if [[ "$gnu_sed_available" == "yes" ]]; then sed -i "/last_update=/d" "$settings_file"; fi
+				echo "last_update=$date_today" >> "$settings_file"
 			fi
+			if [[ "$has_display" == "yes" ]]; then echo "Torrentexpander is being updated"; fi
 			echo "$tex_cont" > "$script_path/torrentexpander.sh"
 			. "$script_path/torrentexpander.sh" "$torrent" -d "$destination_folder"
 			sleep 5
