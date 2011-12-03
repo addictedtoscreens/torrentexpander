@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ## Set up the running environment
-# Makins sure spaces are not interpreted as newline
+# Making sure spaces are not interpreted as newline
 SAVEIFS=$IFS
 IFS=$(echo -en "\n\b")
 
@@ -169,6 +169,9 @@ reset_timestamp="no"
 ## Debug mode (only used in a few routines) - If enabled, it will be named torrentexpander_debug.log
 ## and stored in the same directory as the script
 debug_mode="no"
+## Auto Update script with latest svn release
+## values can be "no", "daily" or "weekly"
+auto_update_script="no"
 ############################ END USER VARIABLES ##################################
 ##################################################################################
 
@@ -292,7 +295,7 @@ elif [[ "$check_settings" != *hird_party_log=* ]]; then echo "third_party_log=no
 fi
 
 # Adding other values in settings file
-for c in $(echo -e "destructive_mode\ntv_shows_fix_numbering\nclean_up_filenames\nmovies_rename_schema\nsubtitles_handling\nrepack_handling\nwii_post\nimg_post\ntv_shows_post\ntv_shows_post_path_mode\nmovies_post\nforce_single_file_movies_folder\nmusic_post\nimdb_poster\nimdb_poster_format\nimdb_nfo\nimdb_fanart\nimdb_fanart_format\ndts_post\nuser_perm_post\ngroup_perm_post\nfiles_perm_post\nfolder_perm_post\nedit_perm_as_sudo\nreset_timestamp\nsupported_extensions\ntv_show_extensions\nmovies_extensions\nmusic_extensions\ndebug_mode"); do
+for c in $(echo -e "destructive_mode\ntv_shows_fix_numbering\nclean_up_filenames\nmovies_rename_schema\nsubtitles_handling\nrepack_handling\nwii_post\nimg_post\ntv_shows_post\ntv_shows_post_path_mode\nmovies_post\nforce_single_file_movies_folder\nmusic_post\nimdb_poster\nimdb_poster_format\nimdb_nfo\nimdb_fanart\nimdb_fanart_format\ndts_post\nuser_perm_post\ngroup_perm_post\nfiles_perm_post\nfolder_perm_post\nedit_perm_as_sudo\nreset_timestamp\nsupported_extensions\ntv_show_extensions\nmovies_extensions\nmusic_extensions\ndebug_mode\nauto_update_script"); do
 	pat="$(echo "$c" | sed "s;^.\(.*\)$;\*\1=\*;")"
 	if [[ "$check_settings" != $pat ]]; then echo "$c=${!c}" >> "$settings_file"; fi
 done
@@ -301,9 +304,13 @@ done
 if [[ "$check_settings" == *ovies_detect_patterns=* && "$gnu_sed_available" != "yes" ]]; then sed -i '' "/movies_detect_patterns=/d" "$settings_file"; fi
 if [[ "$check_settings" == *ovies_detect_patterns=* && "$gnu_sed_available" == "yes" ]]; then sed -i "/movies_detect_patterns=/d" "$settings_file"; fi
 
-# Escaping spaces from paths in settings file
-if [ "$(echo "$check_settings" | egrep -i "([^\\]) ")" ] && [ "$gnu_sed_available" != "yes" ]; then sed -i '' 's;\([^\\]\) ;\1\\ ;g' "$settings_file"; fi
-if [ "$(echo "$check_settings" | egrep -i "([^\\]) ")" ] && [ "$gnu_sed_available" == "yes" ]; then sed -i 's;\([^\\]\) ;\1\\ ;g' "$settings_file"; fi
+# Add quotes in settings file
+#Êif [ "$(echo "$check_settings" | egrep -i "([^\\]) ")" ] && [ "$gnu_sed_available" != "yes" ]; then sed -i '' 's;\([^\\]\) ;\1\\ ;g' "$settings_file"; fi
+# if [ "$(echo "$check_settings" | egrep -i "([^\\]) ")" ] && [ "$gnu_sed_available" == "yes" ]; then sed -i 's;\([^\\]\) ;\1\\ ;g' "$settings_file"; fi
+if [ "$(echo "$check_settings" | egrep -i "([\\]) ")" ] && [ "$gnu_sed_available" != "yes" ]; then sed -i '' 's;\\ ; ;g' "$settings_file"; fi
+if [ "$(echo "$check_settings" | egrep -i "([\\]) ")" ] && [ "$gnu_sed_available" == "yes" ]; then sed -i 's;\\ ; ;g' "$settings_file"; fi
+if [ "$(echo "$check_settings" | egrep -i "([^\"]) ")" ] && [ "$gnu_sed_available" != "yes" ]; then sed -i '' 's;\(.*\)=\([^"]\)\(.*\)\([^"]\);\1="\2\3\4";g' "$settings_file"; fi
+if [ "$(echo "$check_settings" | egrep -i "([^\"]) ")" ] && [ "$gnu_sed_available" == "yes" ]; then sed -i 's;\(.*\)=\([^"]\)\(.*\)\([^"]\);\1="\2\3\4";g' "$settings_file"; fi
 
 # Fetching values from settings file
 source "$settings_file"
@@ -472,6 +479,54 @@ if [ "$quit_on_error" == "yes" ]; then if [ "$has_display" == "yes" ]; then echo
 
 ##################################################################################
 
+# Starting to count steps in the script. Used only if there is a display
+step_number=0
+
+
+############################# SCRIPT AUTO UPDATE #################################
+date_today=$(($(date "+%Y")*365+$(date "+%m")*30+$(date "+%d")))
+if [ ! "$last_update" ]; then last_update=0; fi
+
+if [[ "$wget_curl" == *wget* || "$wget_curl" == *curl* ]] && [[ "$auto_update_script" == "daily" && $last_update -lt $(($date_today-1)) ]] || [[ "$auto_update_script" == "weekly" && $last_update -lt $(($date_today-7)) ]] || [[ "$auto_update_script" == "monthly" && $last_update -lt $(($date_today-30)) ]]; then
+	if [ "$has_display" == "yes" ]; then step_number=$(( $step_number + 1 )) && echo "Step $step_number : Updating Torrentexpander";  fi
+	if [[ "$wget_curl" == *wget* ]]; then
+		rel_cont=`echo "$("$wget_curl" -q "http://code.google.com/p/torrentexpander/source/browse/trunk" -O -; wait)"`;
+	elif [[ "$wget_curl" == *curl* ]]; then
+		rel_cont=`echo "$("$wget_curl" -silent -i "http://code.google.com/p/torrentexpander/source/browse/trunk"; wait)"`;
+	fi
+	release_vers="$(echo "$rel_cont" | egrep "trunk/torrentexpander.sh" | egrep ">[0-9][0-9][0-9]<" | sed "s;.*href=.trunk/torrentexpander.sh.>\([0-9][0-9][0-9]\)<.*;\1;")"
+	if [[ "$has_display" == "yes" && $current_version -eq $release_vers ]]; then echo "Torrentexpander is up to date";  fi
+	if [[ "$release_vers" && ! "$current_version" ]] || [[ "$release_vers" && $current_version -lt $release_vers ]]; then
+		if [[ "$wget_curl" == *wget* ]]; then
+			tex_cont="$("$wget_curl" -q "http://torrentexpander.googlecode.com/svn/trunk/torrentexpander.sh" -O -)";
+		elif [[ "$wget_curl" == *curl* ]]; then
+			tex_cont="$("$wget_curl" -silent -G "http://torrentexpander.googlecode.com/svn/trunk/torrentexpander.sh" | sed '1,12d')";
+		fi
+		if [ "$(echo "$tex_cont" | grep "# REQUIRED SOFTWARE #")" ]; then
+			if [[ "$check_settings" != *urrent_version=* ]]; then
+				echo "current_version=$release_vers" >> "$settings_file"
+			elif [[ $current_version -lt $release_vers ]]; then
+				if [[ "$gnu_sed_available" != "yes" ]]; then sed -i '' "/current_version=/d" "$settings_file"; fi
+				if [[ "$gnu_sed_available" == "yes" ]]; then sed -i "/current_version=/d" "$settings_file"; fi
+				echo "current_version=$release_vers" >> "$settings_file"
+				if [[ "$gnu_sed_available" != "yes" ]]; then sed -i '' "/last_update=/d" "$settings_file"; fi
+				if [[ "$gnu_sed_available" == "yes" ]]; then sed -i "/last_update=/d" "$settings_file"; fi
+				echo "last_update=$date_today" >> "$settings_file"
+			fi
+			echo "$tex_cont" > "$script_path/torrentexpander.sh"
+			. "$script_path/torrentexpander.sh" "$torrent" -d "$destination_folder"
+			sleep 5
+			exit
+		fi
+	fi
+fi
+
+##################################################################################
+
+
+
+
+
 
 ##################### CHECKING IF SCRIPT IS ALREADY RUNNING ######################
 script_notif="torrentexpander is running"
@@ -490,11 +545,10 @@ if [ ! -f "$log_file" ]; then
 fi
 ##################################################################################
 
-# Starting to count steps in the script. Used only if there is a display
-step_number=0
 
 # Creating temp folder
 mkdir -p "$temp_folder"
+
 
 ## Expanding and copying folders to the temp folder
 if [ "$has_display" == "yes" ]; then step_number=$(( $step_number + 1 )) && echo "Step $step_number : Expanding / moving content of the torrent";  fi
@@ -811,6 +865,17 @@ if [[ "$folder_short" && "$tv_shows_fix_numbering" == "yes" && "$gnu_sed_availab
 # Resetting folder_short value the gnu sed way
 elif [[ "$folder_short" && "$tv_shows_fix_numbering" == "yes" && "$gnu_sed_available" == "yes" ]] || [[ "$folder_short" && "$clean_up_filenames" == "yes" && "$gnu_sed_available" == "yes" ]] || [[ "$folder_short" && "$imdb_funct_on" == "yes" && "$gnu_sed_available" != "yes" ]]; then folder_short=`echo "$(cat "$log_file" | sed -n '$p' | sed 's;.*/;;g')"`; sed -i '$d' "$log_file"
 fi
+# Generating a surrounding folder for movies if force_single_file_movies_folder is turned on
+if [[ "$force_single_file_movies_folder" == "yes" && ! "$folder_short" ]]; then
+	source_file=`echo "$(cat "$log_file")"`
+	if [[ "$(echo "$source_file" | egrep -i "$movies_extensions_rev")" ]] && [[ "$(echo "$quality" | egrep -i "$movies_detect_patterns_rev" )" || "$(echo "$quality" | egrep -i "$movies_detect_patterns_pt_2_rev" )" ]] && [[ "$(echo "$source_file" | egrep -v "[sS][0-9][0-9][eE][0-9][0-9]")" && "$(echo "$source_file" | egrep -v "[0-9][0-9][0-9][0-9].[0-9][0-9].[0-9][0-9]")" ]]; then
+		folder_short=`echo "$source_file" | sed 's/\(.*\)\..*/\1/' | sed 's;.*/;;g'`
+		new_destination=`echo "$temp_folder$folder_short/"`
+		mkdir -p "$new_destination"
+		mv -f "$source_file" "$new_destination"
+		echo "$(find "$temp_folder$folder_short" -maxdepth 1 -mindepth 1 -type f | egrep -i "$supported_extensions_rev")" > "$log_file"
+	fi
+fi
 
 
 # Starting debug log for imdb features
@@ -1047,7 +1112,7 @@ done
 ## Deleting unnecessary surrounding folder
 if [[ "$folder_short" && -d "$temp_folder$folder_short" ]]; then
 	files_in_folder_short=$(ls -1 "$temp_folder$folder_short" | wc -l)
-	if [[ "$music_post" == "move" && $files_in_folder_short -eq 0 ]] || [[ "$tv_shows_post" == "move" && $files_in_folder_short -eq 0 ]] || [[ "$movies_post" == "move" && $files_in_folder_short -eq 0 ]]; then folder_short="" && folder_short_deleted="yes"; fi
+	if [[ "$music_post" == "move" && $files_in_folder_short -eq 0 ]] || [[ "$tv_shows_post" == "move" && $files_in_folder_short -eq 0 ]] || [[ "$movies_post" == "move" && $files_in_folder_short -eq 0 ]]; then rm -rf "$temp_folder$folder_short" && folder_short=""; fi
 fi
 
 
