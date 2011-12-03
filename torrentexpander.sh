@@ -309,8 +309,8 @@ if [[ "$check_settings" == *ovies_detect_patterns=* && "$gnu_sed_available" == "
 # if [ "$(echo "$check_settings" | egrep -i "([^\\]) ")" ] && [ "$gnu_sed_available" == "yes" ]; then sed -i 's;\([^\\]\) ;\1\\ ;g' "$settings_file"; fi
 if [ "$(echo "$check_settings" | egrep -i "([\\]) ")" ] && [ "$gnu_sed_available" != "yes" ]; then sed -i '' 's;\\ ; ;g' "$settings_file"; fi
 if [ "$(echo "$check_settings" | egrep -i "([\\]) ")" ] && [ "$gnu_sed_available" == "yes" ]; then sed -i 's;\\ ; ;g' "$settings_file"; fi
-if [ "$(echo "$check_settings" | egrep -i "([^\"]) ")" ] && [ "$gnu_sed_available" != "yes" ]; then sed -i '' 's;\(.*\)=\([^"]\)\(.*\)\([^"]\);\1="\2\3\4";g' "$settings_file"; fi
-if [ "$(echo "$check_settings" | egrep -i "([^\"]) ")" ] && [ "$gnu_sed_available" == "yes" ]; then sed -i 's;\(.*\)=\([^"]\)\(.*\)\([^"]\);\1="\2\3\4";g' "$settings_file"; fi
+if [ "$(echo "$check_settings" | egrep -i "([^\"]) ")" ] && [ "$gnu_sed_available" != "yes" ]; then sed -i '' 's;\(.*\)=\([^"]\)\(.*\)\([^"]\)$;\1="\2\3\4";g' "$settings_file"; fi
+if [ "$(echo "$check_settings" | egrep -i "([^\"]) ")" ] && [ "$gnu_sed_available" == "yes" ]; then sed -i 's;\(.*\)=\([^"]\)\(.*\)\([^"]\)$;\1="\2\3\4";g' "$settings_file"; fi
 
 # Fetching values from settings file
 source "$settings_file"
