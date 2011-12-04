@@ -514,7 +514,7 @@ date_today=$(($(date "+%Y")*365+$(date "+%m")*30+$(date "+%d")))
 if [ ! "$last_update" ]; then last_update=0; fi
 
 if [[ "$wget_curl" == *wget* || "$wget_curl" == *curl* ]] && [[ "$auto_update_script" == "daily" && $last_update -lt $(($date_today-1)) ]] || [[ "$auto_update_script" == "weekly" && $last_update -lt $(($date_today-7)) ]] || [[ "$auto_update_script" == "monthly" && $last_update -lt $(($date_today-30)) ]]; then
-	if [ "$has_display" == "yes" ]; then step_number=$(( $step_number + 1 )) && echo -n -e "Step $step_number : Updating Torrentexpander\n";  fi
+	if [ "$has_display" == "yes" ]; then step_number=$(( $step_number + 1 )) && echo -n -e "Step $step_number : Updating Torrentexpander\n\n";  fi
 	if [[ "$wget_curl" == *wget* ]]; then
 		rel_cont=`echo "$("$wget_curl" -q "http://code.google.com/p/torrentexpander/source/browse/trunk" -O -; wait)"`;
 	elif [[ "$wget_curl" == *curl* ]]; then
@@ -522,22 +522,20 @@ if [[ "$wget_curl" == *wget* || "$wget_curl" == *curl* ]] && [[ "$auto_update_sc
 	fi
 	release_vers="$(echo "$rel_cont" | egrep "trunk/torrentexpander.sh" | egrep ">[0-9][0-9][0-9]<" | sed "s;.*href=.trunk/torrentexpander.sh.>\([0-9][0-9][0-9]\)<.*;\1;")"
 	if [[ $current_version -eq $release_vers ]]; then
-		if [[ "$has_display" == "yes" ]]; then echo "Torrentexpander is up to date"; fi
+		if [[ "$has_display" == "yes" ]]; then echo -n -e  "Torrentexpander is up to date\n\n"; fi
 		if [[ "$gnu_sed_available" != "yes" ]]; then sed -i '' "/last_update=/d" "$settings_file"; fi
 		if [[ "$gnu_sed_available" == "yes" ]]; then sed -i "/last_update=/d" "$settings_file"; fi
 		echo "last_update=$date_today" >> "$settings_file"
 	fi
 	if [[ "$release_vers" && ! "$current_version" ]] || [[ "$release_vers" && $current_version -lt $release_vers ]]; then
-		if [[ "$has_display" == "yes" ]]; then echo -n -e "A new version of Torrentexpander is available.\nDownloading it right now\n"; fi
+		if [[ "$has_display" == "yes" ]]; then echo -n -e "A new version of Torrentexpander is available.\n\nDownloading it right now\n\n"; fi
 		if [[ "$wget_curl" == *wget* ]]; then
 			"$wget_curl" -q "http://torrentexpander.googlecode.com/svn/trunk/torrentexpander.sh" -O "$temp_folder_without_slash/new_script"; wait;
 		elif [[ "$wget_curl" == *curl* ]]; then
-			"$wget_curl" -silent -o "$temp_folder_without_slash/new_script" "http://torrentexpander.googlecode.com/svn/trunk/torrentexpander.sh"; wait;
-			if [[ "$gnu_sed_available" != "yes" ]]; then sed -i '' '/\#..bin.bash/,$!d' "$temp_folder_without_slash/new_script"; fi
-			if [[ "$gnu_sed_available" == "yes" ]]; then sed -i '/\#..bin.bash/,$!d' "$temp_folder_without_slash/new_script"; fi
+			"$wget_curl" -# -C - -o "$temp_folder_without_slash/new_script" "http://torrentexpander.googlecode.com/svn/trunk/torrentexpander.sh" > /dev/null 2>&1; wait;
 		fi
 		if [ "$(cat "$temp_folder_without_slash/new_script" | grep "# REQUIRED SOFTWARE #")" ]; then
-			if [[ "$has_display" == "yes" ]]; then echo -n -e "A new version of Torrentexpander has been downloaded.\nNow installing\n"; fi
+			if [[ "$has_display" == "yes" ]]; then echo -n -e "A new version of Torrentexpander has been downloaded.\nNow installing\n\n"; fi
 			if [[ "$check_settings" != *urrent_version=* ]]; then echo "current_version=$release_vers" >> "$settings_file"; fi
 			if [[ "$last_update" != *ast_update=* ]]; then echo "last_update=$date_today" >> "$settings_file"; fi
 			if [[ $current_version -lt $release_vers ]]; then
@@ -548,7 +546,7 @@ if [[ "$wget_curl" == *wget* || "$wget_curl" == *curl* ]] && [[ "$auto_update_sc
 				if [[ "$gnu_sed_available" == "yes" ]]; then sed -i "/last_update=/d" "$settings_file"; fi
 				echo "last_update=$date_today" >> "$settings_file"
 			fi
-			if [[ "$has_display" == "yes" ]]; then echo -n -e "Torrentexpander is gonna restart now\n"; fi
+			if [[ "$has_display" == "yes" ]]; then echo -n -e "Torrentexpander is gonna restart now\n\n"; fi
 			cat "$temp_folder_without_slash/new_script" > "$script_path/torrentexpander.sh"; wait;
 			rm -rf "$temp_folder"
 			rm -f "$log_file"
@@ -971,7 +969,7 @@ if [ "$imdb_title" ] && [[ "$imdb_poster" == "yes" || "$imdb_nfo" == "yes" || "$
 			# Adding IMDB Poster URL to the debug log
 			if [[ "$debug_mode" == "yes" ]]; then echo "IMDB POSTER URL: $poster_url" >> "$debug_log"; fi
 			# If IMDB Poster URL is available, downloading it
-			if [[ "$imdb_poster" == "yes" && "$poster_url" ]]; then "$wget_curl" -silent -o "$temp_folder_without_slash/temp_poster" "$poster_url"; wait; fi
+			if [[ "$imdb_poster" == "yes" && "$poster_url" ]]; then "$wget_curl" -# -C - -o "$temp_folder_without_slash/temp_poster" "$poster_url" > /dev/null 2>&1; wait; fi
 			# Indicate IMDB Poster as downloaded to the debug log
 			if [[ "$debug_mode" == "yes" && -f "$temp_folder_without_slash/temp_poster" ]]; then echo "IMDB Poster downloaded" >> "$debug_log"; fi
 			# Getting Fanart if the imdb_id is available
@@ -985,7 +983,8 @@ if [ "$imdb_title" ] && [[ "$imdb_poster" == "yes" || "$imdb_nfo" == "yes" || "$
 				# Adding Fanart URL to the debug log
 				if [[ "$debug_mode" == "yes" ]]; then echo "TMDB fanart url: $fanart_url" >> "$debug_log"; fi
 				# If Fanart URL is available, downloading it
-				if [[ "$imdb_fanart" == "yes" && "$fanart_url" ]]; then "$wget_curl" -silent -o "$temp_folder_without_slash/temp_fanart" "$fanart_url"; wait; fi
+				# if [[ "$imdb_fanart" == "yes" && "$fanart_url" ]]; then "$wget_curl" -silent -o "$temp_folder_without_slash/temp_fanart" "$fanart_url"; wait; fi
+				if [[ "$imdb_fanart" == "yes" && "$fanart_url" ]]; then "$wget_curl" -# -C - -o "$temp_folder_without_slash/temp_fanart" "$fanart_url" > /dev/null 2>&1; wait; fi
 				# Indicate Fanart as downloaded to the debug log
 				if [[ "$debug_mode" == "yes" && -f "$temp_folder_without_slash/temp_fanart" ]]; then echo "Fanart downloaded" >> "$debug_log"; fi
 			fi
