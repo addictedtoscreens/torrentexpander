@@ -241,7 +241,7 @@ if [[ "$check_settings" != *nrar_bin=* || "$check_settings" == *nrar_bin=incorre
 	if [ ! -x "$unrar_bin" ] && [ -x "$(for d in $(echo -e "$(echo -e "$PATH" | sed "s;:;\\\n;g")\n/Applications\n/nmt/apps\n/bin\n/usr/bin\n/usr/local/bin"); do if [ -d "$d" ]; then find "$d" -maxdepth 2 -name 7z; fi; done | sed -n -e '1p')" ]; then unrar_bin="$(for d in $(echo -e "$(echo -e "$PATH" | sed "s;:;\\\n;g")\n/Applications\n/nmt/apps\n/bin\n/usr/bin\n/usr/local/bin"); do if [ -d "$d" ]; then find "$d" -maxdepth 2 -name 7z; fi; done | sed -n -e '1p')"; fi
 fi
 
-# Looking for unrar in the PATH variable or /Applications /nmt/apps /usr/local/bin directories
+# Looking for unzip in the PATH variable or /Applications /nmt/apps /usr/local/bin directories
 if [[ "$check_settings" != *nzip_bin=* || "$check_settings" == *nzip_bin=incorrect_or_not_se* ]]; then
 	if [ ! -x "$unzip_bin" ] && [ -x "$(for d in $(echo -e "$(echo -e "$PATH" | sed "s;:;\\\n;g")\n/Applications\n/nmt/apps\n/bin\n/usr/bin\n/usr/local/bin"); do if [ -d "$d" ]; then find "$d" -maxdepth 2 -name unzip; fi; done | sed -n -e '1p')" ]; then unzip_bin="$(for d in $(echo -e "$(echo -e "$PATH" | sed "s;:;\\\n;g")\n/Applications\n/nmt/apps\n/bin\n/usr/bin\n/usr/local/bin"); do if [ -d "$d" ]; then find "$d" -maxdepth 2 -name unzip; fi; done | sed -n -e '1p')"; fi
 	# If unzip is unavailable, switch back to 7z
@@ -261,8 +261,15 @@ if [[ "$check_settings" != *cd2iso_bin=* || "$check_settings" == *cd2iso_bin=inc
 	if [ ! -x "$ccd2iso_bin" ] && [ -x "$(for d in $(echo -e "$(echo -e "$PATH" | sed "s;:;\\\n;g")\n/nmt/apps\n/Applications"); do if [ -d "$d" ]; then find "$d" -maxdepth 2 -name ccd2iso; fi; done | sed -n -e '1p')" ]; then ccd2iso_bin="$(for d in $(echo -e "$(echo -e "$PATH" | sed "s;:;\\\n;g")\n/nmt/apps\n/Applications"); do if [ -d "$d" ]; then find "$d" -maxdepth 2 -name ccd2iso; fi; done | sed -n -e '1p')"; fi
 fi
 
+# Looking for a text editor in the PATH variable or /Applications /nmt/apps /usr/local/bin directories
+if [[ "$check_settings" != *ext_editor_bin=* || "$check_settings" == *ext_editor_bin=incorrect_or_not_se* ]]; then
+	if [ ! -x "$text_editor_bin" ] && [ -x "$(for d in $(echo -e "$(echo -e "$PATH" | sed "s;:;\\\n;g")\n/Applications\n/nmt/apps\n/bin\n/usr/bin\n/usr/local/bin"); do if [ -d "$d" ]; then find "$d" -maxdepth 2 -name nano; fi; done | sed -n -e '1p')" ]; then text_editor_bin="$(for d in $(echo -e "$(echo -e "$PATH" | sed "s;:;\\\n;g")\n/Applications\n/nmt/apps\n/bin\n/usr/bin\n/usr/local/bin"); do if [ -d "$d" ]; then find "$d" -maxdepth 2 -name nano; fi; done | sed -n -e '1p')"; fi
+	# If nano is unavailable, switch back to vi
+	if [ ! -x "$text_editor_bin" ] && [ -x "$(for d in $(echo -e "$(echo -e "$PATH" | sed "s;:;\\\n;g")\n/Applications\n/nmt/apps\n/bin\n/usr/bin\n/usr/local/bin"); do if [ -d "$d" ]; then find "$d" -maxdepth 2 -name vi; fi; done | sed -n -e '1p')" ]; then text_editor_bin="$(for d in $(echo -e "$(echo -e "$PATH" | sed "s;:;\\\n;g")\n/Applications\n/nmt/apps\n/bin\n/usr/bin\n/usr/local/bin"); do if [ -d "$d" ]; then find "$d" -maxdepth 2 -name vi; fi; done | sed -n -e '1p')"; fi
+fi
+
 # Inserting path to binaries into the settings file
-for c in $(echo -e "unrar_bin\nunzip_bin\nwget_curl\nccd2iso_bin\nmkvdts2ac3_bin"); do
+for c in $(echo -e "unrar_bin\nunzip_bin\nwget_curl\nccd2iso_bin\ntext_editor_bin\nmkvdts2ac3_bin"); do
 	pat="$(echo "$c" | sed "s;^.\(.*\)$;\*\1=\*;")"
 	pat_two="$(echo "$c" | sed "s;^.\(.*\)$;\*\1=incorrect_or_not_se\*;")"
 	if [[ "$check_settings" != $pat && -x "${!c}" ]] || [[ "$check_settings" == $pat_two && -x "${!c}" ]]; then
@@ -305,12 +312,10 @@ if [[ "$check_settings" == *ovies_detect_patterns=* && "$gnu_sed_available" != "
 if [[ "$check_settings" == *ovies_detect_patterns=* && "$gnu_sed_available" == "yes" ]]; then sed -i "/movies_detect_patterns=/d" "$settings_file"; fi
 
 # Add quotes in settings file
-#Êif [ "$(echo "$check_settings" | egrep -i "([^\\]) ")" ] && [ "$gnu_sed_available" != "yes" ]; then sed -i '' 's;\([^\\]\) ;\1\\ ;g' "$settings_file"; fi
-# if [ "$(echo "$check_settings" | egrep -i "([^\\]) ")" ] && [ "$gnu_sed_available" == "yes" ]; then sed -i 's;\([^\\]\) ;\1\\ ;g' "$settings_file"; fi
 if [ "$(echo "$check_settings" | egrep -i "([\\]) ")" ] && [ "$gnu_sed_available" != "yes" ]; then sed -i '' 's;\\ ; ;g' "$settings_file"; fi
 if [ "$(echo "$check_settings" | egrep -i "([\\]) ")" ] && [ "$gnu_sed_available" == "yes" ]; then sed -i 's;\\ ; ;g' "$settings_file"; fi
-if [ "$(echo "$check_settings" | egrep -i "([^\"]) ")" ] && [ "$gnu_sed_available" != "yes" ]; then sed -i '' 's;\(.*\)=\([^"]\)\(.*\)\([^"]\)$;\1="\2\3\4";g' "$settings_file"; fi
-if [ "$(echo "$check_settings" | egrep -i "([^\"]) ")" ] && [ "$gnu_sed_available" == "yes" ]; then sed -i 's;\(.*\)=\([^"]\)\(.*\)\([^"]\)$;\1="\2\3\4";g' "$settings_file"; fi
+if [ "$(echo "$check_settings" | egrep -i "([^\"]) ")" ] && [ "$gnu_sed_available" != "yes" ]; then sed -i '' 's;^\(.*\)=\([^"]\)\(.*\)\([^"]\)$;\1="\2\3\4";g' "$settings_file"; fi
+if [ "$(echo "$check_settings" | egrep -i "([^\"]) ")" ] && [ "$gnu_sed_available" == "yes" ]; then sed -i 's;^\(.*\)=\([^"]\)\(.*\)\([^"]\)$;\1="\2\3\4";g' "$settings_file"; fi
 
 # Fetching values from settings file
 source "$settings_file"
@@ -337,8 +342,8 @@ other_movies_patterns="$other_movies_patterns,$audio_quality_patterns"
 ##################################################################################
 ############################### Setup Assistant ##################################
 if [ "$first_run" == "yes" ] && [ "$has_display" == "yes" ]; then echo -e "----------------------------------------------------\n----------------------------------------------------\n\nWELCOME TO TORRENTEXPANDER\n\n----------------------------------------------------\n----------------------------------------------------\n\n"; fi
-if [ "$first_run" == "yes" ] && [ "$has_display" == "yes" ]; then echo -e "This is the first time you're running this script\nA few settings are required for it to run\nThese required settings are :\n- The destination_folder -> This is where the content of your torrents will be expanded / copied\n- unrar_bin -> This is the path to the Unrar binary. If it's not already installed on your computer then Google is your friend\n- unzip_bin -> This is the path to the Unrar binary. It's probably already installed on your computer\n\nAll other options are already set to their default value\nIf you want more details about those options, open this script with a text editor\n\nA nano editor will now open so that you can edit your settings\nTo save them you'll have to press Control-X then Y then Enter\n\nOnce you're ready press Enter" && read -p ""; fi
-if [ "$first_run" == "yes" ] && [ "$has_display" == "yes" ]; then nano "$settings_file" && echo -e "\n\nYou're done with your setup\nThis script will exit now\nIf you need to edit your settings again just run $script_path/torrentexpander.sh -c" && exit; fi
+if [ "$first_run" == "yes" ] && [ "$has_display" == "yes" ]; then echo -e "This is the first time you're running this script\nA few settings are required for it to run\nThese required settings are :\n- The destination_folder -> This is where the content of your torrents will be expanded / copied\n- unrar_bin -> This is the path to the Unrar binary. If it's not already installed on your computer then Google is your friend\n- unzip_bin -> This is the path to the Unrar binary. It's probably already installed on your computer\n\nAll other options are already set to their default value\nIf you want more details about those options, open this script with a text editor\n\nA nano or vi text editor will now open so that you can edit your settings\nTo save them in nano you'll have to press Control-X then Y then Enter\nTo save them in vi you'll have to press Escape then type :wq then press Enter\n\nOnce you're ready press Enter" && read -p ""; fi
+if [ "$first_run" == "yes" ] && [ "$has_display" == "yes" ]; then "$text_editor_bin" "$settings_file" && echo -e "\n\nYou're done with your setup\nThis script will exit now\nIf you need to edit your settings again just run $script_path/torrentexpander.sh -c" && exit; fi
 
 ##################################################################################
 ###################### Kinda graphical user interface ############################
@@ -483,57 +488,6 @@ if [ "$quit_on_error" == "yes" ]; then if [ "$has_display" == "yes" ]; then echo
 step_number=0
 
 
-############################# SCRIPT AUTO UPDATE #################################
-date_today=$(($(date "+%Y")*365+$(date "+%m")*30+$(date "+%d")))
-if [ ! "$last_update" ]; then last_update=0; fi
-
-if [[ "$wget_curl" == *wget* || "$wget_curl" == *curl* ]] && [[ "$auto_update_script" == "daily" && $last_update -lt $(($date_today-1)) ]] || [[ "$auto_update_script" == "weekly" && $last_update -lt $(($date_today-7)) ]] || [[ "$auto_update_script" == "monthly" && $last_update -lt $(($date_today-30)) ]]; then
-	if [ "$has_display" == "yes" ]; then step_number=$(( $step_number + 1 )) && echo "Step $step_number : Updating Torrentexpander";  fi
-	if [[ "$wget_curl" == *wget* ]]; then
-		rel_cont=`echo "$("$wget_curl" -q "http://code.google.com/p/torrentexpander/source/browse/trunk" -O -; wait)"`;
-	elif [[ "$wget_curl" == *curl* ]]; then
-		rel_cont=`echo "$("$wget_curl" -silent -i "http://code.google.com/p/torrentexpander/source/browse/trunk"; wait)"`;
-	fi
-	release_vers="$(echo "$rel_cont" | egrep "trunk/torrentexpander.sh" | egrep ">[0-9][0-9][0-9]<" | sed "s;.*href=.trunk/torrentexpander.sh.>\([0-9][0-9][0-9]\)<.*;\1;")"
-	if [[ $current_version -eq $release_vers ]]; then
-		if [[ "$has_display" == "yes" ]]; then echo "Torrentexpander is up to date"; fi
-		if [[ "$gnu_sed_available" != "yes" ]]; then sed -i '' "/last_update=/d" "$settings_file"; fi
-		if [[ "$gnu_sed_available" == "yes" ]]; then sed -i "/last_update=/d" "$settings_file"; fi
-		echo "last_update=$date_today" >> "$settings_file"
-	fi
-	if [[ "$release_vers" && ! "$current_version" ]] || [[ "$release_vers" && $current_version -lt $release_vers ]]; then
-		if [[ "$wget_curl" == *wget* ]]; then
-			tex_cont="$("$wget_curl" -q "http://torrentexpander.googlecode.com/svn/trunk/torrentexpander.sh" -O -)";
-		elif [[ "$wget_curl" == *curl* ]]; then
-			tex_cont="$("$wget_curl" -silent -G "http://torrentexpander.googlecode.com/svn/trunk/torrentexpander.sh" | sed '1,12d')";
-		fi
-		if [ "$(echo "$tex_cont" | grep "# REQUIRED SOFTWARE #")" ]; then
-			if [[ "$check_settings" != *urrent_version=* ]]; then echo "current_version=$release_vers" >> "$settings_file"; fi
-			if [[ "$last_update" != *ast_update=* ]]; then echo "last_update=$date_today" >> "$settings_file"; fi
-			if [[ $current_version -lt $release_vers ]]; then
-				if [[ "$gnu_sed_available" != "yes" ]]; then sed -i '' "/current_version=/d" "$settings_file"; fi
-				if [[ "$gnu_sed_available" == "yes" ]]; then sed -i "/current_version=/d" "$settings_file"; fi
-				echo "current_version=$release_vers" >> "$settings_file"
-				if [[ "$gnu_sed_available" != "yes" ]]; then sed -i '' "/last_update=/d" "$settings_file"; fi
-				if [[ "$gnu_sed_available" == "yes" ]]; then sed -i "/last_update=/d" "$settings_file"; fi
-				echo "last_update=$date_today" >> "$settings_file"
-			fi
-			if [[ "$has_display" == "yes" ]]; then echo "Torrentexpander is being updated"; fi
-			echo "$tex_cont" > "$script_path/torrentexpander.sh"
-			. "$script_path/torrentexpander.sh" "$torrent" -d "$destination_folder"
-			sleep 5
-			exit
-		fi
-	fi
-fi
-
-##################################################################################
-
-
-
-
-
-
 ##################### CHECKING IF SCRIPT IS ALREADY RUNNING ######################
 script_notif="torrentexpander is running"
 log_file="$(echo "$destination_folder$script_notif")"
@@ -554,6 +508,58 @@ fi
 
 # Creating temp folder
 mkdir -p "$temp_folder"
+
+############################# SCRIPT AUTO UPDATE #################################
+date_today=$(($(date "+%Y")*365+$(date "+%m")*30+$(date "+%d")))
+if [ ! "$last_update" ]; then last_update=0; fi
+
+if [[ "$wget_curl" == *wget* || "$wget_curl" == *curl* ]] && [[ "$auto_update_script" == "daily" && $last_update -lt $(($date_today-1)) ]] || [[ "$auto_update_script" == "weekly" && $last_update -lt $(($date_today-7)) ]] || [[ "$auto_update_script" == "monthly" && $last_update -lt $(($date_today-30)) ]]; then
+	if [ "$has_display" == "yes" ]; then step_number=$(( $step_number + 1 )) && echo -n -e "Step $step_number : Updating Torrentexpander\n";  fi
+	if [[ "$wget_curl" == *wget* ]]; then
+		rel_cont=`echo "$("$wget_curl" -q "http://code.google.com/p/torrentexpander/source/browse/trunk" -O -; wait)"`;
+	elif [[ "$wget_curl" == *curl* ]]; then
+		rel_cont=`echo "$("$wget_curl" -silent -i "http://code.google.com/p/torrentexpander/source/browse/trunk"; wait)"`;
+	fi
+	release_vers="$(echo "$rel_cont" | egrep "trunk/torrentexpander.sh" | egrep ">[0-9][0-9][0-9]<" | sed "s;.*href=.trunk/torrentexpander.sh.>\([0-9][0-9][0-9]\)<.*;\1;")"
+	if [[ $current_version -eq $release_vers ]]; then
+		if [[ "$has_display" == "yes" ]]; then echo "Torrentexpander is up to date"; fi
+		if [[ "$gnu_sed_available" != "yes" ]]; then sed -i '' "/last_update=/d" "$settings_file"; fi
+		if [[ "$gnu_sed_available" == "yes" ]]; then sed -i "/last_update=/d" "$settings_file"; fi
+		echo "last_update=$date_today" >> "$settings_file"
+	fi
+	if [[ "$release_vers" && ! "$current_version" ]] || [[ "$release_vers" && $current_version -lt $release_vers ]]; then
+		if [[ "$has_display" == "yes" ]]; then echo -n -e "A new version of Torrentexpander is available.\nDownloading it right now\n"; fi
+		if [[ "$wget_curl" == *wget* ]]; then
+			"$wget_curl" -q "http://torrentexpander.googlecode.com/svn/trunk/torrentexpander.sh" -O "$temp_folder_without_slash/new_script"; wait;
+		elif [[ "$wget_curl" == *curl* ]]; then
+			"$wget_curl" -silent -o "$temp_folder_without_slash/new_script" "http://torrentexpander.googlecode.com/svn/trunk/torrentexpander.sh"; wait;
+			if [[ "$gnu_sed_available" != "yes" ]]; then sed -i '' '/\#..bin.bash/,$!d' "$temp_folder_without_slash/new_script"; fi
+			if [[ "$gnu_sed_available" == "yes" ]]; then sed -i '/\#..bin.bash/,$!d' "$temp_folder_without_slash/new_script"; fi
+		fi
+		if [ "$(cat "$temp_folder_without_slash/new_script" | grep "# REQUIRED SOFTWARE #")" ]; then
+			if [[ "$has_display" == "yes" ]]; then echo -n -e "A new version of Torrentexpander has been downloaded.\nNow installing\n"; fi
+			if [[ "$check_settings" != *urrent_version=* ]]; then echo "current_version=$release_vers" >> "$settings_file"; fi
+			if [[ "$last_update" != *ast_update=* ]]; then echo "last_update=$date_today" >> "$settings_file"; fi
+			if [[ $current_version -lt $release_vers ]]; then
+				if [[ "$gnu_sed_available" != "yes" ]]; then sed -i '' "/current_version=/d" "$settings_file"; fi
+				if [[ "$gnu_sed_available" == "yes" ]]; then sed -i "/current_version=/d" "$settings_file"; fi
+				echo "current_version=$release_vers" >> "$settings_file"
+				if [[ "$gnu_sed_available" != "yes" ]]; then sed -i '' "/last_update=/d" "$settings_file"; fi
+				if [[ "$gnu_sed_available" == "yes" ]]; then sed -i "/last_update=/d" "$settings_file"; fi
+				echo "last_update=$date_today" >> "$settings_file"
+			fi
+			if [[ "$has_display" == "yes" ]]; then echo -n -e "Torrentexpander is gonna restart now\n"; fi
+			cat "$temp_folder_without_slash/new_script" > "$script_path/torrentexpander.sh"; wait;
+			rm -rf "$temp_folder"
+			rm -f "$log_file"
+			. "$script_path/torrentexpander.sh" "$torrent" -d "$destination_folder"
+			sleep 5
+			exit
+		fi
+	fi
+fi
+
+##################################################################################
 
 
 ## Expanding and copying folders to the temp folder
@@ -909,9 +915,9 @@ if [ "$imdb_title" ] && [[ "$imdb_poster" == "yes" || "$imdb_nfo" == "yes" || "$
 	# Using wget to fetch data if available
 	if [[ "$wget_curl" == *wget* ]]; then
 		# Downloading imdWebService XML and storing it in a variable
-		xml_cont=`echo "$("$wget_curl" -q "http://labaia.hellospace.net/imdbWebService.php?m=$imdb_title&o=xml" -O -; wait)"`;
+		xml_cont=`echo "$("$wget_curl" -q "http://dedi603.seedhost.eu/imdbWebService.php?m=$imdb_title&o=xml" -O -; wait)"`;
 		# Adding XML path to the debug log
-		if [[ "$debug_mode" == "yes" ]]; then echo "IMDB XML URL: http://labaia.hellospace.net/imdbWebService.php?m=$imdb_title&o=xml" >> "$debug_log"; fi
+		if [[ "$debug_mode" == "yes" ]]; then echo "IMDB XML URL: http://dedi603.seedhost.eu/imdbWebService.php?m=$imdb_title&o=xml" >> "$debug_log"; fi
 		if [ "$xml_cont" ]; then
 			# Getting IMDB URL from the XML file
 			imdb_url=`echo "$(echo "$xml_cont" | grep "<IMDB_URL>" | sed 's/^[ \t]*//' | sed 's/[ \t]*$//' | sed 's/<[^>]*>//g')"`;
@@ -948,9 +954,9 @@ if [ "$imdb_title" ] && [[ "$imdb_poster" == "yes" || "$imdb_nfo" == "yes" || "$
 	# Using curl to fetch data if available
 	elif [[ "$wget_curl" == *curl* ]]; then
 		# Downloading imdWebService XML and storing it in a variable
-		xml_cont=`echo "$("$wget_curl" -silent -i "http://labaia.hellospace.net/imdbWebService.php?m=$imdb_title&o=xml"; wait)"`;
+		xml_cont=`echo "$("$wget_curl" -silent -i "http://dedi603.seedhost.eu/imdbWebService.php?m=$imdb_title&o=xml"; wait)"`;
 		# Adding XML path to the debug log
-		if [[ "$debug_mode" == "yes" ]]; then echo "IMDB XML URL: http://labaia.hellospace.net/imdbWebService.php?m=$imdb_title&o=xml" >> "$debug_log"; fi
+		if [[ "$debug_mode" == "yes" ]]; then echo "IMDB XML URL: http://dedi603.seedhost.eu/imdbWebService.php?m=$imdb_title&o=xml" >> "$debug_log"; fi
 		if [ "$xml_cont" ]; then
 			# Getting IMDB URL from the XML file
 			imdb_url=`echo "$(echo "$xml_cont" | grep "<IMDB_URL>" | sed 's/^[ \t]*//' | sed 's/[ \t]*$//' | sed 's/<[^>]*>//g')"`;
@@ -965,7 +971,7 @@ if [ "$imdb_title" ] && [[ "$imdb_poster" == "yes" || "$imdb_nfo" == "yes" || "$
 			# Adding IMDB Poster URL to the debug log
 			if [[ "$debug_mode" == "yes" ]]; then echo "IMDB POSTER URL: $poster_url" >> "$debug_log"; fi
 			# If IMDB Poster URL is available, downloading it
-			if [[ "$imdb_poster" == "yes" && "$poster_url" ]]; then curl -silent -o "$temp_folder_without_slash/temp_poster" "$poster_url"; wait; fi
+			if [[ "$imdb_poster" == "yes" && "$poster_url" ]]; then "$wget_curl" -silent -o "$temp_folder_without_slash/temp_poster" "$poster_url"; wait; fi
 			# Indicate IMDB Poster as downloaded to the debug log
 			if [[ "$debug_mode" == "yes" && -f "$temp_folder_without_slash/temp_poster" ]]; then echo "IMDB Poster downloaded" >> "$debug_log"; fi
 			# Getting Fanart if the imdb_id is available
