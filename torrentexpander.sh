@@ -479,14 +479,13 @@ if [ ! -x "$wget_curl" ] && [[ "$imdb_poster" == "yes" || "$imdb_nfo" == "yes" |
 if [ ! -x "$mkvdts2ac3_bin" ] && [ "$dts_post" == "yes" ]; then echo "Path to mkvdts2ac3.sh is incorrect - DTS Post will be disabled" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Path to mkvdts2ac3.sh is incorrect - DTS Post will be disabled"; fi; dts_post="no"; fi
 if [ ! -x "$ccd2iso_bin" ] && [ "$img_post" == "yes" ]; then echo "Path to ccd2iso is incorrect - IMG to ISO Post will be disabled" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Path to ccd2iso is incorrect - IMG to ISO Post will be disabled"; fi; img_post="no"; fi
 if [[ "$supported_extensions_rev" =~ rar ]] || [[ "$tv_show_extensions_rev" =~ rar ]] || [[ "$movies_extensions_rev" =~ rar ]] || [[ "$music_extensions_rev" =~ rar ]] || [[ "$supported_extensions_rev" =~ zip ]] || [[ "$tv_show_extensions_rev" =~ zip ]] || [[ "$movies_extensions_rev" =~ zip ]] || [[ "$music_extensions_rev" =~ zip ]]; then echo "Your supported file extensions are incorrect please edit your torrentexpander_settings.ini file" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Your supported file extensions are incorrect please edit your torrentexpander_settings.ini file"; fi; quit_on_error="yes"; fi
-if [[ "$third_party_log" != "no" && -f "$third_party_log" ]] || [ "$alt_dest_enabled" == "yes" ]; then if [ "$tv_shows_post" != "no" ]; then tv_shows_post="copy"; fi; if [ "$music_post" != "no" ]; then music_post="copy"; fi; if [ "$movies_post" != "no" ]; then movies_post="copy"; fi; fi
+if [[ "$third_party_log" != "no" && -f "$third_party_log" ]] || [[ "$alt_dest_enabled" == "yes" && "$script_updated" != "yes" ]] || [[ "$alt_dest_enabled" == "yes" && "$subtitles_mode" != "yes" ]]; then if [ "$tv_shows_post" != "no" ]; then tv_shows_post="copy"; fi; if [ "$music_post" != "no" ]; then music_post="copy"; fi; if [ "$movies_post" != "no" ]; then movies_post="copy"; fi; fi
 if [ "$quit_on_error" == "yes" ]; then if [ "$has_display" == "yes" ]; then echo -e "\n\nThere's something wrong with your settings. Please review them now." && read -p "" && nano "$settings_file" && echo -e "\n\nYou're done with your setup\nThis script will exit now\nIf you need to edit your settings again just run $script_path/torrentexpander.sh -c"; fi; exit; fi
 
 ##################################################################################
 
 # Starting to count steps in the script. Used only if there is a display
 step_number=0
-
 
 ##################### CHECKING IF SCRIPT IS ALREADY RUNNING ######################
 script_notif="torrentexpander is running"
@@ -504,7 +503,6 @@ if [ ! -f "$log_file" ]; then
 	touch "$log_file"
 fi
 ##################################################################################
-
 
 # Creating temp folder
 mkdir -p "$temp_folder"
@@ -550,6 +548,7 @@ if [[ "$wget_curl" == *wget* || "$wget_curl" == *curl* ]] && [[ "$auto_update_sc
 			cat "$temp_folder_without_slash/new_script" > "$script_path/torrentexpander.sh"; wait;
 			rm -rf "$temp_folder"
 			rm -f "$log_file"
+			export script_updated="yes"
 			. "$script_path/torrentexpander.sh" "$torrent" "$destination_folder"
 			sleep 5
 			exit
@@ -1285,4 +1284,5 @@ if [ "$has_display" == "yes" ]; then echo "That's All Folks";  fi
 
 # Resetting exported variables
 export subtitles_mode=""
+export script_updated=""
 IFS=$SAVEIFS
