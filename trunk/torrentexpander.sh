@@ -10,7 +10,7 @@ IFS=$(echo -en "\n\b")
 if [ -f "$1" ] || [ -d "$1" ]; then torrent="$1"; fi
 
 # alt_destination will be used instead of destination_folder if you launch the script
-# using "torrentexpander.sh torrent -d destination"
+# using "/path/to/torrentexpander.sh torrent destination"
 if [ -d "$2" ]; then alt_dest_enabled="yes" && alt_destination="$2"; fi
 
 # This routine is used to detect if the script can display output
@@ -550,7 +550,7 @@ if [[ "$wget_curl" == *wget* || "$wget_curl" == *curl* ]] && [[ "$auto_update_sc
 			cat "$temp_folder_without_slash/new_script" > "$script_path/torrentexpander.sh"; wait;
 			rm -rf "$temp_folder"
 			rm -f "$log_file"
-			. "$script_path/torrentexpander.sh" "$torrent" -d "$destination_folder"
+			. "$script_path/torrentexpander.sh" "$torrent" "$destination_folder"
 			sleep 5
 			exit
 		fi
