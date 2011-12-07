@@ -16,10 +16,6 @@ and editing those two lines :
 "script-torrent-done-filename": "/path/to/torrentexpander.sh $TR_TORRENT_DIR/$TR_TORRENT_NAME"
 }}}
 
-On the PopcornHour C200 / A200 / A210, you'll need to enable SSH access to your NMT and chmod +x the script to allow it to run.
-
-*Also make sure that the user that runs Transmission has write permission on your destination_folder.*<br />
-
 With some versions of Transmission, you may need to use this line instead in Transmission's settings file :<br />
 
 {{{
