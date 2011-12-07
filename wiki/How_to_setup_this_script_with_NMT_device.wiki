@@ -1,0 +1,17 @@
+#labels Phase-Deploy
+= Device Supported =
+
+PopcornHour A100 series
+PopcornHour A200 series
+PopcornHour C200 series
+
+= Automatic setup =
+
+Please refer to this topic on nmt forums. 
+http://www.networkedmediatank.com/showthread.php?tid=56777
+
+= Manual setup =
+
+You must enable SSH access to your NMT and chmod +x the script to allow it to run.
+
+Also make sure that the user that runs Transmission has write permission on your destination_folder.
