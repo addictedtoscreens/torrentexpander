@@ -1,11 +1,11 @@
 #labels Phase-Deploy
 = Device Supported =
 
-PopcornHour A100 series
-PopcornHour A200 series
-PopcornHour C200 series
+ * PopcornHour A100 series
+ * PopcornHour A200 series
+ * PopcornHour C200 series
 
-== Automatic setup ==
+== Easy setup ==
 
 Please refer to this topic on nmt forums. 
 http://www.networkedmediatank.com/showthread.php?tid=56777
