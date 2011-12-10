@@ -1036,7 +1036,7 @@ if [ "$imdb_title" ] && [[ "$imdb_poster" == "yes" || "$imdb_nfo" == "yes" || "$
 			# Generating NFO with the IMDB URL
 			if [ "$imdb_url" ] && [ "$imdb_nfo" == "yes" ]; then echo "$imdb_url" > "$nfo_file"; fi
 			# Indicating in the debug log that NFO has been generated
-			if [[ "$debug_mode" == "yes" && "$imdb_nfo" == "yes" ]]; then echo "NFO generated: $nfo_file" >> "$debug_log"; fi
+			if [[ "$debug_mode" == "yes" && -f "$nfo_file" ]]; then echo "NFO generated: $nfo_file" >> "$debug_log"; fi
 			# Generating IMDB Poster
 			if [ -f "$temp_folder_without_slash/temp_poster" ] && [ "$imdb_poster" == "yes" ]; then cp -f "$temp_folder_without_slash/temp_poster" "$poster"; fi
 			# Indicating in the debug log that Poster has been saved
