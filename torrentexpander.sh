@@ -151,6 +151,8 @@ imdb_nfo="no"
 imdb_fanart="no"
 # Fanart format could be: thumb, poster, w1280, original
 imdb_fanart_format="w1280"
+# Disable NMJ scan it IMDB lookup fails
+disable_nmj_scan="no"
 ## Convert DTS track from MKV files to AC3 - Check mkvdts2ac3.sh path and switch variable to "yes" to enable
 ## The DTS track will be kept and the AC3 track will be added
 dts_post="no"
@@ -302,7 +304,7 @@ elif [[ "$check_settings" != *hird_party_log=* ]]; then echo "third_party_log=no
 fi
 
 # Adding other values in settings file
-for c in $(echo -e "destructive_mode\ntv_shows_fix_numbering\nclean_up_filenames\nmovies_rename_schema\nsubtitles_handling\nrepack_handling\nwii_post\nimg_post\ntv_shows_post\ntv_shows_post_path_mode\nmovies_post\nforce_single_file_movies_folder\nmusic_post\nimdb_poster\nimdb_poster_format\nimdb_nfo\nimdb_fanart\nimdb_fanart_format\ndts_post\nuser_perm_post\ngroup_perm_post\nfiles_perm_post\nfolder_perm_post\nedit_perm_as_sudo\nreset_timestamp\nsupported_extensions\ntv_show_extensions\nmovies_extensions\nmusic_extensions\ndebug_mode\nauto_update_script"); do
+for c in $(echo -e "destructive_mode\ntv_shows_fix_numbering\nclean_up_filenames\nmovies_rename_schema\nsubtitles_handling\nrepack_handling\nwii_post\nimg_post\ntv_shows_post\ntv_shows_post_path_mode\nmovies_post\nforce_single_file_movies_folder\nmusic_post\nimdb_poster\nimdb_poster_format\nimdb_nfo\nimdb_fanart\nimdb_fanart_format\ndisable_nmj_scan\ndts_post\nuser_perm_post\ngroup_perm_post\nfiles_perm_post\nfolder_perm_post\nedit_perm_as_sudo\nreset_timestamp\nsupported_extensions\ntv_show_extensions\nmovies_extensions\nmusic_extensions\ndebug_mode\nauto_update_script"); do
 	pat="$(echo "$c" | sed "s;^.\(.*\)$;\*\1=\*;")"
 	if [[ "$check_settings" != $pat ]]; then echo "$c=${!c}" >> "$settings_file"; fi
 done
@@ -921,114 +923,103 @@ if [[ "$force_single_file_movies_folder" == "yes" && ! "$folder_short" ]]; then
 fi
 
 
-# Starting debug log for imdb features
-if [[ "$debug_mode" == "yes" ]]; then 
-	if [ ! -f "$debug_log" ]; then touch "$debug_log"; fi
-	echo "--> LOG START <--" >> "$debug_log";
-	# Adding imdb title to the debug log
-	echo "IMDB Title: $imdb_title" >> "$debug_log";
-	# Adding imdb poster format to the debug log
-	if [[ "$debug_mode" == "yes" ]] && [[ "$imdb_poster" == "yes" ]]; then echo "IMDB Poster format: $imdb_poster_format" >> "$debug_log"; fi
-	# Adding fanart format to the debug log
-	if [[ "$debug_mode" == "yes" ]] && [[ "$imdb_fanart" == "yes" ]]; then echo "Fanart Poster format: $imdb_fanart_format" >> "$debug_log"; fi
-fi
-
-
 ## IMDB routine. This will generate NFO, Poster and fanart files
-if [ "$imdb_title" ] && [[ "$imdb_poster" == "yes" || "$imdb_nfo" == "yes" || "$imdb_fanart" == "yes" ]]; then
+if [ "$imdb_title" ] && [ "$imdb_funct_on" == "yes" ]; then
 	if [ "$has_display" == "yes" ]; then step_number=$(( $step_number + 1 )) && echo "Step $step_number : Generating NFO and downloading Poster"; fi
+	
+	# Starting debug log for imdb features
+	if [[ "$debug_mode" == "yes" ]] && [ "$imdb_funct_on" == "yes" ]; then 
+		if [ ! -f "$debug_log" ]; then touch "$debug_log"; fi
+		echo "--> LOG START <--" >> "$debug_log";
+		echo "Started on $(date)" >> "$debug_log";
+		# Adding imdb title to the debug log
+		echo "IMDB Title: $imdb_title" >> "$debug_log";
+		# Adding imdb poster format to the debug log
+		if [[ "$debug_mode" == "yes" ]] && [[ "$imdb_poster" == "yes" ]]; then echo "IMDB Poster format: $imdb_poster_format" >> "$debug_log"; fi
+		# Adding fanart format to the debug log
+		if [[ "$debug_mode" == "yes" ]] && [[ "$imdb_fanart" == "yes" ]]; then echo "Fanart Poster format: $imdb_fanart_format" >> "$debug_log"; fi
+	fi
+	
 	# Defining the poster format value to fetch in the imdWebService XML
 	if [ "$imdb_poster_format" == "normal" ]; then poster_size="POSTER"
 	elif [ "$imdb_poster_format" == "small" ]; then poster_size="POSTER_SMALL"
 	elif [ "$imdb_poster_format" == "large" ]; then poster_size="POSTER_LARGE"
 	elif [ "$imdb_poster_format" == "full" ]; then poster_size="POSTER_FULL"
 	fi
-	# Using wget to fetch data if available
+	
+	# Downloading imdbWebService XML and storing it in a variable
 	if [[ "$wget_curl" == *wget* ]]; then
-		# Downloading imdWebService XML and storing it in a variable
+		# Using wget to fetch data if available
 		xml_cont=`echo "$("$wget_curl" -q "http://dedi603.seedhost.eu/imdbWebService.php?m=$imdb_title&o=xml" -O -; wait)"`;
-		# Adding XML path to the debug log
-		if [[ "$debug_mode" == "yes" ]]; then echo "IMDB XML URL: http://dedi603.seedhost.eu/imdbWebService.php?m=$imdb_title&o=xml" >> "$debug_log"; fi
-		if [ "$xml_cont" ]; then
-			# Getting IMDB URL from the XML file
-			imdb_url=`echo "$(echo "$xml_cont" | grep "<IMDB_URL>" | sed 's/^[ \t]*//' | sed 's/[ \t]*$//' | sed 's/<[^>]*>//g')"`;
-			# Adding IMDB URL to the debug log
-			if [[ "$debug_mode" == "yes" ]]; then echo "IMDB URL: $imdb_url" >> "$debug_log"; fi
-			# Getting IMDB ID from the XML file
-			imdb_id=`echo "$(echo "$xml_cont" | grep "<TITLE_ID>" | sed 's/^[ \t]*//' | sed 's/[ \t]*$//' | sed 's/<[^>]*>//g')"`;
-			# Adding IMDB ID to the debug log
-			if [[ "$debug_mode" == "yes" ]]; then echo "IMDB ID: $imdb_id" >> "$debug_log"; fi
-			# Getting IMDB Poster URL from the XML file
-			poster_url=`echo "$(echo "$xml_cont" | grep "<$poster_size>" | sed 's/^[ \t]*//' | sed 's/[ \t]*$//' | sed 's/<[^>]*>//g')"`;
-			# Adding IMDB Poster URL to the debug log
-			if [[ "$debug_mode" == "yes" ]]; then echo "IMDB POSTER URL: $poster_url" >> "$debug_log"; fi
-			# If IMDB Poster URL is available, downloading it
-			if [[ "$imdb_poster" == "yes" && "$poster_url" ]]; then "$wget_curl" -q "$poster_url" -O "$temp_folder_without_slash/temp_poster"; wait; fi
-			# Indicate IMDB Poster as downloaded to the debug log
-			if [[ "$debug_mode" == "yes" && -f "$temp_folder_without_slash/temp_poster" ]]; then echo "IMDB Poster downloaded" >> "$debug_log"; fi
-			# Getting Fanart if the imdb_id is available
-			if [[ "$imdb_fanart" == "yes" && "$imdb_id" ]]; then
-				# Downloading TheMovieDataBase XML and storing it in a variable
-				themoviedb_xml_cont=`echo "$("$wget_curl" -q "http://api.themoviedb.org/2.1/Movie.imdbLookup/en/xml/57983e31fb435df4df77afb854740ea9/$imdb_id" -O -; wait)"`;
-				# Adding XML path to the debug log
-				if [[ "$debug_mode" == "yes" ]]; then echo "TMDB XML URL: http://api.themoviedb.org/2.1/Movie.imdbLookup/en/xml/57983e31fb435df4df77afb854740ea9/$imdb_id" >> "$debug_log"; fi
-				# Getting Fanart URL from the XML file
-				fanart_url=`echo "$(echo "$themoviedb_xml_cont" | grep "backdrop" | grep "size=\"$imdb_fanart_format\"" | sed q | sed 's;.*url="\(.*\.jpg\).*;\1;g')"`;
-				# Adding Fanart URL to the debug log
-				if [[ "$debug_mode" == "yes" ]]; then echo "TMDB fanart url: $fanart_url" >> "$debug_log"; fi
-				# If Fanart URL is available, downloading it
-				if [[ "$imdb_fanart" == "yes" && "$fanart_url" ]]; then "$wget_curl" -q "$fanart_url" -O "$temp_folder_without_slash/temp_fanart"; wait; fi
-				# Indicate Fanart as downloaded to the debug log
-				if [[ "$debug_mode" == "yes" && -f "$temp_folder_without_slash/temp_fanart" ]]; then echo "Fanart downloaded" >> "$debug_log"; fi
-			fi
-		fi
-	# Using curl to fetch data if available
 	elif [[ "$wget_curl" == *curl* ]]; then
-		# Downloading imdWebService XML and storing it in a variable
+		# Using curl to fetch data if available
 		xml_cont=`echo "$("$wget_curl" -silent -i "http://dedi603.seedhost.eu/imdbWebService.php?m=$imdb_title&o=xml"; wait)"`;
-		# Adding XML path to the debug log
-		if [[ "$debug_mode" == "yes" ]]; then echo "IMDB XML URL: http://dedi603.seedhost.eu/imdbWebService.php?m=$imdb_title&o=xml" >> "$debug_log"; fi
-		if [ "$xml_cont" ]; then
-			# Getting IMDB URL from the XML file
-			imdb_url=`echo "$(echo "$xml_cont" | grep "<IMDB_URL>" | sed 's/^[ \t]*//' | sed 's/[ \t]*$//' | sed 's/<[^>]*>//g')"`;
-			# Adding IMDB URL to the debug log
-			if [[ "$debug_mode" == "yes" ]]; then echo "IMDB URL: $imdb_url" >> "$debug_log"; fi
-			# Getting IMDB ID from the XML file
-			imdb_id=`echo "$(echo "$xml_cont" | grep "<TITLE_ID>" | sed 's/^[ \t]*//' | sed 's/[ \t]*$//' | sed 's/<[^>]*>//g')"`;
-			# Adding IMDB ID to the debug log
-			if [[ "$debug_mode" == "yes" ]]; then echo "IMDB ID: $imdb_id" >> "$debug_log"; fi
-			# Getting IMDB Poster URL from the XML file
-			poster_url=`echo "$(echo "$xml_cont" | grep "<$poster_size>" | sed 's/^[ \t]*//' | sed 's/[ \t]*$//' | sed 's/<[^>]*>//g')"`;
-			# Adding IMDB Poster URL to the debug log
-			if [[ "$debug_mode" == "yes" ]]; then echo "IMDB POSTER URL: $poster_url" >> "$debug_log"; fi
-			# If IMDB Poster URL is available, downloading it
-			if [[ "$imdb_poster" == "yes" && "$poster_url" ]]; then "$wget_curl" -# -C - -o "$temp_folder_without_slash/temp_poster" "$poster_url" > /dev/null 2>&1; wait; fi
-			# Indicate IMDB Poster as downloaded to the debug log
-			if [[ "$debug_mode" == "yes" && -f "$temp_folder_without_slash/temp_poster" ]]; then echo "IMDB Poster downloaded" >> "$debug_log"; fi
-			# Getting Fanart if the imdb_id is available
-			if [[ "$imdb_fanart" == "yes" && "$imdb_id" ]]; then
-				# Downloading TheMovieDataBase XML and storing it in a variable
-				themoviedb_xml_cont=`echo "$("$wget_curl" -silent -i "http://api.themoviedb.org/2.1/Movie.imdbLookup/en/xml/57983e31fb435df4df77afb854740ea9/$imdb_id"; wait)"`;
-				# Adding XML path to the debug log
-				if [[ "$debug_mode" == "yes" ]]; then echo "TMDB XML URL: http://api.themoviedb.org/2.1/Movie.imdbLookup/en/xml/57983e31fb435df4df77afb854740ea9/$imdb_id" >> "$debug_log"; fi
-				# Getting Fanart URL from the XML file
-				fanart_url=`echo "$(echo "$themoviedb_xml_cont" | grep "backdrop" | grep "size=\"$imdb_fanart_format\"" | sed q | sed 's;.*url="\(.*\.jpg\).*;\1;g')"`;
-				# Adding Fanart URL to the debug log
-				if [[ "$debug_mode" == "yes" ]]; then echo "TMDB fanart url: $fanart_url" >> "$debug_log"; fi
-				# If Fanart URL is available, downloading it
-				# if [[ "$imdb_fanart" == "yes" && "$fanart_url" ]]; then "$wget_curl" -silent -o "$temp_folder_without_slash/temp_fanart" "$fanart_url"; wait; fi
-				if [[ "$imdb_fanart" == "yes" && "$fanart_url" ]]; then "$wget_curl" -# -C - -o "$temp_folder_without_slash/temp_fanart" "$fanart_url" > /dev/null 2>&1; wait; fi
-				# Indicate Fanart as downloaded to the debug log
-				if [[ "$debug_mode" == "yes" && -f "$temp_folder_without_slash/temp_fanart" ]]; then echo "Fanart downloaded" >> "$debug_log"; fi
-			fi
-		fi
 	fi
 	
-	## If the torrent only contains one file and imdb features are activated, we ll create a surrounding folder
-	if [ ! "$folder_short" ] && [ "$xml_cont" ]; then folder_short=`echo "$(basename "$(cat "$log_file")")" | sed 's/\(.*\)\..*/\1/' | sed 's;.*/;;g'` && mkdir -p "$temp_folder$folder_short/" && mv -f "$(cat "$log_file")" "$temp_folder$folder_short/"; fi
-	
-	## We ll now create generate nfo, poster and fanart. We ll also duplicate them for every movie file
+	# Adding XML path to the debug log
+	if [[ "$debug_mode" == "yes" ]]; then echo "IMDB XML URL: http://dedi603.seedhost.eu/imdbWebService.php?m=$imdb_title&o=xml" >> "$debug_log"; fi
 	if [ "$xml_cont" ]; then
+		# Getting IMDB URL from the XML file
+		imdb_url=`echo "$(echo "$xml_cont" | grep "<IMDB_URL>" | sed 's/^[ \t]*//' | sed 's/[ \t]*$//' | sed 's/<[^>]*>//g')"`;
+		# Adding IMDB URL to the debug log
+		if [[ "$debug_mode" == "yes" ]]; then echo "IMDB URL: $imdb_url" >> "$debug_log"; fi
+		# Getting IMDB ID from the XML file
+		imdb_id=`echo "$(echo "$xml_cont" | grep "<TITLE_ID>" | sed 's/^[ \t]*//' | sed 's/[ \t]*$//' | sed 's/<[^>]*>//g')"`;
+		# Adding IMDB ID to the debug log
+		if [[ "$debug_mode" == "yes" ]]; then echo "IMDB ID: $imdb_id" >> "$debug_log"; fi
+		# Getting IMDB Poster URL from the XML file
+		poster_url=`echo "$(echo "$xml_cont" | grep "<$poster_size>" | sed 's/^[ \t]*//' | sed 's/[ \t]*$//' | sed 's/<[^>]*>//g')"`;
+		# Adding IMDB Poster URL to the debug log
+		if [[ "$debug_mode" == "yes" ]]; then echo "IMDB POSTER URL: $poster_url" >> "$debug_log"; fi
+		# If IMDB Poster URL is available, downloading it
+		if [[ "$wget_curl" == *wget* ]] && [[ "$imdb_poster" == "yes" && "$poster_url" ]]; then
+			# Using wget to fetch data if available
+			"$wget_curl" -q "$poster_url" -O "$temp_folder_without_slash/temp_poster"; wait;
+		elif [[ "$wget_curl" == *curl* ]] && [[ "$imdb_poster" == "yes" && "$poster_url" ]]; then
+			# Using curl to fetch data if available
+			"$wget_curl" -# -C - -o "$temp_folder_without_slash/temp_poster" "$poster_url" > /dev/null 2>&1; wait;
+		fi		
+		# Indicate IMDB Poster as downloaded to the debug log
+		if [[ "$debug_mode" == "yes" && -f "$temp_folder_without_slash/temp_poster" ]]; then echo "IMDB Poster downloaded" >> "$debug_log"; fi
+		# Getting Fanart if the imdb_id is available
+		if [[ "$imdb_fanart" == "yes" && "$imdb_id" ]]; then
+			# Downloading TheMovieDataBase XML and storing it in a variable
+			if [[ "$wget_curl" == *wget* ]]; then
+				# Using wget to fetch data if available
+				themoviedb_xml_cont=`echo "$("$wget_curl" -q "http://api.themoviedb.org/2.1/Movie.imdbLookup/en/xml/57983e31fb435df4df77afb854740ea9/$imdb_id" -O -; wait)"`;
+			elif [[ "$wget_curl" == *curl* ]]; then
+				# Using curl to fetch data if available
+				themoviedb_xml_cont=`echo "$("$wget_curl" -silent -i "http://api.themoviedb.org/2.1/Movie.imdbLookup/en/xml/57983e31fb435df4df77afb854740ea9/$imdb_id"; wait)"`;
+			fi			
+			# Adding XML path to the debug log
+			if [[ "$debug_mode" == "yes" ]]; then echo "TMDB XML URL: http://api.themoviedb.org/2.1/Movie.imdbLookup/en/xml/57983e31fb435df4df77afb854740ea9/$imdb_id" >> "$debug_log"; fi
+			# Getting Fanart URL from the XML file
+			fanart_url=`echo "$(echo "$themoviedb_xml_cont" | grep "backdrop" | grep "size=\"$imdb_fanart_format\"" | sed q | sed 's;.*url="\(.*\.jpg\).*;\1;g')"`;
+			# Adding Fanart URL to the debug log
+			if [[ "$debug_mode" == "yes" ]]; then echo "TMDB fanart url: $fanart_url" >> "$debug_log"; fi
+			# If Fanart URL is available, downloading it
+			if [[ "$wget_curl" == *wget* ]] && [[ "$imdb_fanart" == "yes" && "$fanart_url" ]]; then
+				# Using wget to fetch data if available
+				"$wget_curl" -q "$fanart_url" -O "$temp_folder_without_slash/temp_fanart"; wait;
+			elif [[ "$wget_curl" == *curl* ]] && [[ "$imdb_fanart" == "yes" && "$fanart_url" ]]; then
+				# Using curl to fetch data if available
+				"$wget_curl" -# -C - -o "$temp_folder_without_slash/temp_fanart" "$fanart_url" > /dev/null 2>&1; wait;
+			fi
+			# Indicate Fanart as downloaded to the debug log
+			if [[ "$debug_mode" == "yes" && -f "$temp_folder_without_slash/temp_fanart" ]]; then echo "Fanart downloaded" >> "$debug_log"; fi
+		fi
+	fi
+
+	
+	## If the torrent only contains one file and imdb features are activated, we ll create a surrounding folder
+	if [ ! "$folder_short" ] && [ "$xml_cont" ]; then
+		folder_short=`echo "$(basename "$(cat "$log_file")")" | sed 's/\(.*\)\..*/\1/' | sed 's;.*/;;g'`;
+		mkdir -p "$temp_folder$folder_short/";
+		mv -f "$(cat "$log_file")" "$temp_folder$folder_short/"
+	fi
+	
+	## We ll now generate nfo, poster and fanart. We ll also duplicate them for every movie file
+	if [ "$imdb_url" ]; then
 		for item in $(find "$temp_folder$folder_short" -type f | egrep -i "$(echo "\.$(echo "$movies_extensions" | sed "s;,srt;;" | sed "s;,idx;;" | sed "s;,sub;;" | sed 's;,;\$\|\\\.;g')$")"); do
 			nfo_file=`echo "$item" | sed 's/\(.*\)\..*/\1.nfo/'`;
 			poster=`echo "$item" | sed 's/\(.*\)\..*/\1.jpg/'`;
@@ -1046,15 +1037,23 @@ if [ "$imdb_title" ] && [[ "$imdb_poster" == "yes" || "$imdb_nfo" == "yes" || "$
 			# Indicating in the debug log that Fanart has been saved
 			if [[ "$debug_mode" == "yes" && -f "$temp_folder_without_slash/temp_fanart" ]]; then echo "Fanart Poster downloaded: $fanart" >> "$debug_log"; fi
 		done
+	elif [ "$disable_nmj_scan" == "yes" ]; then
+		if [[ "$debug_mode" == "yes" ]]; then echo "Sorry, I could not find that title on IMDB" >> "$debug_log"; fi
+		touch "$temp_folder$folder_short/.no_all.nmj";
 	fi
+	
+	
 	# Removing remp poster and temp fanart
 	if [ -f "$temp_folder_without_slash/temp_poster" ]; then rm "$temp_folder_without_slash/temp_poster"; fi
 	if [ -f "$temp_folder_without_slash/temp_fanart" ]; then rm "$temp_folder_without_slash/temp_fanart"; fi
 	# Adding jpg and nfo to the list of supported extensions
-	supported_extensions_rev="$supported_extensions_rev|\.nfo$|\.jpg$"
-	movies_extensions_rev="$movies_extensions_rev|\.nfo$|\.jpg$"
+	supported_extensions_rev="$supported_extensions_rev|\.nfo$|\.jpg|.nmj$"
+	movies_extensions_rev="$movies_extensions_rev|\.nfo$|\.jpg|.nmj$"
 	# End debug log
-	if [[ "$debug_mode" == "yes" ]]; then echo "--> LOG END <--" >> "$debug_log"; fi
+	if [[ "$debug_mode" == "yes" ]]; then
+		echo "Ended on $(date)" >> "$debug_log";
+		echo "--> LOG END <--" >> "$debug_log";
+	fi
 	# Generating a brand new log_files with all the new imdb files
 	if [ "$folder_short" ]; then echo "$(find "$temp_folder$folder_short" -maxdepth 1 -mindepth 1 -type f | egrep -i "$supported_extensions_rev")" > "$log_file"; fi
 fi
@@ -1121,7 +1120,36 @@ for line in $(cat "$log_file"); do
 	
 	# Guessing path for /Series/Episode (s) or /Series/Season X/Episode (ss)
 	# or /Series/Season XX/Episode (sss) ordering
-	if [ "$(echo "$source_filename" | egrep -i "([. _])s([0-9])([0-9])e([0])([0-9])([. _])")" ]; then series_season_v1=`echo "$source_filename" | sed 's;\(.*\).\([sS]\)\([0-9]\)\([0-9]\)\([eE]\)\([0-9]\)\([0-9]\).*;Season \4;g'` && series_season_v2=`echo "$source_filename" | sed 's;\(.*\).\([sS]\)\([0-9]\)\([0-9]\)\([eE]\)\([0-9]\)\([0-9]\).*;Season \3\4;g'` && series_title=`echo "$source_filename" | sed 's;\(.*\).\([sS]\)\([0-9]\)\([0-9]\)\([eE]\)\([0-9]\)\([0-9]\).*;\1;' | sed 's;\(.*\).\([0-9]\)\([0-9]\)\([0-9]\)\([0-9]\).\([0-9]\)\([0-9]\).\([0-9]\)\([0-9]\).*;\1;'`; elif [ "$(echo "$source_filename" | egrep -i "([. _])s([0-9])([0-9])e([1-9])([0-9])([. _])")" ]; then series_season_v1=`echo "$source_filename" | sed 's;\(.*\).\([sS]\)\([0-9]\)\([0-9]\)\([eE]\)\([0-9]\)\([0-9]\).*;Season \3\4;g'` && series_season_v2=`echo "$source_filename" | sed 's;\(.*\).\([sS]\)\([0-9]\)\([0-9]\)\([eE]\)\([0-9]\)\([0-9]\).*;Season \3\4;g'` && series_title=`echo "$source_filename" | sed 's;\(.*\).\([sS]\)\([0-9]\)\([0-9]\)\([eE]\)\([0-9]\)\([0-9]\).*;\1;' | sed 's;\(.*\).\([0-9]\)\([0-9]\)\([0-9]\)\([0-9]\).\([0-9]\)\([0-9]\).\([0-9]\)\([0-9]\).*;\1;'`; elif [ "$(echo "$line" | egrep -i "([. _])([0-9])([0-9])([0-9])([0-9]).([0-9])([0-9]).([0-9])([0-9])([. _])")" ]; then series_season_v1=`echo "$source_filename" | sed 's;\(.*\).\([0-9]\)\([0-9]\)\([0-9]\)\([0-9]\).\([0-9]\)\([0-9]\).\([0-9]\)\([0-9]\).*;Season \2\3\4\5;g'` && series_season_v2=`echo "$source_filename" | sed 's;\(.*\).\([0-9]\)\([0-9]\)\([0-9]\)\([0-9]\).\([0-9]\)\([0-9]\).\([0-9]\)\([0-9]\).*;Season \2\3\4\5;g'` && series_title=`echo "$source_filename" | sed 's;\(.*\).\([sS]\)\([0-9]\)\([0-9]\)\([eE]\)\([0-9]\)\([0-9]\).*;\1;' | sed 's;\(.*\).\([0-9]\)\([0-9]\)\([0-9]\)\([0-9]\).\([0-9]\)\([0-9]\).\([0-9]\)\([0-9]\).*;\1;'`; fi
+	if [ "$(echo "$source_filename" | egrep -i "([. _])s([0-9])([0-9])e([0])([0-9])([. _])")" ]; then
+		series_season_v1=`echo "$source_filename" | sed 's;\(.*\).\([sS]\)\([0-9]\)\([0-9]\)\([eE]\)\([0-9]\)\([0-9]\).*;Season \4;g'`;
+		series_season_v2=`echo "$source_filename" | sed 's;\(.*\).\([sS]\)\([0-9]\)\([0-9]\)\([eE]\)\([0-9]\)\([0-9]\).*;Season \3\4;g'`;
+		series_title=`echo "$source_filename" | sed 's;\(.*\).\([sS]\)\([0-9]\)\([0-9]\)\([eE]\)\([0-9]\)\([0-9]\).*;\1;' | sed 's;\(.*\).\([0-9]\)\([0-9]\)\([0-9]\)\([0-9]\).\([0-9]\)\([0-9]\).\([0-9]\)\([0-9]\).*;\1;'`;
+	elif [ "$(echo "$source_filename" | egrep -i "([. _])s([0-9])([0-9])e([1-9])([0-9])([. _])")" ]; then
+		series_season_v1=`echo "$source_filename" | sed 's;\(.*\).\([sS]\)\([0-9]\)\([0-9]\)\([eE]\)\([0-9]\)\([0-9]\).*;Season \3\4;g'`;
+		series_season_v2=`echo "$source_filename" | sed 's;\(.*\).\([sS]\)\([0-9]\)\([0-9]\)\([eE]\)\([0-9]\)\([0-9]\).*;Season \3\4;g'`;
+		series_title=`echo "$source_filename" | sed 's;\(.*\).\([sS]\)\([0-9]\)\([0-9]\)\([eE]\)\([0-9]\)\([0-9]\).*;\1;' | sed 's;\(.*\).\([0-9]\)\([0-9]\)\([0-9]\)\([0-9]\).\([0-9]\)\([0-9]\).\([0-9]\)\([0-9]\).*;\1;'`;
+	elif [ "$(echo "$line" | egrep -i "([. _])([0-9])([0-9])([0-9])([0-9]).([0-9])([0-9]).([0-9])([0-9])([. _])")" ]; then
+		series_season_v1=`echo "$source_filename" | sed 's;\(.*\).\([0-9]\)\([0-9]\)\([0-9]\)\([0-9]\).\([0-9]\)\([0-9]\).\([0-9]\)\([0-9]\).*;Season \2\3\4\5;g'`;
+		series_season_v2=`echo "$source_filename" | sed 's;\(.*\).\([0-9]\)\([0-9]\)\([0-9]\)\([0-9]\).\([0-9]\)\([0-9]\).\([0-9]\)\([0-9]\).*;Season \2\3\4\5;g'`;
+		series_title=`echo "$source_filename" | sed 's;\(.*\).\([sS]\)\([0-9]\)\([0-9]\)\([eE]\)\([0-9]\)\([0-9]\).*;\1;' | sed 's;\(.*\).\([0-9]\)\([0-9]\)\([0-9]\)\([0-9]\).\([0-9]\)\([0-9]\).\([0-9]\)\([0-9]\).*;\1;'`;
+	fi
+	
+	# Trying to find the path to an existing series
+	if [ "$series_title" ]; then
+		series_list=$(ls "$tv_shows_post_path")
+		# Looking for a perfect match
+		if [ "$(echo "$series_list" | egrep -i "^$series_title$")" ]; then
+			series_title="$(echo -n -e "$series_list" | egrep -i "^$series_title$" | sed -n '$p')";
+		# Trying with or without the prefix
+		elif [ "$(echo "$series_list" | egrep -i "$(echo "$series_title" | sed 's;The ;;' | sed 's;Le ;;'| sed 's;La ;;'| sed 's;Les ;;'| sed 's;El ;;' | sed 's;^;(The |Le |La |Les |El ){0,1};' | sed 's;^\(.*\)$;^\1$;')")" ]; then
+			series_title="$(echo -n -e "$series_list" | egrep -i "$(echo "$series_title" | sed 's;The ;;' | sed 's;Le ;;'| sed 's;La ;;'| sed 's;Les ;;'| sed 's;El ;;' | sed 's;^;(The |Le |La |Les |El ){0,1};' | sed 's;^\(.*\)$;^\1$;')" | sed -n '$p')";
+		# Trying with or without year
+		elif [ "$(echo "$series_list" | egrep -i "$(echo "$series_title" | sed 's;The ;;' | sed 's;Le ;;'| sed 's;La ;;'| sed 's;Les ;;'| sed 's;El ;;' | sed 's;^;(The |Le |La |Les |El ){0,1};' | sed 's; \([0-9][0-9][0-9][0-9]\)$;;' | sed 's;$;( [0-9][0-9][0-9][0-9]){0,1};' | sed 's;^\(.*\)$;^\1$;')")" ]; then
+			series_title="$(echo -n -e "$series_list" | egrep -i "$(echo "$series_title" | sed 's;The ;;' | sed 's;Le ;;'| sed 's;La ;;'| sed 's;Les ;;'| sed 's;El ;;' | sed 's;^;(The |Le |La |Les |El ){0,1};' | sed 's; \([0-9][0-9][0-9][0-9]\)$;;' | sed 's;$;( [0-9][0-9][0-9][0-9]){0,1};' | sed 's;^\(.*\)$;^\1$;')" | sed -n '$p')";
+		# Lookup failed. We ll use the episode name
+		fi
+	fi
+	
 	
 	# Reverting to default if tv_shows_post_path_mode is disabled
 	if [[ "$(echo "$line" | egrep -i "([. _])s([0-9])([0-9])e([0-9])([0-9])([. _])" )" || "$(echo "$line" | egrep -i "([. _])([0-9])([0-9])([0-9])([0-9]).([0-9])([0-9]).([0-9])([0-9])([. _])")" ]] && [ "$(echo "$line" | egrep -i "$tv_show_extensions_rev" )" ] && [[ "$tv_shows_post" != "no" && "$tv_shows_post_path_mode" == "no" ]]; then new_destination=`echo "$tv_shows_post_path"`; fi
