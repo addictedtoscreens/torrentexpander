@@ -99,7 +99,7 @@ music_extensions="mp3,m4a,wav"
 # scene patterns is used for scenes that add their name at the beginning of the file name
 movies_detect_patterns="HDTV,DVDRip,BDRip,BRRip,DVDR,720p,1080p"
 movies_detect_patterns_pt_2="TS,TVRip,DVDSCR,R5,Workprint,SCR,HDRip"
-other_movies_patterns="proper,repack,rerip,pdtv,hdtv,xvid,webrip,web-dl,readnfo,ntsc,pal,limited,ws,uncut,unrated,internal,480p,festival,bluray,italian"
+other_movies_patterns="proper,repack,rerip,pdtv,hdtv,xvid,webrip,web-dl,readnfo,ntsc,pal,limited,ws,uncut,unrated,internal,480p,festival,bluray,extended,italian"
 scene_patterns="aaf"
 audio_quality_patterns="AC3,DTS,LiNE,CAM AUDIO,MD,LD,Studio Audio"
 ####################### Optional functionalities variables #######################
