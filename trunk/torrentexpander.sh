@@ -29,7 +29,7 @@ find -L / -maxdepth 1 > /dev/null 2>&1 && if [ "$?" == "0" ]; then find_l_availa
 
 ##################################################################################
 ##                   TORRENTEXPANDER 
-##                   v0.18
+##                   v0.19
 ##
 ## You can use and modify this script to your convenience
 ## Any suggestion on how to improve this script will be welcome
@@ -174,6 +174,10 @@ debug_mode="no"
 ## Auto Update script with latest svn release
 ## values can be "no", "daily" or "weekly"
 auto_update_script="no"
+## Post Run Script - Will be run once torrentexpander is done
+## You can input the path to a script of your choice or just type the name of a binary in your PATH
+post_run_script_enabled="no"
+post_run_script=""
 ############################ END USER VARIABLES ##################################
 ##################################################################################
 
@@ -270,8 +274,13 @@ if [[ "$check_settings" != *ext_editor_bin=* || "$check_settings" == *ext_editor
 	if [ ! -x "$text_editor_bin" ] && [ -x "$(for d in $(echo -e "$(echo -e "$PATH" | sed "s;:;\\\n;g")\n/Applications\n/nmt/apps\n/bin\n/usr/bin\n/usr/local/bin"); do if [ -d "$d" ]; then find "$d" -maxdepth 2 -name vi; fi; done | sed -n -e '1p')" ]; then text_editor_bin="$(for d in $(echo -e "$(echo -e "$PATH" | sed "s;:;\\\n;g")\n/Applications\n/nmt/apps\n/bin\n/usr/bin\n/usr/local/bin"); do if [ -d "$d" ]; then find "$d" -maxdepth 2 -name vi; fi; done | sed -n -e '1p')"; fi
 fi
 
+# Looking for post_run_script in your PATH variable or /Applications /nmt/apps /usr/local/bin directories
+if [ "$third_party_log" ] && [[ "$check_settings" != *ost_run_script=* || "$check_settings" == *ost_run_script=incorrect_or_not_se* ]]; then
+	if [ ! -x "$post_run_script" ] && [ -x "$(for d in $(echo -e "$(echo -e "$PATH" | sed "s;:;\\\n;g")\n/Applications\n/nmt/apps\n/bin\n/usr/bin\n/usr/local/bin\n/share/Apps/TorrentExpander/bin/"); do if [ -d "$d" ]; then find "$d" -maxdepth 2 -name "$post_run_script"; fi; done | sed -n -e '1p')" ]; then post_run_script="$(for d in $(echo -e "$(echo -e "$PATH" | sed "s;:;\\\n;g")\n/Applications\n/nmt/apps\n/bin\n/usr/bin\n/usr/local/bin\n/share/Apps/TorrentExpander/bin/"); do if [ -d "$d" ]; then find "$d" -maxdepth 2 -name "$post_run_script"; fi; done | sed -n -e '1p')"; fi
+fi
+
 # Inserting path to binaries into the settings file
-for c in $(echo -e "unrar_bin\nunzip_bin\nwget_curl\nccd2iso_bin\ntext_editor_bin\nmkvdts2ac3_bin"); do
+for c in $(echo -e "unrar_bin\nunzip_bin\nwget_curl\nccd2iso_bin\ntext_editor_bin\nmkvdts2ac3_bin\npost_run_script"); do
 	pat="$(echo "$c" | sed "s;^.\(.*\)$;\*\1=\*;")"
 	pat_two="$(echo "$c" | sed "s;^.\(.*\)$;\*\1=incorrect_or_not_se\*;")"
 	if [[ "$check_settings" != $pat && -x "${!c}" ]] || [[ "$check_settings" == $pat_two && -x "${!c}" ]]; then
@@ -304,7 +313,7 @@ elif [[ "$check_settings" != *hird_party_log=* ]]; then echo "third_party_log=no
 fi
 
 # Adding other values in settings file
-for c in $(echo -e "destructive_mode\ntv_shows_fix_numbering\nclean_up_filenames\nmovies_rename_schema\nsubtitles_handling\nrepack_handling\nwii_post\nimg_post\ntv_shows_post\ntv_shows_post_path_mode\nmovies_post\nforce_single_file_movies_folder\nmusic_post\nimdb_poster\nimdb_poster_format\nimdb_nfo\nimdb_fanart\nimdb_fanart_format\ndisable_nmj_scan\ndts_post\nuser_perm_post\ngroup_perm_post\nfiles_perm_post\nfolder_perm_post\nedit_perm_as_sudo\nreset_timestamp\nsupported_extensions\ntv_show_extensions\nmovies_extensions\nmusic_extensions\ndebug_mode\nauto_update_script"); do
+for c in $(echo -e "destructive_mode\ntv_shows_fix_numbering\nclean_up_filenames\nmovies_rename_schema\nsubtitles_handling\nrepack_handling\nwii_post\nimg_post\ntv_shows_post\ntv_shows_post_path_mode\nmovies_post\nforce_single_file_movies_folder\nmusic_post\nimdb_poster\nimdb_poster_format\nimdb_nfo\nimdb_fanart\nimdb_fanart_format\ndisable_nmj_scan\ndts_post\nuser_perm_post\ngroup_perm_post\nfiles_perm_post\nfolder_perm_post\nedit_perm_as_sudo\nreset_timestamp\nsupported_extensions\ntv_show_extensions\nmovies_extensions\nmusic_extensions\ndebug_mode\nauto_update_script\npost_run_script_enabled"); do
 	pat="$(echo "$c" | sed "s;^.\(.*\)$;\*\1=\*;")"
 	if [[ "$check_settings" != $pat ]]; then echo "$c=${!c}" >> "$settings_file"; fi
 done
@@ -500,6 +509,8 @@ if [ ! -x "$wget_curl" ] && [[ "$imdb_poster" == "yes" || "$imdb_nfo" == "yes" |
 if [ ! -x "$mkvdts2ac3_bin" ] && [ "$dts_post" == "yes" ]; then echo "Path to mkvdts2ac3.sh is incorrect - DTS Post will be disabled" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Path to mkvdts2ac3.sh is incorrect - DTS Post will be disabled"; fi; dts_post="no"; fi
 
 if [ ! -x "$ccd2iso_bin" ] && [ "$img_post" == "yes" ]; then echo "Path to ccd2iso is incorrect - IMG to ISO Post will be disabled" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Path to ccd2iso is incorrect - IMG to ISO Post will be disabled"; fi; img_post="no"; fi
+
+if [ ! -x "$post_run_script" ] && [ "$post_run_script_enabled" == "yes" ]; then echo "Path to your post_run_script is incorrect - This feature will be disabled" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Path to your post_run_script is incorrect - This feature will be disabled"; fi; post_run_script_enabled="no"; fi
 
 if [[ "$supported_extensions_rev" =~ rar ]] || [[ "$tv_show_extensions_rev" =~ rar ]] || [[ "$movies_extensions_rev" =~ rar ]] || [[ "$music_extensions_rev" =~ rar ]] || [[ "$supported_extensions_rev" =~ zip ]] || [[ "$tv_show_extensions_rev" =~ zip ]] || [[ "$movies_extensions_rev" =~ zip ]] || [[ "$music_extensions_rev" =~ zip ]]; then echo "Your supported file extensions are incorrect please edit your torrentexpander_settings.ini file" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Your supported file extensions are incorrect please edit your torrentexpander_settings.ini file"; fi; quit_on_error="yes"; fi
 
@@ -1361,3 +1372,9 @@ if [ "$has_display" == "yes" ]; then echo "That's All Folks";  fi
 export subtitles_mode=""
 export script_updated=""
 IFS=$SAVEIFS
+
+# Starting the post_run_script
+if [ "$post_run_script_enabled" == "yes" ]; then
+	. "$post_run_script"
+	sleep 1
+fi
