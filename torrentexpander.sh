@@ -100,7 +100,7 @@ music_extensions="mp3,m4a,wav"
 movies_detect_patterns="HDTV,DVDRip,BDRip,BRRip,DVDR,720p,1080p,HD1080p"
 movies_detect_patterns_pt_2="TS,TVRip,DVDSCR,R5,Workprint,SCR,Screener,HDRip,DVDScreener"
 other_movies_patterns="proper,repack,rerip,pdtv,hdtv,xvid,webrip,web-dl,readnfo,ntsc,pal,limited,ws,uncut,unrated,internal,480p,festival,bluray,extended,italian,theatrical.cut,dubbed,collection,remastered,season,nlsubs,spanish,divx,x264,hdtvrip,dvdriptorrents"
-scene_patterns="aaf"
+scene_patterns="[. _-]*www[. _-].*[. _-]com[. _-]*,aaf"
 audio_quality_patterns="AC3,DTS,LiNE,CAM AUDIO,MD,LD,Studio Audio"
 ####################### Optional functionalities variables #######################
 #################### Set these variables to "no" to disable ######################
