@@ -23,9 +23,6 @@ if [ "$1" == "-c" ]; then first_run="yes"; fi
 # Detect if the OS handles the nice command
 nice -n 15 echo > /dev/null 2>&1 && if [ "$?" == "0" ]; then nice_available="yes"; fi
 
-# Detect if find can handle symlinks
-find -L / -maxdepth 1 > /dev/null 2>&1 && if [ "$?" == "0" ]; then find_l_available="yes"; fi
-
 
 ##################################################################################
 ##                   TORRENTEXPANDER 
@@ -610,8 +607,7 @@ fi
 
 ## Expanding and copying folders to the temp folder
 if [ "$has_display" == "yes" ]; then step_number=$(( $step_number + 1 )) && echo "Step $step_number : Expanding / moving content of the torrent";  fi
-# I personally need to also fetch items within a symlink. This won t work on some OS
-for item in $(if [[ "$current_folder" && "$find_l_available" == "yes" ]]; then find -L "$current_folder" -type d; elif [ "$current_folder" ]; then find "$current_folder" -type d; else [ "$torrent" ]; echo "$torrent"; fi); do
+for item in $(if [[ "$current_folder" ]]; then find "$current_folder" -type d -follow; else echo "$torrent"; fi); do
 	# Don t bother with Mac OS X invisible files
 	if [[ "$item" == */.AppleDouble ]] || [[ "$item" == */._* ]] || [[ "$item" == */.DS_Store* ]]; then
 		echo "" > /dev/null 2>&1
@@ -620,7 +616,7 @@ for item in $(if [[ "$current_folder" && "$find_l_available" == "yes" ]]; then f
 		# Find the right .rar file
 		if [[ "$(ls "$item" | egrep -i "part001\.rar$")" ]]; then rarFile=`ls "$item" | egrep -i "part001\.rar$"` && searchPath="$item/$rarFile";
 		elif [[ "$(ls "$item" | egrep -i "part01\.rar$")" ]]; then rarFile=`ls "$item" | egrep -i "part01\.rar$"` && searchPath="$item/$rarFile";
-		elif [[ -d "$item" && "$(ls "$item" | egrep -i "\.rar$")" ]]; then searchPath=`find -L "$item" -maxdepth 1 ! -name "._*" -type f | egrep -i "\.rar$"`;
+		elif [[ -d "$item" && "$(ls "$item" | egrep -i "\.rar$")" ]]; then searchPath=`find "$item" -maxdepth 1 ! -name "._*" -type f -follow | egrep -i "\.rar$"`;
 		elif [[ "$(echo "$torrent" | egrep -i "\.rar$" )" ]]; then searchPath=`echo "$item" | egrep -i "\.rar$"`;
 		# switch back to the .001 file
 		elif [[ "$(ls "$item" | egrep -i "\.001$")" ]]; then rarFile=`ls "$item" | egrep -i "\.001$"` && searchPath="$item/$rarFile";
@@ -639,7 +635,7 @@ for item in $(if [[ "$current_folder" && "$find_l_available" == "yes" ]]; then f
 	# Fetch zip files
 	elif [[ "$(ls $item | egrep -i "\.zip$")" ]]; then
 		# use unzip to unzip files. Use nice -n 15 if available. Output will be displayed if possible
-		if [[ -d "$item" && "$(ls "$item" | egrep -i "\.zip$")" ]]; then searchPath=`find -L "$item" -maxdepth 1 ! -name "._*" -type f | egrep -i "\.zip$"`;
+		if [[ -d "$item" && "$(ls "$item" | egrep -i "\.zip$")" ]]; then searchPath=`find "$item" -maxdepth 1 ! -name "._*" -type f -follow | egrep -i "\.zip$"`;
 		elif [[ "$(echo "$item" | egrep -i "\.zip$" )" ]]; then searchPath=`echo "$item" | egrep -i "\.zip$"`;
 		fi
 		if [[ "$unzip_bin" == *unzip* ]] && [ "$nice_available" == "yes" ] && [ "$has_display" == "yes" ]; then for f in $(echo -e "$searchPath"); do nice -n 15 "$unzip_bin" -o -j `echo "$f"` -d "$temp_folder"; done
@@ -655,9 +651,7 @@ for item in $(if [[ "$current_folder" && "$find_l_available" == "yes" ]]; then f
 	# Now fetch all other files and copy them to the temp folder, or move them if in destructive mode
 	elif [[ "$(ls $item | egrep -i -v "\.[0-9][0-9][0-9]$|\.r[0-9][0-9]$|\.rar$|\.001$|\.zip$")" ]]; then
 		# 
-		if [[ -d "$item" && "$(ls "$item" | egrep -i -v "\.[0-9][0-9][0-9]$|\.r[0-9][0-9]$|\.rar$|\.001$|\.zip$")" && "$find_l_available" == "yes" ]]; then otherFiles=`find -L "$item" -maxdepth 1 ! -name "._*" -type f | egrep -i -v "\.[0-9][0-9][0-9]$|\.r[0-9][0-9]$|\.rar$|\.001$|\.zip$"`
-		dest_path=`echo "$temp_folder$(dirname "item")/"`
-		elif [[ -d "$item" && "$(ls "$item" | egrep -i -v "\.[0-9][0-9][0-9]$|\.r[0-9][0-9]$|\.rar$|\.001$|\.zip$")" ]]; then otherFiles=`find "$item" -maxdepth 1 ! -name "._*" -type f | egrep -i -v "\.[0-9][0-9][0-9]$|\.r[0-9][0-9]$|\.rar$|\.001$|\.zip$"`
+		if [[ -d "$item" && "$(ls "$item" | egrep -i -v "\.[0-9][0-9][0-9]$|\.r[0-9][0-9]$|\.rar$|\.001$|\.zip$")" ]]; then otherFiles=`find "$item" -maxdepth 1 ! -name "._*" -type f -follow | egrep -i -v "\.[0-9][0-9][0-9]$|\.r[0-9][0-9]$|\.rar$|\.001$|\.zip$"`
 		dest_path=`echo "$temp_folder$(dirname "item")/"`
 		elif [[ "$(echo "$item" | egrep -i -v "\.[0-9][0-9][0-9]$|\.r[0-9][0-9]$|\.rar$|\.001$|\.zip$")" ]]; then otherFiles=`echo "$item" | egrep -i -v "\.[0-9][0-9][0-9]$|\.r[0-9][0-9]$|\.rar$|\.001$|\.zip$"`
 		dest_path=`echo "$temp_folder"`
@@ -682,7 +676,7 @@ for item in $(find "$temp_folder_without_slash" -type d); do
 		# Fetch .rar that were previously rared
 		if [[ "$(ls "$item" | egrep -i "part001\.rar$")" ]]; then rarFile=`ls "$item" | egrep -i "part001\.rar$"` && searchPath="$item/$rarFile";
 		elif [[ "$(ls "$item" | egrep -i "part01\.rar$")" ]]; then rarFile=`ls "$item" | egrep -i "part01\.rar$"` && searchPath="$item/$rarFile";
-		elif [[ -d "$item" && "$(ls "$item" | egrep -i "\.rar$")" ]]; then searchPath=`find -L "$item" -maxdepth 1 ! -name "._*" -type f | egrep -i "\.rar$"`;
+		elif [[ -d "$item" && "$(ls "$item" | egrep -i "\.rar$")" ]]; then searchPath=`find "$item" -maxdepth 1 ! -name "._*" -type f -follow | egrep -i "\.rar$"`;
 		elif [[ "$(echo "$torrent" | egrep -i "\.rar$" )" ]]; then searchPath=`echo "$item" | egrep -i "\.rar$"`;
 		elif [[ "$(ls "$item" | egrep -i "\.001$")" ]]; then rarFile=`ls "$item" | egrep -i "\.001$"` && searchPath="$item/$rarFile";
 		fi
@@ -705,7 +699,7 @@ for item in $(find "$temp_folder_without_slash" -type d); do
 	if [[ "$item" == */.AppleDouble ]] || [[ "$item" == */._* ]] || [[ "$item" == */.DS_Store* ]]; then
 		echo "" > /dev/null 2>&1
 	elif [[ "$(ls "$item" | egrep -i "\.zip$")" ]]; then
-		searchPath=`find -L "$item" -maxdepth 1 ! -name "._*" -type f | egrep -i "\.zip$"`;
+		searchPath=`find "$item" -maxdepth 1 ! -name "._*" -type f -follow | egrep -i "\.zip$"`;
 		# use unzip to unzip files. Use nice -n 15 if available. Output will be displayed if possible
 		if [[ "$unzip_bin" == *unzip* ]] && [ "$nice_available" == "yes" ] && [ "$has_display" == "yes" ]; then for f in $(echo -e "$searchPath"); do nice -n 15 "$unzip_bin" -o -j `echo "$f"` -d "$item"; done
 		elif [[ "$unzip_bin" == *unzip* ]] && [ "$nice_available" == "yes" ]; then for f in $(echo -e "$searchPath"); do nice -n 15 "$unzip_bin" -o -j `echo "$f"` -d "$item" > /dev/null 2>&1; done
