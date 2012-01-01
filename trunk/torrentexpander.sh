@@ -171,6 +171,11 @@ debug_mode="no"
 ## Auto Update script with latest svn release
 ## values can be "no", "daily" or "weekly"
 auto_update_script="no"
+## In destructive_mode, torrentexpander can pause then remove torrent and data from your transmission torrent client
+torrent_daemon_bin="/usr/local/bin/transmission-remote"
+torrent_daemon_login=""
+torrent_daemon_password=""
+torrent_daemon_port="9091"
 ## Post Run Script - Will be run once torrentexpander is done
 ## You can input the path to a script of your choice or just type the name of a binary in your PATH
 post_run_script_enabled="no"
@@ -271,13 +276,18 @@ if [[ "$check_settings" != *ext_editor_bin=* || "$check_settings" == *ext_editor
 	if [ ! -x "$text_editor_bin" ] && [ -x "$(for d in $(echo -e "$(echo -e "$PATH" | sed "s;:;\\\n;g")\n/Applications\n/nmt/apps\n/bin\n/usr/bin\n/usr/local/bin"); do if [ -d "$d" ]; then find "$d" -maxdepth 2 -name vi; fi; done | sed -n -e '1p')" ]; then text_editor_bin="$(for d in $(echo -e "$(echo -e "$PATH" | sed "s;:;\\\n;g")\n/Applications\n/nmt/apps\n/bin\n/usr/bin\n/usr/local/bin"); do if [ -d "$d" ]; then find "$d" -maxdepth 2 -name vi; fi; done | sed -n -e '1p')"; fi
 fi
 
+# Looking for a torrent client in the PATH variable or /Applications /nmt/apps /usr/local/bin directories
+if [[ "$check_settings" != *orrent_daemon_bin=* || "$check_settings" == *orrent_daemon_bin=incorrect_or_not_se* ]]; then
+	if [ ! -x "$torrent_daemon_bin" ] && [ -x "$(for d in $(echo -e "$(echo -e "$PATH" | sed "s;:;\\\n;g")\n/Applications\n/nmt/apps\n/bin\n/usr/bin\n/usr/local/bin"); do if [ -d "$d" ]; then find "$d" -maxdepth 2 -name transmission-remote; fi; done | sed -n -e '1p')" ]; then torrent_daemon_bin="$(for d in $(echo -e "$(echo -e "$PATH" | sed "s;:;\\\n;g")\n/Applications\n/nmt/apps\n/bin\n/usr/bin\n/usr/local/bin"); do if [ -d "$d" ]; then find "$d" -maxdepth 2 -name transmission-remote; fi; done | sed -n -e '1p')"; fi
+fi
+
 # Looking for post_run_script in your PATH variable or /Applications /nmt/apps /usr/local/bin directories
 if [ "$third_party_log" ] && [[ "$check_settings" != *ost_run_script=* || "$check_settings" == *ost_run_script=incorrect_or_not_se* ]]; then
 	if [ ! -x "$post_run_script" ] && [ -x "$(for d in $(echo -e "$(echo -e "$PATH" | sed "s;:;\\\n;g")\n/Applications\n/nmt/apps\n/bin\n/usr/bin\n/usr/local/bin\n/share/Apps/TorrentExpander/bin/"); do if [ -d "$d" ]; then find "$d" -maxdepth 2 -name "$post_run_script"; fi; done | sed -n -e '1p')" ]; then post_run_script="$(for d in $(echo -e "$(echo -e "$PATH" | sed "s;:;\\\n;g")\n/Applications\n/nmt/apps\n/bin\n/usr/bin\n/usr/local/bin\n/share/Apps/TorrentExpander/bin/"); do if [ -d "$d" ]; then find "$d" -maxdepth 2 -name "$post_run_script"; fi; done | sed -n -e '1p')"; fi
 fi
 
 # Inserting path to binaries into the settings file
-for c in $(echo -e "unrar_bin\nunzip_bin\nwget_curl\nccd2iso_bin\ntext_editor_bin\nmkvdts2ac3_bin\npost_run_script"); do
+for c in $(echo -e "unrar_bin\nunzip_bin\nwget_curl\nccd2iso_bin\ntext_editor_bin\nmkvdts2ac3_bin\ntorrent_daemon_bin\npost_run_script"); do
 	pat="$(echo "$c" | sed "s;^.\(.*\)$;\*\1=\*;")"
 	pat_two="$(echo "$c" | sed "s;^.\(.*\)$;\*\1=incorrect_or_not_se\*;")"
 	if [[ "$check_settings" != $pat && -x "${!c}" ]] || [[ "$check_settings" == $pat_two && -x "${!c}" ]]; then
@@ -310,7 +320,7 @@ elif [[ "$check_settings" != *hird_party_log=* ]]; then echo "third_party_log=no
 fi
 
 # Adding other values in settings file
-for c in $(echo -e "destructive_mode\ntv_shows_fix_numbering\nclean_up_filenames\nmovies_rename_schema\nsubtitles_handling\nrepack_handling\nwii_post\nimg_post\ntv_shows_post\ntv_shows_post_path_mode\nmovies_post\nforce_single_file_movies_folder\nmusic_post\nimdb_poster\nimdb_poster_format\nimdb_nfo\nimdb_fanart\nimdb_fanart_format\ndisable_nmj_scan\ndts_post\nuser_perm_post\ngroup_perm_post\nfiles_perm_post\nfolder_perm_post\nedit_perm_as_sudo\nreset_timestamp\nsupported_extensions\ntv_show_extensions\nmovies_extensions\nmusic_extensions\ndebug_mode\nauto_update_script\npost_run_script_enabled"); do
+for c in $(echo -e "destructive_mode\ntv_shows_fix_numbering\nclean_up_filenames\nmovies_rename_schema\nsubtitles_handling\nrepack_handling\nwii_post\nimg_post\ntv_shows_post\ntv_shows_post_path_mode\nmovies_post\nforce_single_file_movies_folder\nmusic_post\nimdb_poster\nimdb_poster_format\nimdb_nfo\nimdb_fanart\nimdb_fanart_format\ndisable_nmj_scan\ndts_post\nuser_perm_post\ngroup_perm_post\nfiles_perm_post\nfolder_perm_post\nedit_perm_as_sudo\nreset_timestamp\nsupported_extensions\ntv_show_extensions\nmovies_extensions\nmusic_extensions\ndebug_mode\nauto_update_script\ntorrent_daemon_login\ntorrent_daemon_password\ntorrent_daemon_port\npost_run_script_enabled"); do
 	pat="$(echo "$c" | sed "s;^.\(.*\)$;\*\1=\*;")"
 	if [[ "$check_settings" != $pat ]]; then echo "$c=${!c}" >> "$settings_file"; fi
 done
@@ -441,7 +451,10 @@ temp_folder_without_slash="$(echo "$destination_folder$torrentexpander_temp")"
 ## This script will use a variable named torrent if file, else cd variable torrent, 
 ## else use transmission variables if file, else cd transmission variables,
 ## else use current folder
-if [ "$TR_TORRENT_NAME" ] && [ ! "$torrent" ]; then torrent="$TR_TORRENT_DIR/$TR_TORRENT_NAME"; fi
+if [ "$TR_TORRENT_NAME" ] && [ ! "$torrent" ]; then
+	torrent="$TR_TORRENT_DIR/$TR_TORRENT_NAME";
+	torrent_name="$TR_TORRENT_NAME";
+fi
 if [[ -f "$torrent" || -d "$torrent" ]] && [ -r "$torrent" ]; then
 	delete_third_party_log="yes"
 	if [[ -d "$torrent" && -r "$torrent" ]]; then cd "$torrent" && current_folder=`echo "$(pwd)"` && folder_short=`echo "$( basename "$(pwd)" )"` && torrent=""; fi
@@ -509,6 +522,8 @@ if [ ! -x "$wget_curl" ] && [[ "$imdb_poster" == "yes" || "$imdb_nfo" == "yes" |
 if [ ! -x "$mkvdts2ac3_bin" ] && [ "$dts_post" == "yes" ]; then echo "Path to mkvdts2ac3.sh is incorrect - DTS Post will be disabled" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Path to mkvdts2ac3.sh is incorrect - DTS Post will be disabled"; fi; dts_post="no"; fi
 
 if [ ! -x "$ccd2iso_bin" ] && [ "$img_post" == "yes" ]; then echo "Path to ccd2iso is incorrect - IMG to ISO Post will be disabled" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Path to ccd2iso is incorrect - IMG to ISO Post will be disabled"; fi; img_post="no"; fi
+
+if [ ! -x "$torrent_daemon_bin" ] || [ "$destructive_mode" != "yes" ]; then echo "Path to your torrent_daemon_bin is incorrect or destructive mode is disabled - Your torrent will not be removed from your torrent client" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Path to your torrent_daemon_bin is incorrect or destructive mode is disabled - Your torrent will not be removed from your torrent client"; fi; auto_delete_torrent="no"; fi
 
 if [ ! -x "$post_run_script" ] && [ "$post_run_script_enabled" == "yes" ]; then echo "Path to your post_run_script is incorrect - This feature will be disabled" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Path to your post_run_script is incorrect - This feature will be disabled"; fi; post_run_script_enabled="no"; fi
 
@@ -677,8 +692,45 @@ done
 
 ## If destructive_mode is enabled, remove original torrent
 cd "$destination_folder"
-if [[ "$has_display" == "yes" && "$destructive_mode" == "yes" ]]; then step_number=$(( $step_number + 1 )) && echo "Step $step_number : Deleting original torrent";  fi
-if [[ "$destructive_mode" == "yes" && "$current_folder" ]]; then rm -rf "$current_folder"; elif [[ "$destructive_mode" == "yes" && "$torrent" && -f "$torrent" ]]; then rm -f "$torrent"; fi
+if [[ "$has_display" == "yes" && "$destructive_mode" == "yes" ]]; then
+	step_number=$(( $step_number + 1 ));
+	echo "Step $step_number : Deleting original torrent";
+fi
+# Trying to remove torrent from torrent client if destructive_mode is activated
+if [[ "$destructive_mode" == "yes" ]] && [[ -x "$torrent_daemon_bin" && "$(echo "$torrent_daemon_bin" | grep "transmission-remote")" && "$torrent_daemon_port" ]]; then
+	# Getting torrent ID
+	if [[ ! "$torrent_daemon_login" ]] || [[ ! "$torrent_daemon_password" ]]; then
+		daemon_ip="localhost:$torrent_daemon_port"
+		torrent_id=$("$torrent_daemon_bin" "$daemon_ip" -l | grep "$torrent_name" | sed "s;^ \([0-9]*\)   .*;\1;")
+	else
+		daemon_ip="localhost:$torrent_daemon_port"
+		daemon_l_p="$torrent_daemon_login:$torrent_daemon_password"
+		torrent_id=$("$torrent_daemon_bin" "$daemon_ip" -n "$daemon_l_p" -l | grep "$torrent_name" | sed "s;^ \([0-9]*\)   .*;\1;")
+	fi
+	# Pausing and deleting torrent
+	if [[ "$torrent_id" ]]; then
+		if [[ ! "$torrent_daemon_login" ]] || [[ ! "$torrent_daemon_password" ]]; then
+			if [[ "$has_display" == "yes" ]]; then
+				"$torrent_daemon_bin" "$daemon_ip" -t "$torrent_id" -S && "$torrent_daemon_bin" "$daemon_ip" -t "$torrent_id" --remove-and-delete
+			else
+				"$torrent_daemon_bin" "$daemon_ip" -t "$torrent_id" -S > /dev/null 2>&1 && "$torrent_daemon_bin" "$daemon_ip" -t "$torrent_id" --remove-and-delete > /dev/null 2>&1
+			fi
+		else
+			if [[ "$has_display" == "yes" ]]; then
+				"$torrent_daemon_bin" "$daemon_ip" -n "$daemon_l_p" -t "$torrent_id" -S && "$torrent_daemon_bin" "$daemon_ip" -n "$daemon_l_p" -t "$torrent_id" --remove-and-delete
+			else
+				"$torrent_daemon_bin" "$daemon_ip" -n "$daemon_l_p" -t "$torrent_id" -S > /dev/null 2>&1 && "$torrent_daemon_bin" -n "$daemon_l_p" "$daemon_ip" -t "$torrent_id" --remove-and-delete > /dev/null 2>&1
+			fi
+		fi
+	fi
+fi
+# If torrent client daemon cannot be controlled, we ll remove the torrent anyway
+if [[ "$destructive_mode" == "yes" && -d "$current_folder" ]]; then
+	rm -rf "$current_folder";
+elif [[ "$destructive_mode" == "yes" && "$torrent" && -f "$torrent" ]]; then
+	rm -f "$torrent";
+fi
+
 
 ## If .rar archives within archives - Expanding to the temp folder
 for item in $(find "$temp_folder_without_slash" -type d); do
