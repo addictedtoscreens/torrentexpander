@@ -4,6 +4,13 @@
 # Making sure spaces are not interpreted as newline
 SAVEIFS=$IFS
 IFS=$(echo -en "\n\b")
+PATH_BACKUP="$PATH"
+for test_path in $(echo -e "/usr/local/sbin\n/usr/local/bin\n/usr/sbin\n/usr/bin\n/sbin\n/bin\n/usr/games\n/usr/bin\n/bin\n/usr/sbin\n/sbin\n/usr/local/bin\n/usr/X11/bin\n/Applications\n/opt/syb/sigma/bdj/jvm/bin\n/usr/bin/X11\n/opt/syb/app/bin\n/opt/syb/app/sbin\n/opt/syb/sigma/bin\n/nmt/apps"); do
+	if [[ -d "$test_path" && "$PATH" != *$test_path* ]]; then
+		PATH="$PATH:$test_path";
+	fi
+done
+export PATH="$PATH"
 
 ## Interpreting commandline options
 # Making sure the torrent fed into torrentexpander is a file or directory
@@ -457,17 +464,17 @@ if [ "$TR_TORRENT_NAME" ] && [ ! "$torrent" ]; then
 fi
 if [[ -f "$torrent" || -d "$torrent" ]] && [ -r "$torrent" ]; then
 	delete_third_party_log="yes"
+	if [ ! "$torrent_name" ] && [ "$torrent" ]; then torrent_name=`echo "$(basename "$torrent")"`; fi
 	if [[ -d "$torrent" && -r "$torrent" ]]; then cd "$torrent" && current_folder=`echo "$(pwd)"` && folder_short=`echo "$( basename "$(pwd)" )"` && torrent=""; fi
 elif [ "$third_party_log" != "no" ] && [[ -f "$third_party_log" && -w "$third_party_log" ]]; then
 	torrent="$(cat "$third_party_log")"
+	if [ ! "$torrent_name" ] && [ "$torrent" ]; then torrent_name=`echo "$(basename "$torrent")"`; fi
 	if [[ -d "$torrent" && -r "$torrent" ]]; then cd "$torrent" && current_folder=`echo "$(pwd)"` && folder_short=`echo "$( basename "$(pwd)" )"` && torrent=""; fi
 elif [ "$has_display" == "yes" ]; then
 	echo "I cannot detect any Torrent Source or permissions to this torrent are not set correctly - This script will exit" && exit
 else
 	exit
 fi
-
-
 
 ######################### END TORRENT SOURCE SETUP ###############################
 ##################################################################################
@@ -697,15 +704,15 @@ if [[ "$has_display" == "yes" && "$destructive_mode" == "yes" ]]; then
 	echo "Step $step_number : Deleting original torrent";
 fi
 # Trying to remove torrent from torrent client if destructive_mode is activated
-if [[ "$destructive_mode" == "yes" ]] && [[ -x "$torrent_daemon_bin" && "$(echo "$torrent_daemon_bin" | grep "transmission-remote")" && "$torrent_daemon_port" ]]; then
+if [[ "$destructive_mode" == "yes" && "$torrent_name" ]] && [[ -x "$torrent_daemon_bin" && "$(echo "$torrent_daemon_bin" | grep "transmission-remote")" && "$torrent_daemon_port" ]]; then
 	# Getting torrent ID
 	if [[ ! "$torrent_daemon_login" ]] || [[ ! "$torrent_daemon_password" ]]; then
 		daemon_ip="localhost:$torrent_daemon_port"
-		torrent_id=$("$torrent_daemon_bin" "$daemon_ip" -l | grep "$torrent_name" | sed "s;^ \([0-9]*\)   .*;\1;")
+		torrent_id=$("$torrent_daemon_bin" "$daemon_ip" -l > /dev/null 2>&1 | grep "$torrent_name" | sed "s;^ \([0-9]*\)   .*;\1;")
 	else
 		daemon_ip="localhost:$torrent_daemon_port"
 		daemon_l_p="$torrent_daemon_login:$torrent_daemon_password"
-		torrent_id=$("$torrent_daemon_bin" "$daemon_ip" -n "$daemon_l_p" -l | grep "$torrent_name" | sed "s;^ \([0-9]*\)   .*;\1;")
+		torrent_id=$("$torrent_daemon_bin" "$daemon_ip" -n "$daemon_l_p" -l > /dev/null 2>&1 | grep "$torrent_name" | sed "s;^ \([0-9]*\)   .*;\1;")
 	fi
 	# Pausing and deleting torrent
 	if [[ "$torrent_id" ]]; then
@@ -810,8 +817,6 @@ if [[ $files -eq 1 ]]; then
 	subtitles_dest=`echo "$subtitles_directory/$(basename "$item")"`
 	# Reset folder_short variable because no folder will be generated
 	folder_short=""
-	# Generate dummy 0k video for later subtitles fetching - not required anymore
-	# if [[ "$subtitles_mode" != "yes" && "$subtitles_handling" == "yes" && "$(echo "$item" | egrep -i "\.avi$|\.mkv$|\.divx$|\.mp4$|\.ts$")" ]]; then mkdir -p "$subtitles_directory" && echo "$folder_short$extension" > "$subtitles_dest"; fi
 fi
 
 ## If more than one supported file, create folder named as the initial one and move the resulting files there
@@ -998,7 +1003,7 @@ fi
 
 
 ## IMDB routine. This will generate NFO, Poster and fanart files
-if [ "$imdb_title" ] && [ "$imdb_funct_on" == "yes" ]; then
+if [ "$imdb_title" ] && [ "$imdb_funct_on" == "yes" ] && [ "$subtitles_mode" != "yes" ]; then
 	if [ "$has_display" == "yes" ]; then step_number=$(( $step_number + 1 )) && echo "Step $step_number : Generating NFO and downloading Poster"; fi
 	
 	# Starting debug log for imdb features
@@ -1134,7 +1139,7 @@ fi
 
 
 ## Convert DTS track from MKV files to AC3, img disc images to iso disc images and creates a folder and a cuesheet for Wii backups
-if [ "$has_display" == "yes" ] && [[ "$dts_post" == "yes" || "$img_post" == "yes" || "$wii_post" == "yes" ]] && [ "$(cat "$log_file" | egrep -i "\.mkv$|\.img$|([. _-])wii([. _-])")" ]; then step_number=$(( $step_number + 1 )) && echo "Step $step_number : Converting DTS track to AC3, IMG to ISO and Creating Wii Cuesheet";  fi
+if [ "$has_display" == "yes" ] && [[ "$dts_post" == "yes" || "$img_post" == "yes" || "$wii_post" == "yes" ]] && [ "$subtitles_mode" != "yes" ] && [ "$(cat "$log_file" | egrep -i "\.mkv$|\.img$|([. _-])wii([. _-])")" ]; then step_number=$(( $step_number + 1 )) && echo "Step $step_number : Converting DTS track to AC3, IMG to ISO and Creating Wii Cuesheet";  fi
 for line in $(cat "$log_file"); do
 	source_trimmed=`echo "$line" | sed 's/\(.*\)\..*/\1/' | sed 's;.*/;;g'`
 	source_file=`echo "$line"`
@@ -1181,11 +1186,11 @@ done
 
 
 ## Copy or move TV Shows, movies and music to a specific folder
-if [ "$has_display" == "yes" ] && [[ "$tv_shows_post" != "no" || "$music_post" != "no" || "$movies_post" != "no" ]]; then step_number=$(( $step_number + 1 )) && echo "Step $step_number : Taking care of TV Shows, Music and Movie files";  fi
+if [ "$has_display" == "yes" ] && [ "$subtitles_mode" != "yes" ] && [[ "$tv_shows_post" != "no" || "$music_post" != "no" || "$movies_post" != "no" ]]; then step_number=$(( $step_number + 1 )) && echo "Step $step_number : Taking care of TV Shows, Music and Movie files";  fi
 
 # If in GUI mode, we turn tv_shows_post, music_post and movies_post from move to copy mode, unless the user says otherwise
 user_confirm_move=0
-if [ "$has_display" == "yes" ] && [[ "$tv_shows_post" != "no" || "$music_post" != "no" || "$movies_post" != "no" ]] && [[ "$alt_dest_enabled" == "yes" && "$subtitles_mode" != "yes" ]]; then
+if [ "$has_display" == "yes" ] && [[ "$tv_shows_post" != "no" || "$music_post" != "no" || "$movies_post" != "no" ]] && [[ "$alt_dest_enabled" == "yes" ]]; then
 	while [[ "$user_confirm_move" != "1" ]] && [[ "$user_confirm_move" != "2" ]]; do
 		echo -e "\n\nOops, are you sure you want to move your files and not simply copy them ?\nYour processed torrent may not show up in your destination folder\n\n1) Yes, I'm sure\n2) You may be right, I'd rather copy them\n\n"
 		read user_confirm_move
@@ -1425,7 +1430,7 @@ if [ "$folder_short" ]; then
 	dest=`echo "$destination_folder$folder_short"`
 	# Adding a number into brackets if there s already a directory with the same name
 	while [ -d "$dest" ]; do
-		if [[ count -eq 1 ]]; then
+		if [[ count -eq 1 ]] || [ "$subtitles_mode" == "yes" ]; then
 			dest=`echo "$destination_folder$folder_short"`;
 		else
 			dest=`echo "$destination_folder$folder_short [$count]"`;
@@ -1443,7 +1448,7 @@ elif [ ! "$folder_short" ]; then
 		dest=`echo "$destination_folder$title_clean$extension"`
 		# Adding a number into brackets if there s already a file with the same name
 		while [ -f "$dest" ]; do
-			if [[ count -eq 1 ]]; then
+			if [[ count -eq 1 ]] || [ "$subtitles_mode" == "yes" ]; then
 				dest=`echo "$destination_folder$title_clean$extension"`;
 			else
 				dest=`echo "$destination_folder$title_clean [$count]$extension"`;
@@ -1462,13 +1467,13 @@ if [[ "$gnu_sed_available" != "yes" ]]; then rm -rf "$temp_folder_without_slash"
 ## Use a source / destination log shared with a third party app - Add path to enable
 count=0 && files=$(( $count + $(cat "$log_file"|wc -l) ))
 # If only one file, add its path to the third_party_log file
-if [[ $files -eq 1 ]] && [ "$third_party_log" != "no" ]; then echo "$(cat "$log_file")" > "$third_party_log"; fi
-if [[ $files -gt 1 ]] && [ "$third_party_log" != "no" ]; then folder_name=`echo "$destination_folder$folder_short"`; echo "$folder_name" > "$third_party_log"; fi
+if [[ $files -eq 1 ]] && [ "$third_party_log" != "no" ] && [ "$subtitles_mode" != "yes" ]; then echo "$(cat "$log_file")" > "$third_party_log"; fi
+if [[ $files -gt 1 ]] && [ "$third_party_log" != "no" ] && [ "$subtitles_mode" != "yes" ]; then folder_name=`echo "$destination_folder$folder_short"`; echo "$folder_name" > "$third_party_log"; fi
 # If we end up with a directory, add its path to the third_party_log file
-if [ "$third_party_log" != "no" ] && [ "$user_perm_post" == "yes" ]; then chown "$user_perm_post":"$group_perm_post" "$third_party_log" && sudo chmod "$files_perm_post" "$third_party_log"; fi
+if [ "$third_party_log" != "no" ] && [ "$user_perm_post" == "yes" ] && [ "$subtitles_mode" != "yes" ]; then chown "$user_perm_post":"$group_perm_post" "$third_party_log" && sudo chmod "$files_perm_post" "$third_party_log"; fi
 
 ## Delete third party log if required
-if [ "$delete_third_party_log" == "yes" ] && [ "$third_party_log" != "no" ]; then rm -f "$third_party_log"; fi
+if [ "$delete_third_party_log" == "yes" ] && [ "$third_party_log" != "no" ] && [ "$subtitles_mode" != "yes" ]; then rm -f "$third_party_log"; fi
 
 ##################################################################################
 
@@ -1516,10 +1521,13 @@ if [ "$has_display" == "yes" ]; then echo "That's All Folks";  fi
 # Resetting exported variables
 export subtitles_mode=""
 export script_updated=""
+export TR_TORRENT_DIR=""
+export TR_TORRENT_NAME=""
 IFS=$SAVEIFS
+export PATH="$PATH_BACKUP"
 
 # Starting the post_run_script
-if [ "$post_run_script_enabled" == "yes" ]; then
+if [[ "$post_run_script_enabled" == "yes" && -x "$post_run_script" ]]; then
 	. "$post_run_script"
 	sleep 1
 fi
