@@ -4,13 +4,15 @@
 # Making sure spaces are not interpreted as newline
 SAVEIFS=$IFS
 IFS=$(echo -en "\n\b")
-PATH_BACKUP="$PATH"
+path_backup="$PATH";
+initial_path=":$PATH:";
+new_path="$PATH";
 for test_path in $(echo -e "/usr/local/sbin\n/usr/local/bin\n/usr/sbin\n/usr/bin\n/sbin\n/bin\n/usr/games\n/usr/bin\n/bin\n/usr/sbin\n/sbin\n/usr/local/bin\n/usr/X11/bin\n/Applications\n/opt/syb/sigma/bdj/jvm/bin\n/usr/bin/X11\n/opt/syb/app/bin\n/opt/syb/app/sbin\n/opt/syb/sigma/bin\n/nmt/apps"); do
-	if [[ -d "$test_path" && "$PATH" != *$test_path* ]]; then
-		PATH="$PATH:$test_path";
+	if [[ -d "$test_path" && "$initial_path" != *:$test_path:* ]]; then
+		new_path="$new_path:$test_path";
 	fi
 done
-export PATH="$PATH"
+export PATH="$new_path"
 
 ## Interpreting commandline options
 # Making sure the torrent fed into torrentexpander is a file or directory
@@ -697,12 +699,21 @@ for item in $(if [[ "$current_folder" ]]; then find "$current_folder" -type d -f
 	fi
 done
 
+
 ## If destructive_mode is enabled, remove original torrent
 cd "$destination_folder"
 if [[ "$has_display" == "yes" && "$destructive_mode" == "yes" ]]; then
 	step_number=$(( $step_number + 1 ));
 	echo "Step $step_number : Deleting original torrent";
 fi
+
+# Make sure torrentexpander did not fail
+temp_size=$(du -a -c "$temp_folder" | sed -n '$p' | sed "s;\([0-9]*\)\t.*;\1;")
+if [[ "$current_folder" ]]; then torrent_size=$(du -a -c "$current_folder" | sed -n '$p' | sed "s;\([0-9]*\)\t.*;\1;"); else echo torrent_size=$(du -a -c "$torrent" | sed -n '$p' | sed "s;\([0-9]*\)\t.*;\1;"); fi
+temp_size=$(( $temp_size + ( $temp_size / 10 ) ))
+if [ "$temp_size" -lt "$torrent_size" ]; then destructive_mode="no"; fi
+
+
 # Trying to remove torrent from torrent client if destructive_mode is activated
 if [[ "$destructive_mode" == "yes" && "$torrent_name" ]] && [[ -x "$torrent_daemon_bin" && "$(echo "$torrent_daemon_bin" | grep "transmission-remote")" && "$torrent_daemon_port" ]]; then
 	# Getting torrent ID
@@ -1190,7 +1201,7 @@ if [ "$has_display" == "yes" ] && [ "$subtitles_mode" != "yes" ] && [[ "$tv_show
 
 # If in GUI mode, we turn tv_shows_post, music_post and movies_post from move to copy mode, unless the user says otherwise
 user_confirm_move=0
-if [ "$has_display" == "yes" ] && [[ "$tv_shows_post" != "no" || "$music_post" != "no" || "$movies_post" != "no" ]] && [[ "$alt_dest_enabled" == "yes" ]]; then
+if [ "$has_display" == "yes" ] && [[ "$tv_shows_post" == "move" || "$music_post" == "move" || "$movies_post" == "move" ]] && [[ "$alt_dest_enabled" == "yes" ]]; then
 	while [[ "$user_confirm_move" != "1" ]] && [[ "$user_confirm_move" != "2" ]]; do
 		echo -e "\n\nOops, are you sure you want to move your files and not simply copy them ?\nYour processed torrent may not show up in your destination folder\n\n1) Yes, I'm sure\n2) You may be right, I'd rather copy them\n\n"
 		read user_confirm_move
@@ -1524,7 +1535,7 @@ export script_updated=""
 export TR_TORRENT_DIR=""
 export TR_TORRENT_NAME=""
 IFS=$SAVEIFS
-export PATH="$PATH_BACKUP"
+export PATH="$path_backup"
 
 # Starting the post_run_script
 if [[ "$post_run_script_enabled" == "yes" && -x "$post_run_script" ]]; then
