@@ -4,6 +4,7 @@
 # Making sure spaces are not interpreted as newline
 SAVEIFS=$IFS
 IFS=$(echo -en "\n\b")
+# Making sure PATH variable contains all necessary binary paths
 path_backup="$PATH";
 initial_path=":$PATH:";
 new_path="$PATH";
@@ -14,20 +15,29 @@ for test_path in $(echo -e "/usr/local/sbin\n/usr/local/bin\n/usr/sbin\n/usr/bin
 done
 export PATH="$new_path"
 
-## Interpreting commandline options
-# Making sure the torrent fed into torrentexpander is a file or directory
-if [ -f "$1" ] || [ -d "$1" ]; then torrent="$1"; fi
 
-# alt_destination will be used instead of destination_folder if you launch the script
-# using "/path/to/torrentexpander.sh torrent destination"
-if [ -d "$2" ]; then alt_dest_enabled="yes" && alt_destination="$2"; fi
+## Interpreting commandline options
+commandline_arguments="$(echo -e "$*" | sed "s; ;\\\n;g")"
+for arg in $(echo -e "$commandline_arguments"); do
+	# Making sure the torrent fed into torrentexpander is a file or directory
+	if [[ -f "$arg" || -d "$arg" ]] && [[ ! -f "$torrent" && ! -d "$torrent" ]]; then torrent="$arg" && commandline_arguments="$(echo "$commandline_arguments" | egrep -v "^$arg$")";
+	# alt_destination will be used instead of destination_folder if you launch the script using "/path/to/torrentexpander.sh /torrent /destination"
+	elif [[ -d "$arg" ]] && [[ -f "$torrent" || -d "$torrent" ]]; then alt_dest_enabled="yes" && alt_destination="$arg" && commandline_arguments="$(echo "$commandline_arguments" | egrep -v "^$arg$")";
+	fi
+done
+for arg in $(echo -e "$commandline_arguments"); do
+	# if the script is run for the first time or using "torrentexpander -c", launch setup
+	if [ "$arg" == "-c" ]; then first_run="yes";
+	# Commandline arguments help
+	elif [ "$arg" == "-h" ]; then echo -e "\n\nAllowed commands are :\n\n-c   ->   Launch Setup\n-h   ->   Help\n-s   ->   Silent Mode (default if no display is available)\n\nFirst Path is your Torrent Path\nSecond Path is an Optional Destination Path of your choice\n\n" && exit;
+	# if a torrent path is passed in commandline, we allow silent mode
+	elif [ "$arg" == "-s" ] && [[ -f "$torrent" || -d "$torrent" || -f "$TR_TORRENT_DIR/$TR_TORRENT_NAME" || -d "$TR_TORRENT_DIR/$TR_TORRENT_NAME" ]]; then silent_mode="yes";
+	fi
+done
 
 # This routine is used to detect if the script can display output
 # while in subtitles_mode, we never enable display
-if [ -t 1 ] && [ "$subtitles_mode" != "yes" ]; then has_display="yes"; fi
-
-# if the script is run for the first time or using "torrentexpander -c", launch setup
-if [ "$1" == "-c" ]; then first_run="yes"; fi
+if [ -t 1 ] && [ "$subtitles_mode" != "yes" ] && [ "$silent_mode" != "yes" ]; then has_display="yes"; fi
 
 # Detect if the OS handles the nice command
 nice -n 15 echo > /dev/null 2>&1 && if [ "$?" == "0" ]; then nice_available="yes"; fi
