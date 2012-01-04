@@ -32,8 +32,11 @@ for arg in $(echo -e "$commandline_arguments"); do
 	elif [ "$arg" == "-h" ]; then echo -e "\n\nAllowed commands are :\n\n-c   ->   Launch Setup\n-h   ->   Help\n-s   ->   Silent Mode (default if no display is available)\n\nFirst Path is your Torrent Path\nSecond Path is an Optional Destination Path of your choice\n\n" && exit;
 	# if a torrent path is passed in commandline, we allow silent mode
 	elif [ "$arg" == "-s" ] && [[ -f "$torrent" || -d "$torrent" || -f "$TR_TORRENT_DIR/$TR_TORRENT_NAME" || -d "$TR_TORRENT_DIR/$TR_TORRENT_NAME" ]]; then silent_mode="yes";
+	# Manually trigger script update
+	elif [ "$arg" == "-u" ]; then update_mode="yes" && silent_mode="yes";
 	fi
 done
+
 
 # This routine is used to detect if the script can display output
 # while in subtitles_mode, we never enable display
@@ -232,7 +235,7 @@ if [[ "$script_path" == *torrentexpander.workflow* ]]; then subtitles_handling="
 ######################### Script setup user interface ############################
 
 # Switch to setup mode if settings file is missing and used interaction is possible
-if [ "$has_display" == "yes" ] && [ ! -f "$settings_file" ]; then first_run="yes"; fi
+if [ -t 1 ] && [ ! -f "$settings_file" ]; then first_run="yes" && has_display="yes"; fi
 
 # Generating settings file 
 if [ ! -f "$settings_file" ]; then
@@ -484,8 +487,8 @@ elif [ "$third_party_log" != "no" ] && [[ -f "$third_party_log" && -w "$third_pa
 	if [[ -d "$torrent" && -r "$torrent" ]]; then cd "$torrent" && current_folder=`echo "$(pwd)"` && folder_short=`echo "$( basename "$(pwd)" )"` && torrent=""; fi
 elif [ "$has_display" == "yes" ]; then
 	echo "I cannot detect any Torrent Source or permissions to this torrent are not set correctly - This script will exit" && exit
-else
-	exit
+elif [ "$update_mode" == "yes" ]; then echo > /dev/null 2>&1
+else exit
 fi
 
 ######################### END TORRENT SOURCE SETUP ###############################
@@ -561,7 +564,7 @@ if [[ "$third_party_log" != "no" && -f "$third_party_log" ]]; then
 	fi
 fi
 
-if [ "$quit_on_error" == "yes" ]; then if [ "$has_display" == "yes" ]; then echo -e "\n\nThere's something wrong with your settings. Please review them now." && read -p "" && "$text_editor_bin" "$settings_file" && echo -e "\n\nYou're done with your setup\nThis script will exit now\nIf you need to edit your settings again just run $script_path/torrentexpander.sh -c"; fi; exit; fi
+if [ "$quit_on_error" == "yes" ]; then if [ "$has_display" == "yes" ]; then echo -e "\n\nThere's something wrong with your settings. Please review them now." && read -p "" && "$text_editor_bin" "$settings_file" && echo -e "\n\nYou're done with your setup\nThis script will exit now\nIf you need to edit your settings again just run $script_path/torrentexpander.sh -c"; elif [ "$update_mode" != "yes" ]; then exit; fi; fi
 
 
 ##################################################################################
@@ -596,14 +599,15 @@ if [[ ! -w "$temp_folder" ]]; then
 	quit_on_error="yes"
 fi
 
-if [ "$quit_on_error" == "yes" ]; then if [ "$has_display" == "yes" ]; then echo -e "\n\nThere's something wrong with your settings. Please review them now." && read -p "" && "$text_editor_bin" "$settings_file" && echo -e "\n\nYou're done with your setup\nThis script will exit now\nIf you need to edit your settings again just run $script_path/torrentexpander.sh -c"; fi; exit; fi
+if [ "$quit_on_error" == "yes" ]; then if [ "$has_display" == "yes" ]; then echo -e "\n\nThere's something wrong with your settings. Please review them now." && read -p "" && "$text_editor_bin" "$settings_file" && echo -e "\n\nYou're done with your setup\nThis script will exit now\nIf you need to edit your settings again just run $script_path/torrentexpander.sh -c"; fi; if [ "$update_mode" != "yes" ]; then exit; fi; fi
 
 
 ############################# SCRIPT AUTO UPDATE #################################
+if [ "$update_mode" == "yes" ] && [ -t 1 ]; then has_display="yes"; fi
 date_today=$(($(date "+%Y" | sed 's/^0*//')*365+$(date "+%m" | sed 's/^0*//')*30+$(date "+%d" | sed 's/^0*//')))
 if [ ! "$last_update" ]; then last_update=0; fi
 
-if [[ "$wget_curl" == *wget* || "$wget_curl" == *curl* ]] && [[ "$auto_update_script" == "daily" && $last_update -lt $(($date_today-1)) ]] || [[ "$auto_update_script" == "weekly" && $last_update -lt $(($date_today-7)) ]] || [[ "$auto_update_script" == "monthly" && $last_update -lt $(($date_today-30)) ]]; then
+if [[ "$wget_curl" == *wget* || "$wget_curl" == *curl* ]] && [[ "$auto_update_script" == "daily" && $last_update -lt $(($date_today-1)) ]] || [[ "$auto_update_script" == "weekly" && $last_update -lt $(($date_today-7)) ]] || [[ "$auto_update_script" == "monthly" && $last_update -lt $(($date_today-30)) ]] || [ "$update_mode" == "yes" ]; then
 	if [ "$has_display" == "yes" ]; then step_number=$(( $step_number + 1 )) && echo -n -e "Step $step_number : Updating Torrentexpander\n\n";  fi
 	if [[ "$wget_curl" == *wget* ]]; then
 		rel_cont=`echo "$("$wget_curl" -q "http://code.google.com/p/torrentexpander/source/browse/trunk" -O -; wait)"`;
@@ -641,11 +645,12 @@ if [[ "$wget_curl" == *wget* || "$wget_curl" == *curl* ]] && [[ "$auto_update_sc
 			rm -rf "$temp_folder"
 			rm -f "$log_file"
 			export script_updated="yes"
-			. "$script_path/torrentexpander.sh" "$torrent" "$destination_folder"
+			if [ "$update_mode" != "yes" ]; then . "$script_path/torrentexpander.sh" "$torrent" "$destination_folder"; fi
 			sleep 5
 			exit
 		fi
 	fi
+	if [ "$update_mode" == "yes" ]; then rm -rf "$temp_folder" && rm -f "$log_file" && exit; fi
 fi
 
 ##################################################################################
