@@ -599,7 +599,7 @@ if [[ ! -w "$temp_folder" ]]; then
 	quit_on_error="yes"
 fi
 
-if [ "$quit_on_error" == "yes" ]; then if [ "$has_display" == "yes" ]; then echo -e "\n\nThere's something wrong with your settings. Please review them now." && read -p "" && "$text_editor_bin" "$settings_file" && echo -e "\n\nYou're done with your setup\nThis script will exit now\nIf you need to edit your settings again just run $script_path/torrentexpander.sh -c"; fi; if [ "$update_mode" != "yes" ]; then exit; fi; fi
+if [ "$quit_on_error" == "yes" ]; then if [ "$has_display" == "yes" ]; then echo -e "\n\nThere's something wrong with your settings. Please review them now." && read -p "" && "$text_editor_bin" "$settings_file" && echo -e "\n\nYou're done with your setup\nThis script will exit now\nIf you need to edit your settings again just run $script_path/torrentexpander.sh -c"; elif [ "$update_mode" != "yes" ]; then exit; fi; fi
 
 
 ############################# SCRIPT AUTO UPDATE #################################
@@ -640,18 +640,22 @@ if [[ "$wget_curl" == *wget* || "$wget_curl" == *curl* ]] && [[ "$auto_update_sc
 				if [[ "$gnu_sed_available" == "yes" ]]; then sed -i "/last_update=/d" "$settings_file"; fi
 				echo "last_update=$date_today" >> "$settings_file"
 			fi
-			if [[ "$has_display" == "yes" ]]; then echo -n -e "Torrentexpander is gonna restart now\n\n"; fi
+			if [[ "$has_display" == "yes" ]] && [ "$silent_mode" != "yes" ]; then echo -n -e "Torrentexpander is gonna restart now\n\n"; fi
 			cat "$temp_folder_without_slash/new_script" > "$script_path/torrentexpander.sh"; wait;
 			rm -rf "$temp_folder"
 			rm -f "$log_file"
 			export script_updated="yes"
-			if [ "$update_mode" != "yes" ]; then . "$script_path/torrentexpander.sh" "$torrent" "$destination_folder"; fi
+			if [ "$update_mode" != "yes" ] && [ "$silent_mode" != "yes" ]; then . "$script_path/torrentexpander.sh" "$torrent" "$destination_folder";
+			elif [ "$update_mode" != "yes" ] && [ "$silent_mode" == "yes" ]; then . "$script_path/torrentexpander.sh" "$torrent" "$destination_folder" -c;
+			fi
 			sleep 5
 			exit
 		fi
 	fi
 	if [ "$update_mode" == "yes" ]; then rm -rf "$temp_folder" && rm -f "$log_file" && exit; fi
 fi
+
+silent_mode="yes"
 
 ##################################################################################
 
