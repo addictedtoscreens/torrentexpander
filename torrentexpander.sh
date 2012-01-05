@@ -390,9 +390,9 @@ if [ "$first_run" == "yes" ] && [ "$has_display" == "yes" ]; then "$text_editor_
 ###################### Kinda graphical user interface ############################
 if [[ "$has_display" == "yes" && ! "$torrent" ]] || [[ "$has_display" == "yes" && ! "$alt_dest_enabled" ]]; then echo -e "\n\n----------------------------------------------------\n----------------------------------------------------\n\nWELCOME TO TORRENTEXPANDER\n\n----------------------------------------------------\n----------------------------------------------------\n\n"; fi
 
-## Trying to find out transmission download-dir from transmission settings file
-transmission_settings_file="$(if [ -f "/share/.transmission/settings.json" ]; then echo "/share/.transmission/settings.json"; elif [ -f "$HOME/.config/transmission/settings.json" ]; then echo "$HOME/.config/transmission/settings.json"; fi)"
-if [ "$has_display" == "yes" ] && [ -f "$transmission_settings_file" ] && [ ! "$torrent" ]; then cd "$(echo "$(sed -n '/"download-dir": /p' "$transmission_settings_file")" | sed -e 's/    "download-dir": "//g' -e 's/", //g')"; elif [ "$has_display" == "yes" ] && [ ! -f "$transmission_settings_file" ] && [ ! "$torrent" ]; then cd "$HOME"; fi
+## Trying to find out transmission download-dir from transmission settings file - Temporarily disabled until I find a better one
+# transmission_settings_file="$(if [ -f "/share/.transmission/settings.json" ]; then echo "/share/.transmission/settings.json"; elif [ -f "$HOME/.config/transmission/settings.json" ]; then echo "$HOME/.config/transmission/settings.json"; fi)"
+#Êif [ "$has_display" == "yes" ] && [ -f "$transmission_settings_file" ] && [ ! "$torrent" ]; then cd "$(echo "$(sed -n '/"download-dir": /p' "$transmission_settings_file")" | sed -e 's/    "download-dir": "//g' -e 's/", //g')"; elif [ "$has_display" == "yes" ] && [ ! -f "$transmission_settings_file" ] && [ ! "$torrent" ]; then cd "$HOME"; fi
 
 ## Asking the User for the torrent source
 selected=0
