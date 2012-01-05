@@ -119,7 +119,7 @@ music_extensions="mp3,m4a,wav"
 # scene patterns is used for scenes that add their name at the beginning of the file name
 movies_detect_patterns="HDTV,DVDRip,BDRip,BRRip,DVDR,720p,1080p,HD1080p"
 movies_detect_patterns_pt_2="TS,TVRip,DVDSCR,R5,Workprint,SCR,Screener,HDRip,DVDScreener"
-other_movies_patterns="proper,repack,rerip,pdtv,hdtv,xvid,webrip,web-dl,readnfo,ntsc,pal,limited,ws,uncut,unrated,internal,480p,festival,bluray,extended,italian,theatrical.cut,dubbed,collection,remastered,season,nlsubs,spanish,divx,x264,hdtvrip,dvdriptorrents"
+other_movies_patterns="proper,repack,rerip,pdtv,hdtv,xvid,webrip,web-dl,readnfo,ntsc,pal,limited,ws,uncut,unrated,internal,480p,festival,bluray,extended,italian,theatrical.cut,dubbed,collection,remastered,season,nlsubs,spanish,divx,x264,hdtvrip,dvdriptorrents,xxx,[^ ].*[. _-]subs,Plsubbed"
 scene_patterns="[. _-]*www[. _-].*[. _-]com[. _-]*,aaf"
 audio_quality_patterns="AC3,DTS,LiNE,CAM AUDIO,MD,LD,Studio Audio"
 ####################### Optional functionalities variables #######################
@@ -1257,6 +1257,7 @@ for line in $(cat "$log_file"); do
 		new_destination=`echo "$music_post_path"`
 	elif [[ "$(echo "$quality" | egrep -i "$movies_detect_patterns_rev" )" || "$(echo "$quality" | egrep -i "$movies_detect_patterns_pt_2_rev" )" ]] && [ "$(echo "$line" | egrep -i "$movies_extensions_rev" )" ] && [ "$movies_post" != "no" ];
 		then new_destination=`echo "$movies_post_path"`
+	else new_destination=`echo "$movies_post_path"`
 	fi
 	
 	# Guessing path for /Series/Episode (s) or /Series/Season X/Episode (ss)
