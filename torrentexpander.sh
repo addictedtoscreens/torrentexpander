@@ -27,20 +27,21 @@ for arg in $(echo -e "$commandline_arguments"); do
 done
 for arg in $(echo -e "$commandline_arguments"); do
 	# if the script is run for the first time or using "torrentexpander -c", launch setup
-	if [ "$arg" == "-c" ]; then first_run="yes";
+	if [[ "$arg" == "-c" || "$arg" == "--config" ]]; then first_run="yes";
 	# Commandline arguments help
-	elif [ "$arg" == "-h" ]; then echo -e "\n\nAllowed commands are :\n\n-c   ->   Launch Setup\n-h   ->   Help\n-s   ->   Silent Mode (default if no display is available)\n\nFirst Path is your Torrent Path\nSecond Path is an Optional Destination Path of your choice\n\n" && exit;
+	elif [[ "$arg" == "-h" || "$arg" == "--help" ]]; then echo -e "\n\nAllowed commands are :\n\n-c or --config   ->   Launch Setup\n-h or --help   ->   Help\n-s or silent   ->   Silent Mode (default if no display is available)\n-u or --update   ->   Manual Update Mode\n\nFirst Path is your Torrent Path\nSecond Path is an Optional Destination Path of your choice\n\n" && exit;
 	# if a torrent path is passed in commandline, we allow silent mode
-	elif [ "$arg" == "-s" ] && [[ -f "$torrent" || -d "$torrent" || -f "$TR_TORRENT_DIR/$TR_TORRENT_NAME" || -d "$TR_TORRENT_DIR/$TR_TORRENT_NAME" ]]; then silent_mode="yes";
+	elif [[ "$arg" == "-s" || "$arg" == "--silent" ]] && [[ -f "$torrent" || -d "$torrent" || -f "$TR_TORRENT_DIR/$TR_TORRENT_NAME" || -d "$TR_TORRENT_DIR/$TR_TORRENT_NAME" ]]; then silent_mode="yes";
 	# Manually trigger script update
-	elif [ "$arg" == "-u" ]; then update_mode="yes" && silent_mode="yes";
+	elif [[ "$arg" == "-u" || "$arg" == "--update" ]]; then update_mode="yes" && silent_mode="yes";
 	fi
 done
-
 
 # This routine is used to detect if the script can display output
 # while in subtitles_mode, we never enable display
 if [ -t 1 ] && [ "$subtitles_mode" != "yes" ] && [ "$silent_mode" != "yes" ]; then has_display="yes"; fi
+# we ll remind the user about the help command
+if [[ ! "$*" &&  has_display="yes" ]]; then echo -e "\n\nUse the -h or --help command if you need to see a list of all available commands\n\n"; fi
 
 # Detect if the OS handles the nice command
 nice -n 15 echo > /dev/null 2>&1 && if [ "$?" == "0" ]; then nice_available="yes"; fi
