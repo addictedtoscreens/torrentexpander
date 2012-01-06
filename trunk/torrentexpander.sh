@@ -712,9 +712,9 @@ for item in $(if [[ "$current_folder" ]]; then find "$current_folder" -type d -f
 		elif [[ "$(echo "$item" | egrep -i -v "\.[0-9][0-9][0-9]$|\.r[0-9][0-9]$|\.rar$|\.001$|\.zip$")" ]]; then otherFiles=`echo "$item" | egrep -i -v "\.[0-9][0-9][0-9]$|\.r[0-9][0-9]$|\.rar$|\.001$|\.zip$"`
 		dest_path=`echo "$temp_folder"`
 		fi
-		if [[ "$nice_available" == "yes" && "$destructive_mode" != "yes" ]]; then for f in $(echo -e "$otherFiles"); do otherFile=`echo "$f"`; mkdir -p "$dest_path"; nice -n 15 cp -f "$otherFile" "$dest_path"; done
-		elif [[ "$nice_available" != "yes" && "$destructive_mode" != "yes" ]]; then for f in $(echo -e "$otherFiles"); do otherFile=`echo "$f"`; mkdir -p "$dest_path"; cp -f "$otherFile" "$dest_path"; done
-		elif [ "$destructive_mode" == "yes" ]; then for f in $(echo -e "$otherFiles"); do otherFile=`echo "$f"`; mkdir -p "$dest_path"; nice -n 15 mv -f "$otherFile" "$dest_path"; done
+		if [[ "$nice_available" == "yes" && "$destructive_mode" != "yes" ]]; then for f in $(echo -e "$otherFiles"); do otherFile=`echo "$f"`; if [ ! -d "$dest_path" ]; then mkdir -p "$dest_path"; fi; nice -n 15 cp -f "$otherFile" "$dest_path"; done
+		elif [[ "$nice_available" != "yes" && "$destructive_mode" != "yes" ]]; then for f in $(echo -e "$otherFiles"); do otherFile=`echo "$f"`; if [ ! -d "$dest_path" ]; then mkdir -p "$dest_path"; fi; cp -f "$otherFile" "$dest_path"; done
+		elif [ "$destructive_mode" == "yes" ]; then for f in $(echo -e "$otherFiles"); do otherFile=`echo "$f"`; if [ ! -d "$dest_path" ]; then mkdir -p "$dest_path"; fi; nice -n 15 mv -f "$otherFile" "$dest_path"; done
 		fi
 	fi
 done
@@ -876,7 +876,7 @@ done
 for item in $(find "$temp_folder$folder_short" -type f | egrep -i "$supported_extensions_rev"); do
 	subtitles_dest=`echo "$subtitles_directory/$(basename "$item")"`
 	already_subtitles=`echo "$(echo "$item" | sed 's/\(.*\)\..*/\1\.srt/')"`
-	if [[ "$subtitles_mode" != "yes" && "$subtitles_handling" == "yes" && ! -f "$already_subtitles" && "$(echo "$item" | egrep -i "\.avi$|\.mkv$|\.divx$|\.mp4$|\.ts$")" ]]; then mkdir -p "$subtitles_directory" && echo "$(basename "$item")" > "$subtitles_dest"; fi
+	if [[ "$subtitles_mode" != "yes" && "$subtitles_handling" == "yes" && ! -f "$already_subtitles" && "$(echo "$item" | egrep -i "\.avi$|\.mkv$|\.divx$|\.mp4$|\.ts$")" ]]; then if [ ! -d "$subtitles_directory" ]; then mkdir -p "$subtitles_directory"; fi ; echo "$(basename "$item")" > "$subtitles_dest"; fi
 	echo "$item" >> "$log_file"
 done
 fi
@@ -1310,7 +1310,7 @@ for line in $(cat "$log_file"); do
 	
 	# Copying TV Shows
 	if [[ "$(echo "$line" | egrep -i "([. _])s([0-9])([0-9])e([0-9])([0-9])([. _])" )" || "$(echo "$line" | egrep -i "([. _])([0-9])([0-9])([0-9])([0-9]).([0-9])([0-9]).([0-9])([0-9])([. _])")" ]] && [[ "$(echo "$line" | egrep -i "$tv_show_extensions_rev")" && "$tv_shows_post" == "copy" ]]; then
-		mkdir -p "$new_destination";
+		if [ ! -d "$new_destination" ]; then mkdir -p "$new_destination"; fi;
 		if [[ "$(cat "$temp_folder$additional_permissions" | grep -o "^$new_destination$")" == "" && "$new_destination" != "$tv_shows_post_path" ]]; then
 			echo "$new_destination" >> "$temp_folder$additional_permissions";
 		fi
@@ -1322,7 +1322,7 @@ for line in $(cat "$log_file"); do
 	
 	# Moving TV Shows
 	elif [[ "$(echo "$line" | egrep -i "([. _])s([0-9])([0-9])e([0-9])([0-9])([. _])" )" || "$(echo "$line" | egrep -i "([. _])([0-9])([0-9])([0-9])([0-9]).([0-9])([0-9]).([0-9])([0-9])([. _])")" ]] && [[ "$(echo "$line" | egrep -i "$tv_show_extensions_rev")" && "$tv_shows_post" == "move" ]]; then
-		mkdir -p "$new_destination";
+		if [ ! -d "$new_destination" ]; then mkdir -p "$new_destination"; fi;
 		if [[ "$(cat "$temp_folder$additional_permissions" | grep -o "^$new_destination$")" == "" && "$new_destination" != "$tv_shows_post_path" ]]; then
 			echo "$new_destination" >> "$temp_folder$additional_permissions";
 		fi
@@ -1342,7 +1342,7 @@ for line in $(cat "$log_file"); do
     	if [ ! "$folder_short" ] && [[ "$(echo "$line" | egrep -i "$movies_extensions_rev")" && "$force_single_file_movies_folder" == "yes" ]]; then
     		source_trimmed=`echo "$line" | sed 's/\(.*\)\..*/\1/' | sed 's;.*/;;g'` && new_destination=`echo "$new_destination$source_trimmed/"`;
     	fi
-    	mkdir -p "$new_destination";
+    	if [ ! -d "$new_destination" ]; then mkdir -p "$new_destination"; fi;
     	if [[ "$(cat "$temp_folder$additional_permissions" | grep -o "^$new_destination$")" == "" && "$new_destination" != "$music_post_path" && "$new_destination" != "$movies_post_path" ]]; then
     		echo "$new_destination" >> "$temp_folder$additional_permissions";
     	fi
@@ -1358,7 +1358,7 @@ for line in $(cat "$log_file"); do
     		source_trimmed=`echo "$line" | sed 's/\(.*\)\..*/\1/' | sed 's;.*/;;g'`;
     		new_destination=`echo "$new_destination$source_trimmed/"`;
     	fi
-    	mkdir -p "$new_destination";
+    	if [ ! -d "$new_destination" ]; then mkdir -p "$new_destination"; fi;
     	if [[ "$(cat "$temp_folder$additional_permissions" | grep -o "^$new_destination$")" == "" && "$new_destination" != "$music_post_path" && "$new_destination" != "$movies_post_path" ]]; then
     		echo "$new_destination" >> "$temp_folder$additional_permissions";
     	fi
