@@ -15,7 +15,7 @@ for test_path in $(echo -e "/usr/local/sbin\n/usr/local/bin\n/usr/sbin\n/usr/bin
 done
 export PATH="$new_path"
 
-for bin in $(echo -e "basename\ncat\nchmod\nchown\ndate\ndirname\necho\negrep\nexpr\nfind\ngrep\nid\nls\nmkdir\nmv\nrm\nsed\ntouch\nwc"); do
+for bin in $(echo -e "basename\ncat\nchmod\nchown\ndate\ndirname\ndu\necho\negrep\nexpr\nfind\ngrep\nid\nls\nmkdir\nmv\nrm\nsed\ntouch\nwc"); do
 	if [ ! -x "$(which "$bin")" ]; then missing_bin="$missing_bin\n$bin"; fi
 done
 if [ "$missing_bin" ]; then
@@ -39,7 +39,7 @@ for arg in $(echo -e "$commandline_arguments"); do
 	# Commandline arguments help
 	elif [[ "$arg" == "-h" || "$arg" == "--help" ]]; then echo -e "\n\nAllowed commands are :\n\n-c or --config   ->   Launch Setup\n-h or --help   ->   Help\n-s or silent   ->   Silent Mode (default if no display is available)\n-u or --update   ->   Manual Update Mode\n\nFirst Path is your Torrent Path\nSecond Path is an Optional Destination Path of your choice\n\n" && exit;
 	# if a torrent path is passed in commandline, we allow silent mode
-	elif [[ "$arg" == "-s" || "$arg" == "--silent" ]] && [[ -f "$torrent" || -d "$torrent" || -f "$TR_TORRENT_DIR/$TR_TORRENT_NAME" || -d "$TR_TORRENT_DIR/$TR_TORRENT_NAME" ]]; then silent_mode="yes";
+	elif [[ "$arg" == "-s" || "$arg" == "--silent" ]] && [[ -f "$torrent" || -d "$torrent" ]]; then silent_mode="yes";
 	# Manually trigger script update
 	elif [[ "$arg" == "-u" || "$arg" == "--update" ]]; then update_mode="yes" && silent_mode="yes";
 	fi
