@@ -3,7 +3,7 @@
 ## Set up the running environment
 # Making sure spaces are not interpreted as newline
 SAVEIFS=$IFS
-IFS=$(echo -en "\n\b")
+IFS=$(echo -e "\n\b")
 # Making sure PATH variable contains all necessary binary paths
 path_backup="$PATH";
 initial_path=":$PATH:";
@@ -15,14 +15,22 @@ for test_path in $(echo -e "/usr/local/sbin\n/usr/local/bin\n/usr/sbin\n/usr/bin
 done
 export PATH="$new_path"
 
+for bin in $(echo -e "basename\ncat\nchmod\nchown\ndate\ndirname\necho\negrep\nexpr\nfind\ngrep\nid\nls\nmkdir\nmv\nrm\nsed\ntouch\nwc"); do
+	if [ ! -x "$(which "$bin")" ]; then missing_bin="$missing_bin\n$bin"; fi
+done
+if [ "$missing_bin" ]; then
+	if [ -t 1 ]; then echo -e "Sorry but this script cannot be run. Those binaries are missing :\n$missing_bin\n\n"; fi;
+	exit;
+fi
+
 
 ## Interpreting commandline options
-commandline_arguments="$(echo -e "$*" | sed "s; ;\\\n;g")"
+commandline_arguments="$(echo -e "$*" | sed 's; -\([0-9a-zA-Z-]\);\\\n-\1;g' | sed 's; /\([0-9a-zA-Z-]\);\\\n/\1;g' )"
 for arg in $(echo -e "$commandline_arguments"); do
 	# Making sure the torrent fed into torrentexpander is a file or directory
-	if [[ -f "$arg" || -d "$arg" ]] && [[ ! -f "$torrent" && ! -d "$torrent" ]]; then torrent="$arg" && commandline_arguments="$(echo "$commandline_arguments" | egrep -v "^$arg$")";
+	if [[ -f "$arg" || -d "$arg" ]] && [[ ! -f "$torrent" && ! -d "$torrent" ]]; then torrent=`echo "$arg"` && commandline_arguments="$(echo "$commandline_arguments" | egrep -v "^$arg$")";
 	# alt_destination will be used instead of destination_folder if you launch the script using "/path/to/torrentexpander.sh /torrent /destination"
-	elif [[ -d "$arg" ]] && [[ -f "$torrent" || -d "$torrent" ]]; then alt_dest_enabled="yes" && alt_destination="$arg" && commandline_arguments="$(echo "$commandline_arguments" | egrep -v "^$arg$")";
+	elif [[ -d "$arg" ]] && [[ -f "$torrent" || -d "$torrent" ]]; then alt_dest_enabled="yes" && alt_destination=`echo "$arg"` && commandline_arguments="$(echo "$commandline_arguments" | egrep -v "^$arg$")";
 	fi
 done
 for arg in $(echo -e "$commandline_arguments"); do
@@ -402,7 +410,7 @@ if [ "$has_display" == "yes" ] && [ ! "$torrent" ]; then
 		count=-1 && echo "Select Torrent Source :" && echo "" && echo "$(pwd)" && echo ""
 		# Listing content of directory in the GUI
 		for item in $(echo -e "Select current folder\n..\n$(ls -1)"); do
-			count=$(( $count + 1 )); var_name="sel$count"; var_val="$item"; eval ${var_name}=`echo -ne \""${var_val}"\"`; echo "$count - $item"
+			count=$(( $count + 1 )); var_name="sel$count"; var_val="$item"; eval ${var_name}=`echo -e \""${var_val}"\"`; echo "$count - $item"
 		done
 		echo "" && echo "Type the ID of the Torrent Source :"
 		# Asking user for its selection
@@ -435,7 +443,7 @@ if [ "$has_display" == "yes" ] && [ ! "$alt_dest_enabled" ] && [ ! "$alt_destina
 		count=-1 && echo "" && echo "Select Destination Folder :" && echo "" && echo "$(pwd)" && echo ""
 		# Listing content of directory in the GUI
 		for item in $(echo -e "Select current folder\n..\n$(ls -1)"); do
-			count=$(( $count + 1 )); var_name="sel$count"; var_val="$item"; eval ${var_name}=`echo -ne \""${var_val}"\"`; echo "$count  -  $item"
+			count=$(( $count + 1 )); var_name="sel$count"; var_val="$item"; eval ${var_name}=`echo -e \""${var_val}"\"`; echo "$count  -  $item"
 		done
 		echo "" && echo "Type the ID of the Destination Folder :"
 		# Asking user for its selection
@@ -513,42 +521,42 @@ if [ -f "$errors_file" ]; then rm -f "$errors_file"; fi
 # If some necessary variables are incorrect, the script will exit
 # If some optional variables are incorrect, the script will continue but those features will be disabled
 
-if [ ! -d "$(dirname "$destination_folder")" ]; then echo "Your destination folder is incorrect please edit your torrentexpander_settings.ini file" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Your destination folder is incorrect please edit your torrentexpander_settings.ini file"; fi; quit_on_error="yes"; fi
-if [ ! -w "$(dirname "$destination_folder")" ]; then echo "Permissions on your destination folder are incorrect please edit your torrentexpander_settings.ini file or your permissions for this folder" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Permissions on your destination folder are incorrect please edit your torrentexpander_settings.ini file or your permissions for this folder"; fi; quit_on_error="yes"; fi
+if [ ! -d "$(dirname "$destination_folder")" ]; then echo "Your destination folder is incorrect please edit your torrentexpander_settings.ini file" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo -e "Your destination folder is incorrect please edit your torrentexpander_settings.ini file\n"; fi; quit_on_error="yes"; fi
+if [ ! -w "$(dirname "$destination_folder")" ]; then echo "Permissions on your destination folder are incorrect please edit your torrentexpander_settings.ini file or your permissions for this folder" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo -e "\nPermissions on your destination folder are incorrect please edit your torrentexpander_settings.ini file or your permissions for this folder\n"; fi; quit_on_error="yes"; fi
 if [ -d "$(dirname "$destination_folder")" ] && [ ! -d "$destination_folder" ]; then mkdir -p "$destination_folder"; fi
-if [[ ! -w "$destination_folder" || ! -d "$destination_folder" ]]; then echo "Permissions on your destination folder are incorrect please edit your torrentexpander_settings.ini file or your permissions for this folder" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Permissions on your destination folder are incorrect please edit your torrentexpander_settings.ini file or your permissions for this folder"; fi; quit_on_error="yes"; fi
+if [[ ! -w "$destination_folder" || ! -d "$destination_folder" ]]; then echo "Permissions on your destination folder are incorrect please edit your torrentexpander_settings.ini file or your permissions for this folder" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo -e "\nPermissions on your destination folder are incorrect please edit your torrentexpander_settings.ini file or your permissions for this folder\n"; fi; quit_on_error="yes"; fi
 
-if [ ! -d "$temp_directory" ]; then echo "Your temp folder path is incorrect please edit your torrentexpander_settings.ini file" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Your temp folder path is incorrect please edit your torrentexpander_settings.ini file"; fi; quit_on_error="yes"; fi
-if [ -d "$temp_folder" ]; then echo "Temp folder already exists. Please delete it or edit your torrentexpander_settings.ini file" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Temp folder already exists. Please delete it or edit your torrentexpander_settings.ini file"; fi; quit_on_error="yes"; fi
-if [[ ! -w "$temp_directory" ]]; then echo "Permissions on your temp folder are incorrect please edit your torrentexpander_settings.ini file or your permissions for this folder" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Permissions on your temp folder are incorrect please edit your torrentexpander_settings.ini file or your permissions for this folder"; fi; quit_on_error="yes"; fi
+if [ ! -d "$temp_directory" ]; then echo "Your temp folder path is incorrect please edit your torrentexpander_settings.ini file" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo -e "\nYour temp folder path is incorrect please edit your torrentexpander_settings.ini file\n"; fi; quit_on_error="yes"; fi
+if [ -d "$temp_folder" ]; then echo "Temp folder already exists. Please delete it or edit your torrentexpander_settings.ini file" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo -e "\nTemp folder already exists. Please delete it or edit your torrentexpander_settings.ini file\n"; fi; quit_on_error="yes"; fi
+if [[ ! -w "$temp_directory" ]]; then echo "Permissions on your temp folder are incorrect please edit your torrentexpander_settings.ini file or your permissions for this folder" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo -e "\nPermissions on your temp folder are incorrect please edit your torrentexpander_settings.ini file or your permissions for this folder\n"; fi; quit_on_error="yes"; fi
 
 if [ ! -d "$tv_shows_post_path" ] && [ "$tv_shows_post" != "no" ]; then	echo "Your TV Shows path is incorrect - TV Shows Post will be disabled" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Your TV Shows path is incorrect - TV Shows Post will be disabled"; fi; tv_shows_post="no"; fi
-if [[ ! -w "$tv_shows_post_path" && "$tv_shows_post" != "no" ]]; then echo "Permissions on your TV Shows folder are incorrect please edit your torrentexpander_settings.ini file or your permissions for this folder - TV Shows Post will be disabled" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Permissions on your TV Shows folder are incorrect please edit your torrentexpander_settings.ini file or your permissions for this folder - TV Shows Post will be disabled"; fi; tv_shows_post="no"; fi
+if [[ ! -w "$tv_shows_post_path" && "$tv_shows_post" != "no" ]]; then echo "Permissions on your TV Shows folder are incorrect please edit your torrentexpander_settings.ini file or your permissions for this folder - TV Shows Post will be disabled" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo -e "\nPermissions on your TV Shows folder are incorrect please edit your torrentexpander_settings.ini file or your permissions for this folder - TV Shows Post will be disabled\n"; fi; tv_shows_post="no"; fi
 
 if [ ! -d "$music_post_path" ] && [ "$music_post" != "no" ]; then echo "Your music path is incorrect - Music Post will be disabled" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Your music path is incorrect - Music Post will be disabled"; fi; music_post="no"; fi
-if [[ ! -w "$music_post_path" && "$music_post" != "no" ]]; then echo "Permissions on your Music folder are incorrect please edit your torrentexpander_settings.ini file or your permissions for this folder - Music Post will be disabled" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Permissions on your Music folder are incorrect please edit your torrentexpander_settings.ini file or your permissions for this folder - Music Post will be disabled"; fi; music_post="no"; fi
+if [[ ! -w "$music_post_path" && "$music_post" != "no" ]]; then echo "Permissions on your Music folder are incorrect please edit your torrentexpander_settings.ini file or your permissions for this folder - Music Post will be disabled" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo -e "\nPermissions on your Music folder are incorrect please edit your torrentexpander_settings.ini file or your permissions for this folder - Music Post will be disabled\n"; fi; music_post="no"; fi
 
 if [ ! -d "$movies_post_path" ] && [ "$movies_post" != "no" ]; then	echo "Your movies path is incorrect - Movies Post will be disabled" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Your movies path is incorrect - Movies Post will be disabled"; fi; movies_post="no"; fi
-if [[ ! -w "$movies_post_path" && "$movies_post" != "no" ]]; then echo "Permissions on your Movies folder are incorrect please edit your torrentexpander_settings.ini file or your permissions for this folder - Movies Post will be disabled" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Permissions on your Movies folder are incorrect please edit your torrentexpander_settings.ini file or your permissions for this folder - Movies Post will be disabled"; fi; movies_post="no"; fi
+if [[ ! -w "$movies_post_path" && "$movies_post" != "no" ]]; then echo "Permissions on your Movies folder are incorrect please edit your torrentexpander_settings.ini file or your permissions for this folder - Movies Post will be disabled" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo -e "\nPermissions on your Movies folder are incorrect please edit your torrentexpander_settings.ini file or your permissions for this folder - Movies Post will be disabled\n"; fi; movies_post="no"; fi
 
 if [ ! -d "$third_party_log_directory" ] && [ "$third_party_log" != "no" ]; then echo "Your third party log path is incorrect please edit your torrentexpander_settings.ini file" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Your third party log path is incorrect please edit your torrentexpander_settings.ini file"; fi; quit_on_error="yes"; fi
-if [ ! -w "$third_party_log_directory" ] && [ "$third_party_log" != "no" ]; then echo "Your third party log path permissions are incorrect please edit your torrentexpander_settings.ini file or your permissions" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Your third party log path permissions are incorrect please edit your torrentexpander_settings.ini file or your permissions"; fi; quit_on_error="yes"; fi
+if [ ! -w "$third_party_log_directory" ] && [ "$third_party_log" != "no" ]; then echo "Your third party log path permissions are incorrect please edit your torrentexpander_settings.ini file or your permissions" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo -e "\nYour third party log path permissions are incorrect please edit your torrentexpander_settings.ini file or your permissions\n"; fi; quit_on_error="yes"; fi
 
-if [ "$torrent_directory" == "$destination_folder" ] && [ "$destructive_mode" != "yes" ]; then echo "Your destination folder should be different from the one where your torrent is located. Please edit your torrentexpander_settings.ini file" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Your destination folder should be different from the one where your torrent is located. Please edit your torrentexpander_settings.ini file"; fi; quit_on_error="yes"; fi
+if [ "$torrent_directory" == "$destination_folder" ] && [ "$destructive_mode" != "yes" ]; then echo "Your destination folder should be different from the one where your torrent is located. Please edit your torrentexpander_settings.ini file" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo -e "\nYour destination folder should be different from the one where your torrent is located. Please edit your torrentexpander_settings.ini file\n"; fi; quit_on_error="yes"; fi
 
-if [ ! -x "$unrar_bin" ]; then echo "Your Unrar path is incorrect or permissions are incorrect please edit your torrentexpander_settings.ini file or edit your permissions" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Your Unrar path is incorrect or permissions are incorrect please edit your torrentexpander_settings.ini file or edit your permissions"; fi; quit_on_error="yes"; fi
+if [ ! -x "$unrar_bin" ]; then echo "Your Unrar path is incorrect or permissions are incorrect please edit your torrentexpander_settings.ini file or edit your permissions" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo -e "\nYour Unrar path is incorrect or permissions are incorrect please edit your torrentexpander_settings.ini file or edit your permissions\n"; fi; quit_on_error="yes"; fi
 
-if [ ! -x "$unzip_bin" ]; then echo "Your unzip path is incorrect or permissions are incorrect please edit your torrentexpander_settings.ini file or edit your permissions" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Your Unzip path is incorrect or permissions are incorrect please edit your torrentexpander_settings.ini file or edit your permissions"; fi; quit_on_error="yes"; fi
+if [ ! -x "$unzip_bin" ]; then echo "Your unzip path is incorrect or permissions are incorrect please edit your torrentexpander_settings.ini file or edit your permissions" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo -e "\nYour Unzip path is incorrect or permissions are incorrect please edit your torrentexpander_settings.ini file or edit your permissions\n"; fi; quit_on_error="yes"; fi
 
 if [ ! -x "$wget_curl" ] && [[ "$imdb_poster" == "yes" || "$imdb_nfo" == "yes" || "$imdb_fanart" == "yes" ]]; then echo "Path to wget or curl is incorrect - IMDB features will be disabled" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Path to wget or curl is incorrect - IMDB features will be disabled"; fi; imdb_poster="no" && imdb_nfo="no" && imdb_fanart="no"; fi
 
-if [ ! -x "$mkvdts2ac3_bin" ] && [ "$dts_post" == "yes" ]; then echo "Path to mkvdts2ac3.sh is incorrect - DTS Post will be disabled" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Path to mkvdts2ac3.sh is incorrect - DTS Post will be disabled"; fi; dts_post="no"; fi
+if [ ! -x "$mkvdts2ac3_bin" ] && [ "$dts_post" == "yes" ]; then echo "Path to mkvdts2ac3.sh is incorrect - DTS Post will be disabled" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo -e "\nPath to mkvdts2ac3.sh is incorrect - DTS Post will be disabled\n"; fi; dts_post="no"; fi
 
-if [ ! -x "$ccd2iso_bin" ] && [ "$img_post" == "yes" ]; then echo "Path to ccd2iso is incorrect - IMG to ISO Post will be disabled" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Path to ccd2iso is incorrect - IMG to ISO Post will be disabled"; fi; img_post="no"; fi
+if [ ! -x "$ccd2iso_bin" ] && [ "$img_post" == "yes" ]; then echo "Path to ccd2iso is incorrect - IMG to ISO Post will be disabled" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo -e "\nPath to ccd2iso is incorrect - IMG to ISO Post will be disabled\n"; fi; img_post="no"; fi
 
-if [ ! -x "$torrent_daemon_bin" ] || [ "$destructive_mode" != "yes" ]; then echo "Path to your torrent_daemon_bin is incorrect or destructive mode is disabled - Your torrent will not be removed from your torrent client" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Path to your torrent_daemon_bin is incorrect or destructive mode is disabled - Your torrent will not be removed from your torrent client"; fi; auto_delete_torrent="no"; fi
+if [ ! -x "$torrent_daemon_bin" ] && [ "$destructive_mode" == "yes" ]; then echo "Path to your torrent_daemon_bin is incorrect - Your torrent will not be removed from your torrent client" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo -e "\nPath to your torrent_daemon_bin is incorrect - Your torrent will not be removed from your torrent client\n"; fi; auto_delete_torrent="no"; fi
 
-if [ ! -x "$post_run_script" ] && [ "$post_run_script_enabled" == "yes" ]; then echo "Path to your post_run_script is incorrect - This feature will be disabled" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Path to your post_run_script is incorrect - This feature will be disabled"; fi; post_run_script_enabled="no"; fi
+if [ ! -x "$post_run_script" ] && [ "$post_run_script_enabled" == "yes" ]; then echo "Path to your post_run_script is incorrect - This feature will be disabled" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo -e "\nPath to your post_run_script is incorrect - This feature will be disabled\n"; fi; post_run_script_enabled="no"; fi
 
 if [[ "$supported_extensions_rev" =~ rar ]] || [[ "$tv_show_extensions_rev" =~ rar ]] || [[ "$movies_extensions_rev" =~ rar ]] || [[ "$music_extensions_rev" =~ rar ]] || [[ "$supported_extensions_rev" =~ zip ]] || [[ "$tv_show_extensions_rev" =~ zip ]] || [[ "$movies_extensions_rev" =~ zip ]] || [[ "$music_extensions_rev" =~ zip ]]; then echo "Your supported file extensions are incorrect please edit your torrentexpander_settings.ini file" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Your supported file extensions are incorrect please edit your torrentexpander_settings.ini file"; fi; quit_on_error="yes"; fi
 
@@ -609,7 +617,7 @@ date_today=$(($(date "+%Y" | sed 's/^0*//')*365+$(date "+%m" | sed 's/^0*//')*30
 if [ ! "$last_update" ]; then last_update=0; fi
 
 if [[ "$wget_curl" == *wget* || "$wget_curl" == *curl* ]] && [[ "$auto_update_script" == "daily" && $last_update -lt $(($date_today-1)) ]] || [[ "$auto_update_script" == "weekly" && $last_update -lt $(($date_today-7)) ]] || [[ "$auto_update_script" == "monthly" && $last_update -lt $(($date_today-30)) ]] || [ "$update_mode" == "yes" ]; then
-	if [ "$has_display" == "yes" ]; then step_number=$(( $step_number + 1 )) && echo -n -e "Step $step_number : Updating Torrentexpander\n\n";  fi
+	if [ "$has_display" == "yes" ]; then step_number=$(( $step_number + 1 )) && echo -e "Step $step_number : Updating Torrentexpander\n\n";  fi
 	if [[ "$wget_curl" == *wget* ]]; then
 		rel_cont=`echo "$("$wget_curl" -q "http://code.google.com/p/torrentexpander/source/browse/trunk" -O -; wait)"`;
 	elif [[ "$wget_curl" == *curl* ]]; then
@@ -617,20 +625,20 @@ if [[ "$wget_curl" == *wget* || "$wget_curl" == *curl* ]] && [[ "$auto_update_sc
 	fi
 	release_vers="$(echo "$rel_cont" | egrep "trunk/torrentexpander.sh" | egrep ">[0-9][0-9][0-9]<" | sed "s;.*href=.trunk/torrentexpander.sh.>\([0-9][0-9][0-9]\)<.*;\1;")"
 	if [[ $current_version -eq $release_vers ]]; then
-		if [[ "$has_display" == "yes" ]]; then echo -n -e  "Torrentexpander is up to date\n\n"; fi
+		if [[ "$has_display" == "yes" ]]; then echo -e  "Torrentexpander is up to date\n\n"; fi
 		if [[ "$gnu_sed_available" != "yes" ]]; then sed -i '' "/last_update=/d" "$settings_file"; fi
 		if [[ "$gnu_sed_available" == "yes" ]]; then sed -i "/last_update=/d" "$settings_file"; fi
 		echo "last_update=$date_today" >> "$settings_file"
 	fi
 	if [[ "$release_vers" && ! "$current_version" ]] || [[ "$release_vers" && $current_version -lt $release_vers ]]; then
-		if [[ "$has_display" == "yes" ]]; then echo -n -e "A new version of Torrentexpander is available.\n\nDownloading it right now\n\n"; fi
+		if [[ "$has_display" == "yes" ]]; then echo -e "A new version of Torrentexpander is available.\n\nDownloading it right now\n\n"; fi
 		if [[ "$wget_curl" == *wget* ]]; then
 			"$wget_curl" -q "http://torrentexpander.googlecode.com/svn/trunk/torrentexpander.sh" -O "$temp_folder_without_slash/new_script"; wait;
 		elif [[ "$wget_curl" == *curl* ]]; then
 			"$wget_curl" -# -C - -o "$temp_folder_without_slash/new_script" "http://torrentexpander.googlecode.com/svn/trunk/torrentexpander.sh" > /dev/null 2>&1; wait;
 		fi
 		if [ "$(cat "$temp_folder_without_slash/new_script" | grep "# REQUIRED SOFTWARE #")" ]; then
-			if [[ "$has_display" == "yes" ]]; then echo -n -e "A new version of Torrentexpander has been downloaded.\nNow installing\n\n"; fi
+			if [[ "$has_display" == "yes" ]]; then echo -e "A new version of Torrentexpander has been downloaded.\nNow installing\n\n"; fi
 			if [[ "$check_settings" != *urrent_version=* ]]; then echo "current_version=$release_vers" >> "$settings_file"; fi
 			if [[ "$last_update" != *ast_update=* ]]; then echo "last_update=$date_today" >> "$settings_file"; fi
 			if [[ $current_version -lt $release_vers ]]; then
@@ -641,7 +649,7 @@ if [[ "$wget_curl" == *wget* || "$wget_curl" == *curl* ]] && [[ "$auto_update_sc
 				if [[ "$gnu_sed_available" == "yes" ]]; then sed -i "/last_update=/d" "$settings_file"; fi
 				echo "last_update=$date_today" >> "$settings_file"
 			fi
-			if [[ "$has_display" == "yes" ]] && [ "$silent_mode" != "yes" ]; then echo -n -e "Torrentexpander is gonna restart now\n\n"; fi
+			if [[ "$has_display" == "yes" ]] && [ "$silent_mode" != "yes" ]; then echo -e "Torrentexpander is gonna restart now\n\n"; fi
 			cat "$temp_folder_without_slash/new_script" > "$script_path/torrentexpander.sh"; wait;
 			rm -rf "$temp_folder"
 			rm -f "$log_file"
@@ -930,11 +938,11 @@ fi
 if [[ "$has_display" == "yes" && "$clean_up_filenames" == "yes" ]]; then step_number=$(( $step_number + 1 )) && echo "Step $step_number : Cleaning up filenames";  fi
 
 # When clean_up_finenames is disabled but imdb enabled, we ll only get the last line of the log file to improve speed
-if [ "$clean_up_filenames" == "yes" ]; then temp_log_file="$(echo -n -e "$(cat "$log_file")")"
-	elif [ "$imdb_funct_on" == "yes" ]; then temp_log_file="$(echo -n -e "$(cat "$log_file" | sed -n '$p')")"
+if [ "$clean_up_filenames" == "yes" ]; then temp_log_file="$(echo -e "$(cat "$log_file")")"
+	elif [ "$imdb_funct_on" == "yes" ]; then temp_log_file="$(echo -e "$(cat "$log_file" | sed -n '$p')")"
 fi
 
-if [ "$clean_up_filenames" == "yes" ] || [ "$imdb_funct_on" == "yes" ]; then for line in $(echo -n -e "$temp_log_file"); do
+if [ "$clean_up_filenames" == "yes" ] || [ "$imdb_funct_on" == "yes" ]; then for line in $(echo -e "$temp_log_file"); do
 	item=`echo "$(basename "$line")"`;
 	ren_file=`echo "$item"`;
 	source=`echo "$line"`;
@@ -1262,32 +1270,32 @@ for line in $(cat "$log_file"); do
 	
 	# Guessing path for /Series/Episode (s) or /Series/Season X/Episode (ss)
 	# or /Series/Season XX/Episode (sss) ordering
-	if [ "$(echo "$source_filename" | egrep -i "([. _])s([0-9])([0-9])e([0])([0-9])([. _])")" ]; then
+	if [ "$(echo "$source_filename" | egrep -i "([. _])s([0])([0-9])e([0-9])([0-9])([. _])")" ]; then
 		series_season_v1=`echo "$source_filename" | sed 's;\(.*\).\([sS]\)\([0-9]\)\([0-9]\)\([eE]\)\([0-9]\)\([0-9]\).*;Season \4;g'`;
 		series_season_v2=`echo "$source_filename" | sed 's;\(.*\).\([sS]\)\([0-9]\)\([0-9]\)\([eE]\)\([0-9]\)\([0-9]\).*;Season \3\4;g'`;
-		series_title=`echo "$source_filename" | sed 's;\(.*\).\([sS]\)\([0-9]\)\([0-9]\)\([eE]\)\([0-9]\)\([0-9]\).*;\1;' | sed 's;\(.*\).\([0-9]\)\([0-9]\)\([0-9]\)\([0-9]\).\([0-9]\)\([0-9]\).\([0-9]\)\([0-9]\).*;\1;'`;
-	elif [ "$(echo "$source_filename" | egrep -i "([. _])s([0-9])([0-9])e([1-9])([0-9])([. _])")" ]; then
+		series_title=`echo "$source_filename" | sed 's;\(.*\).\([sS]\)\([0-9]\)\([0-9]\)\([eE]\)\([0-9]\)\([0-9]\).*;\1/;' | sed 's;\(.*\).\([0-9]\)\([0-9]\)\([0-9]\)\([0-9]\).\([0-9]\)\([0-9]\).\([0-9]\)\([0-9]\).*;\1/;'`;
+	elif [ "$(echo "$source_filename" | egrep -i "([. _])s([1-9])([0-9])e([0-9])([0-9])([. _])")" ]; then
 		series_season_v1=`echo "$source_filename" | sed 's;\(.*\).\([sS]\)\([0-9]\)\([0-9]\)\([eE]\)\([0-9]\)\([0-9]\).*;Season \3\4;g'`;
 		series_season_v2=`echo "$source_filename" | sed 's;\(.*\).\([sS]\)\([0-9]\)\([0-9]\)\([eE]\)\([0-9]\)\([0-9]\).*;Season \3\4;g'`;
-		series_title=`echo "$source_filename" | sed 's;\(.*\).\([sS]\)\([0-9]\)\([0-9]\)\([eE]\)\([0-9]\)\([0-9]\).*;\1;' | sed 's;\(.*\).\([0-9]\)\([0-9]\)\([0-9]\)\([0-9]\).\([0-9]\)\([0-9]\).\([0-9]\)\([0-9]\).*;\1;'`;
+		series_title=`echo "$source_filename" | sed 's;\(.*\).\([sS]\)\([0-9]\)\([0-9]\)\([eE]\)\([0-9]\)\([0-9]\).*;\1/;' | sed 's;\(.*\).\([0-9]\)\([0-9]\)\([0-9]\)\([0-9]\).\([0-9]\)\([0-9]\).\([0-9]\)\([0-9]\).*;\1/;'`;
 	elif [ "$(echo "$line" | egrep -i "([. _])([0-9])([0-9])([0-9])([0-9]).([0-9])([0-9]).([0-9])([0-9])([. _])")" ]; then
 		series_season_v1=`echo "$source_filename" | sed 's;\(.*\).\([0-9]\)\([0-9]\)\([0-9]\)\([0-9]\).\([0-9]\)\([0-9]\).\([0-9]\)\([0-9]\).*;Season \2\3\4\5;g'`;
 		series_season_v2=`echo "$source_filename" | sed 's;\(.*\).\([0-9]\)\([0-9]\)\([0-9]\)\([0-9]\).\([0-9]\)\([0-9]\).\([0-9]\)\([0-9]\).*;Season \2\3\4\5;g'`;
-		series_title=`echo "$source_filename" | sed 's;\(.*\).\([sS]\)\([0-9]\)\([0-9]\)\([eE]\)\([0-9]\)\([0-9]\).*;\1;' | sed 's;\(.*\).\([0-9]\)\([0-9]\)\([0-9]\)\([0-9]\).\([0-9]\)\([0-9]\).\([0-9]\)\([0-9]\).*;\1;'`;
+		series_title=`echo "$source_filename" | sed 's;\(.*\).\([sS]\)\([0-9]\)\([0-9]\)\([eE]\)\([0-9]\)\([0-9]\).*;\1/;' | sed 's;\(.*\).\([0-9]\)\([0-9]\)\([0-9]\)\([0-9]\).\([0-9]\)\([0-9]\).\([0-9]\)\([0-9]\).*;\1/;'`;
 	fi
 	
 	# Trying to find the path to an existing series
 	if [ "$series_title" ] && [ "$tv_shows_post" != "no" ]; then
-		series_list=$(ls "$tv_shows_post_path")
+		series_list=$(ls -d */ "$tv_shows_post_path")
 		# Looking for a perfect match
 		if [ "$(echo "$series_list" | egrep -i "^$series_title$")" ]; then
-			series_title="$(echo -n -e "$series_list" | egrep -i "^$series_title$" | sed -n '$p')";
+			series_title="$(echo -e "$series_list" | egrep -i "^$series_title$" | sed -n '$p')";
 		# Trying with or without the prefix
-		elif [ "$(echo "$series_list" | egrep -i "$(echo "$series_title" | sed 's;The ;;' | sed 's;Le ;;'| sed 's;La ;;'| sed 's;Les ;;'| sed 's;El ;;' | sed 's;^;(The |Le |La |Les |El ){0,1};' | sed 's;^\(.*\)$;^\1$;')")" ]; then
-			series_title="$(echo -n -e "$series_list" | egrep -i "$(echo "$series_title" | sed 's;The ;;' | sed 's;Le ;;'| sed 's;La ;;'| sed 's;Les ;;'| sed 's;El ;;' | sed 's;^;(The |Le |La |Les |El ){0,1};' | sed 's;^\(.*\)$;^\1$;')" | sed -n '$p')";
+		elif [ "$(echo "$series_list" | egrep -i "$(echo "$series_title" | sed 's;The ;;' | sed 's;Le ;;'| sed 's;La ;;'| sed 's;Les ;;'| sed 's;El ;;' | sed 's;^;(The |Le |La |Les |El ){0,1};' | sed 's;^\(.*\)/$;^\1/$;')")" ]; then
+			series_title="$(echo -e "$series_list" | egrep -i "$(echo "$series_title" | sed 's;The ;;' | sed 's;Le ;;'| sed 's;La ;;'| sed 's;Les ;;'| sed 's;El ;;' | sed 's;^;(The |Le |La |Les |El ){0,1};' | sed 's;^\(.*\)$;^\1$;')" | sed -n '$p')";
 		# Trying with or without year
-		elif [ "$(echo "$series_list" | egrep -i "$(echo "$series_title" | sed 's;The ;;' | sed 's;Le ;;'| sed 's;La ;;'| sed 's;Les ;;'| sed 's;El ;;' | sed 's;^;(The |Le |La |Les |El ){0,1};' | sed 's; \([0-9][0-9][0-9][0-9]\)$;;' | sed 's;$;( [0-9][0-9][0-9][0-9]){0,1};' | sed 's;^\(.*\)$;^\1$;')")" ]; then
-			series_title="$(echo -n -e "$series_list" | egrep -i "$(echo "$series_title" | sed 's;The ;;' | sed 's;Le ;;'| sed 's;La ;;'| sed 's;Les ;;'| sed 's;El ;;' | sed 's;^;(The |Le |La |Les |El ){0,1};' | sed 's; \([0-9][0-9][0-9][0-9]\)$;;' | sed 's;$;( [0-9][0-9][0-9][0-9]){0,1};' | sed 's;^\(.*\)$;^\1$;')" | sed -n '$p')";
+		elif [ "$(echo "$series_list" | egrep -i "$(echo "$series_title" | sed 's;The ;;' | sed 's;Le ;;'| sed 's;La ;;'| sed 's;Les ;;'| sed 's;El ;;' | sed 's;^;(The |Le |La |Les |El ){0,1};' | sed 's; \([0-9][0-9][0-9][0-9]\)$;;' | sed 's;$;( [0-9][0-9][0-9][0-9]){0,1};' | sed 's;^\(.*\)/$;^\1/$;')")" ]; then
+			series_title="$(echo -e "$series_list" | egrep -i "$(echo "$series_title" | sed 's;The ;;' | sed 's;Le ;;'| sed 's;La ;;'| sed 's;Les ;;'| sed 's;El ;;' | sed 's;^;(The |Le |La |Les |El ){0,1};' | sed 's; \([0-9][0-9][0-9][0-9]\)$;;' | sed 's;$;( [0-9][0-9][0-9][0-9]){0,1};' | sed 's;^\(.*\)/$;^\1/$;')" | sed -n '$p')";
 		# Lookup failed. We ll use the episode name
 		fi
 	fi
@@ -1301,19 +1309,24 @@ for line in $(cat "$log_file"); do
 	# Defining destination path to be /Series/Episode (s) or /Series/Season X/Episode (ss)
 	# or /Series/Season XX/Episode (sss) depending on user setting in variable tv_shows_post_path_mode
 	if [[ "$(echo "$line" | egrep -i "([. _])s([0-9])([0-9])e([0-9])([0-9])([. _])" )" || "$(echo "$line" | egrep -i "([. _])([0-9])([0-9])([0-9])([0-9]).([0-9])([0-9]).([0-9])([0-9])([. _])")" ]] && [ "$(echo "$line" | egrep -i "$tv_show_extensions_rev" )" ] && [[ "$tv_shows_post" != "no" && "$tv_shows_post_path_mode" == "s" ]]; then
-		new_destination=`echo "$tv_shows_post_path$series_title/"`;
+		new_destination=`echo "$tv_shows_post_path$series_title"`;
 	elif [[ "$(echo "$line" | egrep -i "([. _])s([0-9])([0-9])e([0-9])([0-9])([. _])" )" || "$(echo "$line" | egrep -i "([. _])([0-9])([0-9])([0-9])([0-9]).([0-9])([0-9]).([0-9])([0-9])([. _])")" ]] && [ "$(echo "$line" | egrep -i "$tv_show_extensions_rev" )" ] && [[ "$tv_shows_post" != "no" && "$tv_shows_post_path_mode" == "ss" ]]; then
-		new_destination=`echo "$tv_shows_post_path$series_title/$series_season_v1/"`;
+		new_destination=`echo "$tv_shows_post_path$series_title$series_season_v1/"`;
 	elif [[ "$(echo "$line" | egrep -i "([. _])s([0-9])([0-9])e([0-9])([0-9])([. _])" )" || "$(echo "$line" | egrep -i "([. _])([0-9])([0-9])([0-9])([0-9]).([0-9])([0-9]).([0-9])([0-9])([. _])")" ]] && [ "$(echo "$line" | egrep -i "$tv_show_extensions_rev" )" ] && [[ "$tv_shows_post" != "no" && "$tv_shows_post_path_mode" == "sss" ]]; then
-		new_destination=`echo "$tv_shows_post_path$series_title/$series_season_v2/"`;
+		new_destination=`echo "$tv_shows_post_path$series_title$series_season_v2/"`;
 	fi
 	
 	# Copying TV Shows
 	if [[ "$(echo "$line" | egrep -i "([. _])s([0-9])([0-9])e([0-9])([0-9])([. _])" )" || "$(echo "$line" | egrep -i "([. _])([0-9])([0-9])([0-9])([0-9]).([0-9])([0-9]).([0-9])([0-9])([. _])")" ]] && [[ "$(echo "$line" | egrep -i "$tv_show_extensions_rev")" && "$tv_shows_post" == "copy" ]]; then
+		new_dest_bis="$(echo "$new_destination" | sed "s;^$tv_shows_post_path;;" | sed "s;/;\\\n;g")";
+		dirpath="$tv_shows_post_path";
+		for d in $(echo -e "$new_dest_bis"); do
+			dirpath="$dirpath$d/"
+			if [ ! -d "$dirpath" ] && [[ "$(cat "$temp_folder$additional_permissions" | grep -o "^$dirpath$")" == "" ]]; then
+				echo "$dirpath" >> "$temp_folder$additional_permissions";
+			fi
+		done
 		if [ ! -d "$new_destination" ]; then mkdir -p "$new_destination"; fi;
-		if [[ "$(cat "$temp_folder$additional_permissions" | grep -o "^$new_destination$")" == "" && "$new_destination" != "$tv_shows_post_path" ]]; then
-			echo "$new_destination" >> "$temp_folder$additional_permissions";
-		fi
 		if [ "$has_display" == "yes" ]; then
 				echo "- Copying $source_filename to $new_destination";
 		fi
@@ -1322,10 +1335,15 @@ for line in $(cat "$log_file"); do
 	
 	# Moving TV Shows
 	elif [[ "$(echo "$line" | egrep -i "([. _])s([0-9])([0-9])e([0-9])([0-9])([. _])" )" || "$(echo "$line" | egrep -i "([. _])([0-9])([0-9])([0-9])([0-9]).([0-9])([0-9]).([0-9])([0-9])([. _])")" ]] && [[ "$(echo "$line" | egrep -i "$tv_show_extensions_rev")" && "$tv_shows_post" == "move" ]]; then
+		new_dest_bis="$(echo "$new_destination" | sed "s;^$tv_shows_post_path;;" | sed "s;/;\\\n;g")";
+		dirpath="$tv_shows_post_path";
+		for d in $(echo -e "$new_dest_bis"); do
+			dirpath="$dirpath$d/"
+			if [ ! -d "$dirpath" ] && [[ "$(cat "$temp_folder$additional_permissions" | grep -o "^$dirpath$")" == "" ]]; then
+				echo "$dirpath" >> "$temp_folder$additional_permissions";
+			fi
+		done
 		if [ ! -d "$new_destination" ]; then mkdir -p "$new_destination"; fi;
-		if [[ "$(cat "$temp_folder$additional_permissions" | grep -o "^$new_destination$")" == "" && "$new_destination" != "$tv_shows_post_path" ]]; then
-			echo "$new_destination" >> "$temp_folder$additional_permissions";
-		fi
 		if [ "$has_display" == "yes" ]; then
 			echo "- Moving $source_filename to $new_destination";
 		fi
@@ -1339,13 +1357,20 @@ for line in $(cat "$log_file"); do
 	
 	# Copying Music and movies
     elif [[ "$(echo "$line" | egrep -i "$music_extensions_rev")" && "$music_post" == "copy" ]] || [[ "$(echo "$line" | egrep -i "$movies_extensions_rev")" && "$(echo "$quality" | egrep -i "$movies_detect_patterns_rev" )" && "$movies_post" == "copy" ]] || [[ "$(echo "$line" | egrep -i "$movies_extensions_rev")" && "$(echo "$quality" | egrep -i "$movies_detect_patterns_pt_2_rev" )" && "$movies_post" == "copy" ]] || [[ "$(echo "$line" | egrep -i "$movies_extensions_rev")" && "$(echo "$line" | egrep -i "$movies_detect_patterns_rev" )" && "$movies_post" == "copy" ]] || [[ "$(echo "$line" | egrep -i "$movies_extensions_rev")" && "$(echo "$line" | egrep -i "$movies_detect_patterns_pt_2_rev" )" && "$movies_post" == "copy" ]]; then
+    	old_destination="$new_destination";
     	if [ ! "$folder_short" ] && [[ "$(echo "$line" | egrep -i "$movies_extensions_rev")" && "$force_single_file_movies_folder" == "yes" ]]; then
-    		source_trimmed=`echo "$line" | sed 's/\(.*\)\..*/\1/' | sed 's;.*/;;g'` && new_destination=`echo "$new_destination$source_trimmed/"`;
+    		source_trimmed=`echo "$line" | sed 's/\(.*\)\..*/\1/' | sed 's;.*/;;g'`;
+    		new_destination=`echo "$new_destination$source_trimmed/"`;
     	fi
+    	new_dest_bis="$(echo "$new_destination" | sed "s;^$old_destination;;" | sed "s;/;\\\n;g")";
+		dirpath="$old_destination";
+		for d in $(echo -e "$new_dest_bis"); do
+			dirpath="$dirpath$d/"
+			if [ ! -d "$dirpath" ] && [[ "$(cat "$temp_folder$additional_permissions" | grep -o "^$dirpath$")" == "" ]]; then
+				echo "$dirpath" >> "$temp_folder$additional_permissions";
+			fi
+		done
     	if [ ! -d "$new_destination" ]; then mkdir -p "$new_destination"; fi;
-    	if [[ "$(cat "$temp_folder$additional_permissions" | grep -o "^$new_destination$")" == "" && "$new_destination" != "$music_post_path" && "$new_destination" != "$movies_post_path" ]]; then
-    		echo "$new_destination" >> "$temp_folder$additional_permissions";
-    	fi
     	if [ "$has_display" == "yes" ]; then
     		echo "- Copying $source_filename to $new_destination";
     	fi
@@ -1354,14 +1379,20 @@ for line in $(cat "$log_file"); do
     
     # Moving Music and movies
     elif [[ "$(echo "$line" | egrep -i "$music_extensions_rev")" && "$music_post" == "move" ]] || [[ "$(echo "$line" | egrep -i "$movies_extensions_rev")" && "$(echo "$quality" | egrep -i "$movies_detect_patterns_rev" )" && "$movies_post" == "move" ]] || [[ "$(echo "$line" | egrep -i "$movies_extensions_rev")" && "$(echo "$quality" | egrep -i "$movies_detect_patterns_pt_2_rev" )" && "$movies_post" == "move" ]] || [[ "$(echo "$line" | egrep -i "$movies_extensions_rev")" && "$(echo "$line" | egrep -i "$movies_detect_patterns_rev" )" && "$movies_post" == "move" ]] || [[ "$(echo "$line" | egrep -i "$movies_extensions_rev")" && "$(echo "$line" | egrep -i "$movies_detect_patterns_pt_2_rev" )" && "$movies_post" == "move" ]]; then
+    	old_destination="$new_destination";
     	if [ ! "$folder_short" ] && [[ "$(echo "$line" | egrep -i "$movies_extensions_rev")" && "$force_single_file_movies_folder" == "yes" ]]; then
     		source_trimmed=`echo "$line" | sed 's/\(.*\)\..*/\1/' | sed 's;.*/;;g'`;
     		new_destination=`echo "$new_destination$source_trimmed/"`;
     	fi
+    	new_dest_bis="$(echo "$new_destination" | sed "s;^$old_destination;;" | sed "s;/;\\\n;g")";
+		dirpath="$old_destination";
+		for d in $(echo -e "$new_dest_bis"); do
+			dirpath="$dirpath$d/"
+			if [ ! -d "$dirpath" ] && [[ "$(cat "$temp_folder$additional_permissions" | grep -o "^$dirpath$")" == "" ]]; then
+				echo "$dirpath" >> "$temp_folder$additional_permissions";
+			fi
+		done
     	if [ ! -d "$new_destination" ]; then mkdir -p "$new_destination"; fi;
-    	if [[ "$(cat "$temp_folder$additional_permissions" | grep -o "^$new_destination$")" == "" && "$new_destination" != "$music_post_path" && "$new_destination" != "$movies_post_path" ]]; then
-    		echo "$new_destination" >> "$temp_folder$additional_permissions";
-    	fi
     	if [ "$has_display" == "yes" ]; then
     		echo "- Moving $source_filename to $new_destination";
     	fi
@@ -1373,6 +1404,9 @@ for line in $(cat "$log_file"); do
     		sed -i '' "s;$source_file;$new_destination$source_filename;g" "$log_file";
     	fi
 	fi
+	series_title="";
+	series_season_v1="";
+	series_season_v2="";
 done
 fi
 
