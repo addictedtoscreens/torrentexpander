@@ -209,7 +209,7 @@ for arg in $(echo -e "$commandline_arguments"); do
 	# if the script is run for the first time or using "torrentexpander -c", launch setup
 	if [[ "$arg" == "-c" || "$arg" == "--config" ]]; then first_run="yes";
 	# Commandline arguments help
-	elif [[ "$arg" == "-h" || "$arg" == "--help" ]] && [ -t 1 ]; then echo -e "\n\nAllowed commands are :\n\n-c or --config   ->   Launch Setup\n-h or --help   ->   Help\n-d or --destructive   ->   Destructive Mode\n-nd or --non-destructive   ->   Disable Destructive Mode\n-s or silent   ->   Silent Mode (default if no display is available)\n-u or --update   ->   Manual Update Mode\n\nFirst Path is your Torrent Path\nSecond Path is an Optional Destination Path of your choice\n\n" && exit;
+	elif [[ "$arg" == "-h" || "$arg" == "--help" ]] && [ -t 1 ]; then echo -e "\n\nAllowed commands are :\n\n-c  or --config            ->   Launch Setup\n-h  or --help              ->   Help\n-d  or --destructive       ->   Destructive Mode\n-nd or --non-destructive   ->   Disable Destructive Mode\n-s  or --silent            ->   Silent Mode (default if no display is available)\n-u  or --update            ->   Manual Update Mode\n\nFirst Path is your Torrent Path\nSecond Path is an Optional Destination Path of your choice\n\n" && exit;
 	# Force destructive or non-destructive mode
 	elif [[ "$arg" == "-d" || "$arg" == "--destructive" ]]; then force_destructive="yes";
 	elif [[ "$arg" == "-nd" || "$arg" == "--non-destructive" ]]; then force_destructive="no";
@@ -824,7 +824,7 @@ elif [[ "$destructive_mode" == "yes" && "$torrent_name" ]] && [[ -x "$torrent_da
 			torrent_id=$("$torrent_daemon_bin" -u "$torrent_daemon_login" -p "$torrent_daemon_password" "$daemon_ip" d.get_name "$id" > /dev/null 2>&1 | grep "String" | sed "s;\> String\: \'\(.*\)\';\1;g")
 		fi
 		# Pausing and deleting torrent
-		if [[ "$torrent_id" ]]; then
+		if [[ "$id" ]] && [ "$torrent_id" == "$torrent_name" ]; then
 			if [[ ! "$torrent_daemon_login" ]] || [[ ! "$torrent_daemon_password" ]]; then
 				if [[ "$has_display" == "yes" ]]; then
 					"$torrent_daemon_bin" "$daemon_ip" d.close "$id" && "$torrent_daemon_bin" "$daemon_ip" d.erase "$id"
