@@ -770,7 +770,7 @@ if [[ "$has_display" == "yes" && "$destructive_mode" == "yes" ]]; then
 fi
 
 # Make sure torrentexpander did not fail
-if [[ "$destructive_mode" == "yes" ]]; then
+if [[ "$destructive_mode" == "yes" ]] && [[ -d "$current_folder" || -f "$torrent" ]]; then
 	temp_size=$(du -a -c "$temp_folder" | sed -n '$p' | sed "s;\([0-9]*\)\t.*;\1;")
 	if [[ "$current_folder" ]]; then torrent_size=$(du -a -c "$current_folder" | sed -n '$p' | sed "s;\([0-9]*\)\t.*;\1;"); else echo torrent_size=$(du -a -c "$torrent" | sed -n '$p' | sed "s;\([0-9]*\)\t.*;\1;"); fi
 	temp_size=$(( $temp_size + ( $temp_size / 10 ) ))
