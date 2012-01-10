@@ -1489,58 +1489,6 @@ if [[ "$folder_short" && -d "$temp_folder$folder_short" ]]; then
 fi
 
 
-## Edit files and folders permissions
-if [ "$folder_short" ]; then echo "$temp_folder$folder_short" >> "$log_file"; fi
-if [ ! -f "$temp_folder$additional_permissions" ]; then echo "" > "$temp_folder$additional_permissions"; fi
-if [[ "$has_display" == "yes" && "$user_perm_post" != "no" ]] || [[ "$has_display" == "yes" && "$files_perm_post" != "no" ]]; then step_number=$(( $step_number + 1 )) && echo "Step $step_number : Setting permissions";  fi
-
-# Taking care of file and folders permissions
-for line in $(cat "$log_file" "$temp_folder$additional_permissions"); do
-	if [[ "$user_perm_post" != "no" && "$group_perm_post" != "no" ]] || [[ "$files_perm_post" != "no" && "$folder_perm_post" != "no" ]]; then
-		# Chmod part of the routine
-		item=`echo "$line"`
-		if [ "$item" == "" ]; then
-			echo > /dev/null 2>&1
-		# Chmod files
-		elif [[ -f "$item" && "$files_perm_post" != "no" ]]; then
-			chmod "$files_perm_post" "$item"
-		# Chmod directories
-		elif [[ -d "$item" && "$folder_perm_post" != "no" ]]; then
-			chmod "$folder_perm_post" "$item"
-		fi
-		# Chown part of the routine
-		if [ "$item" == "" ]; then
-			echo > /dev/null 2>&1
-		# Chown files and directories if run as root
-		elif [[ $(id -u) -eq 0 && "$user_perm_post" != "no" && "$group_perm_post" != "no" ]] && [[ -f "$item" || -d "$item" ]]; then
-			chown "$user_perm_post":"$group_perm_post" "$item"
-		# Chown files and directories with sudo if user interaction is available
-		elif [[ "$edit_perm_as_sudo" == "yes" && "$has_display" == "yes" && "$user_perm_post" != "no" && "$group_perm_post" != "no" ]] && [[ -f "$item" || -d "$item" ]]; then
-			sudo chown "$user_perm_post":"$group_perm_post" "$item"
-		fi
-	fi
-done
-
-
-## Reset timestamp (mtime)
-## Modification time of the file will be set to the moment the script ends. Useful to find the latest downloads
-if [ "$has_display" == "yes" ] && [ "$reset_timestamp" == "yes" ]; then step_number=$(( $step_number + 1 )) && echo "Step $step_number : Resetting mtime";  fi
-# setting mtime for files in log_file
-for line in $(cat "$log_file"); do
-	if [ "$reset_timestamp" == "yes" ]; then
-		item=`echo "$line"`
-		touch "$line"
-	fi
-done
-# setting mtime for files copied or moved during the optional move / copy routine
-for line in $(cat "$temp_folder$additional_permissions"); do
-	if [ "$reset_timestamp" == "yes" ]; then
-		item=`echo "$line"`
-		touch "$line"
-	fi
-done
-
-
 ## Move content of temp folder to destination folder
 if [ "$folder_short" ]; then
 	count=1
@@ -1579,8 +1527,60 @@ fi
 
 
 ## Removing the temp directory and edit the log_file accordingly
-additional_list="$(cat "$temp_folder$additional_permissions")"
+if [ -f "$temp_folder$additional_permissions" ]; then additional_list="$(cat "$temp_folder$additional_permissions")"; fi
 if [[ "$gnu_sed_available" != "yes" ]]; then rm -rf "$temp_folder_without_slash" && sed -i '' "s;^$temp_folder;$destination_folder;g" "$log_file"; else rm -rf "$temp_folder_without_slash" && sed -i "s;^$temp_folder;$destination_folder;g" "$log_file"; fi
+
+
+## Edit files and folders permissions
+if [ "$folder_short" ]; then echo "$destination_folder$folder_short" >> "$log_file"; fi
+all_files_list="$(echo -e "$(cat "$log_file")\n$additional_list")"
+if [[ "$has_display" == "yes" && "$user_perm_post" != "no" ]] || [[ "$has_display" == "yes" && "$files_perm_post" != "no" ]]; then step_number=$(( $step_number + 1 )) && echo "Step $step_number : Setting permissions";  fi
+
+# Taking care of file and folders permissions
+for line in $(echo -e "$all_files_list"); do
+	if [[ "$user_perm_post" != "no" && "$group_perm_post" != "no" ]] || [[ "$files_perm_post" != "no" && "$folder_perm_post" != "no" ]]; then
+		# Chmod part of the routine
+		item=`echo "$line"`
+		if [ "$item" == "" ]; then
+			echo > /dev/null 2>&1
+		# Chmod files
+		elif [[ -f "$item" && "$files_perm_post" != "no" ]]; then
+			chmod "$files_perm_post" "$item"
+		# Chmod directories
+		elif [[ -d "$item" && "$folder_perm_post" != "no" ]]; then
+			chmod "$folder_perm_post" "$item"
+		fi
+		# Chown part of the routine
+		if [ "$item" == "" ]; then
+			echo > /dev/null 2>&1
+		# Chown files and directories if run as root
+		elif [[ $(id -u) -eq 0 && "$user_perm_post" != "no" && "$group_perm_post" != "no" ]] && [[ -f "$item" || -d "$item" ]]; then
+			chown "$user_perm_post":"$group_perm_post" "$item"
+		# Chown files and directories with sudo if user interaction is available
+		elif [[ "$edit_perm_as_sudo" == "yes" && "$has_display" == "yes" && "$user_perm_post" != "no" && "$group_perm_post" != "no" ]] && [[ -f "$item" || -d "$item" ]]; then
+			sudo chown "$user_perm_post":"$group_perm_post" "$item"
+		fi
+	fi
+done
+
+
+## Reset timestamp (mtime)
+## Modification time of the file will be set to the moment the script ends. Useful to find the latest downloads
+if [ "$has_display" == "yes" ] && [ "$reset_timestamp" == "yes" ]; then step_number=$(( $step_number + 1 )) && echo "Step $step_number : Resetting mtime";  fi
+# setting mtime for files in log_file
+for line in $(cat "$log_file"); do
+	if [ "$reset_timestamp" == "yes" ]; then
+		item=`echo "$line"`
+		touch "$line"
+	fi
+done
+# setting mtime for files copied or moved during the optional move / copy routine
+for line in $(echo -e "$additional_list"); do
+	if [ "$reset_timestamp" == "yes" ]; then
+		item=`echo "$line"`
+		touch "$line"
+	fi
+done
 
 
 ## Use a source / destination log shared with a third party app - Add path to enable
