@@ -1375,6 +1375,7 @@ for line in $(cat "$log_file"); do
 	if [[ "$(echo "$line" | egrep -i "([. _])s([0-9])([0-9])e([0-9])([0-9])([. _])" )" || "$(echo "$line" | egrep -i "([. _])([0-9])([0-9])([0-9])([0-9]).([0-9])([0-9]).([0-9])([0-9])([. _])")" ]] && [ "$(echo "$line" | egrep -i "$tv_show_extensions_rev" )" ] && [[ "$tv_shows_post" != "no" && "$tv_shows_post_path_mode" == "no" ]]; then new_destination=`echo "$tv_shows_post_path"`; fi
 	
 	# Adding surrounding folder to the destination path variable
+	old_destination="$new_destination";
 	if [ "$folder_short" ]; then new_destination=`echo "$new_destination$folder_short/"`; fi
 	
 	# Defining destination path to be /Series/Episode (s) or /Series/Season X/Episode (ss)
@@ -1428,7 +1429,6 @@ for line in $(cat "$log_file"); do
 	
 	# Copying Music and movies
     elif [[ "$(echo "$line" | egrep -i "$music_extensions_rev")" && "$music_post" == "copy" ]] || [[ "$(echo "$line" | egrep -i "$movies_extensions_rev")" && "$(echo "$quality" | egrep -i "$movies_detect_patterns_rev" )" && "$movies_post" == "copy" ]] || [[ "$(echo "$line" | egrep -i "$movies_extensions_rev")" && "$(echo "$quality" | egrep -i "$movies_detect_patterns_pt_2_rev" )" && "$movies_post" == "copy" ]] || [[ "$(echo "$line" | egrep -i "$movies_extensions_rev")" && "$(echo "$line" | egrep -i "$movies_detect_patterns_rev" )" && "$movies_post" == "copy" ]] || [[ "$(echo "$line" | egrep -i "$movies_extensions_rev")" && "$(echo "$line" | egrep -i "$movies_detect_patterns_pt_2_rev" )" && "$movies_post" == "copy" ]]; then
-    	old_destination="$new_destination";
     	if [ ! "$folder_short" ] && [[ "$(echo "$line" | egrep -i "$movies_extensions_rev")" && "$force_single_file_movies_folder" == "yes" ]]; then
     		source_trimmed=`echo "$line" | sed 's/\(.*\)\..*/\1/' | sed 's;.*/;;g'`;
     		new_destination=`echo "$new_destination$source_trimmed/"`;
@@ -1450,7 +1450,6 @@ for line in $(cat "$log_file"); do
     
     # Moving Music and movies
     elif [[ "$(echo "$line" | egrep -i "$music_extensions_rev")" && "$music_post" == "move" ]] || [[ "$(echo "$line" | egrep -i "$movies_extensions_rev")" && "$(echo "$quality" | egrep -i "$movies_detect_patterns_rev" )" && "$movies_post" == "move" ]] || [[ "$(echo "$line" | egrep -i "$movies_extensions_rev")" && "$(echo "$quality" | egrep -i "$movies_detect_patterns_pt_2_rev" )" && "$movies_post" == "move" ]] || [[ "$(echo "$line" | egrep -i "$movies_extensions_rev")" && "$(echo "$line" | egrep -i "$movies_detect_patterns_rev" )" && "$movies_post" == "move" ]] || [[ "$(echo "$line" | egrep -i "$movies_extensions_rev")" && "$(echo "$line" | egrep -i "$movies_detect_patterns_pt_2_rev" )" && "$movies_post" == "move" ]]; then
-    	old_destination="$new_destination";
     	if [ ! "$folder_short" ] && [[ "$(echo "$line" | egrep -i "$movies_extensions_rev")" && "$force_single_file_movies_folder" == "yes" ]]; then
     		source_trimmed=`echo "$line" | sed 's/\(.*\)\..*/\1/' | sed 's;.*/;;g'`;
     		new_destination=`echo "$new_destination$source_trimmed/"`;
