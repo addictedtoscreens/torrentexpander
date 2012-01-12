@@ -594,7 +594,7 @@ if [ ! -x "$mkvdts2ac3_bin" ] && [ "$dts_post" == "yes" ]; then echo "Path to mk
 
 if [ ! -x "$ccd2iso_bin" ] && [ "$img_post" == "yes" ]; then echo "Path to ccd2iso is incorrect - IMG to ISO Post will be disabled" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo -e "\nPath to ccd2iso is incorrect - IMG to ISO Post will be disabled\n"; fi; img_post="no"; fi
 
-if [ ! -x "$torrent_daemon_bin" ] && [ "$destructive_mode" == "yes" ] && [ "$remove_torrent_from_client" == "yes" ]; then echo "Path to your torrent_daemon_bin is incorrect - Your torrent will not be removed from your torrent client" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo -e "\nPath to your torrent_daemon_bin is incorrect - Your torrent will not be removed from your torrent client\n"; fi; auto_delete_torrent="no"; fi
+if [ ! -x "$torrent_daemon_bin" ] && [ "$destructive_mode" == "yes" ] && [ "$remove_torrent_from_client" == "yes" ]; then echo "Path to your torrent_daemon_bin is incorrect - Your torrent will not be removed from your torrent client" >> "$errors_file"; auto_delete_torrent="no"; fi
 
 if [ ! -x "$all_files_script" ] && [ ! -x "$(which "$all_files_script")" ] && [ "$all_files_script_enabled" == "yes" ]; then echo "Path to your all_files_script is incorrect - This feature will be disabled" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo -e "\nPath to your all_files_script is incorrect - This feature will be disabled\n"; fi; all_files_script_enabled="no"; fi
 
@@ -787,6 +787,25 @@ if [[ "$destructive_mode" == "yes" ]] && [[ -d "$current_folder" || -f "$torrent
 	if [ "$temp_size" -lt "$torrent_size" ]; then destructive_mode="no"; fi
 fi
 
+# If in GUI mode, we ask the user if he wants to remove this torrent from his torrent client
+user_confirm_removal=0
+if [ "$has_display" == "yes" ] && [[ "$destructive_mode" == "yes" && "$torrent_name" ]] && [ -x "$torrent_daemon_bin" ]; then
+	while [[ "$user_confirm_removal" != "1" ]] && [[ "$user_confirm_removal" != "2" ]]; do
+		echo -e "\n\nDo you want to remove this torrent from your torrent client ?\n\n1) Yes, Please\n2) No, Thank You\n\n"
+		read user_confirm_removal
+		if [[ "$user_confirm_removal" != "1" ]] && [[ "$user_confirm_removal" != "2" ]]; then
+			echo -e "\n\nUh-oh, I cannot understand your answer, please try again"
+		elif [[ "$user_confirm_removal" == "1" ]] || [[ "$user_confirm_removal" == "2" ]]; then
+			echo -e "\n\nDuly noted\n\n"
+		fi
+	done
+	if [ "$user_confirm_removal" == "1" ]; then
+		remove_torrent_from_client="yes";
+	fi
+	if [ "$user_confirm_removal" == "2" ]; then
+		remove_torrent_from_client="no";
+	fi
+fi
 
 # Trying to remove torrent from torrent client if destructive_mode is activated
 if [[ "$destructive_mode" == "yes" && "$torrent_name" ]] && [[ -x "$torrent_daemon_bin" && "$(echo "$torrent_daemon_bin" | grep "transmission-remote")" && "$torrent_daemon_port" ]] && [ "$remove_torrent_from_client" == "yes"Ê]; then
