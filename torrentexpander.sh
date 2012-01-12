@@ -94,10 +94,10 @@ music_extensions="mp3,m4a,wav"
 ############# You must have at least one pattern enabled in each field ###########
 # movies_detect_patterns and movies_detect_patterns_pt_2 are the same - only splitted
 # scene patterns is used for scenes that add their name at the beginning of the file name
-movies_detect_patterns="HDTV,DVDRip,BDRip,BRRip,DVDR,720p,1080p,HD1080p"
-movies_detect_patterns_pt_2="TS,TVRip,DVDSCR,R5,Workprint,SCR,Screener,HDRip,DVDScreener"
-other_movies_patterns="proper,repack,rerip,pdtv,hdtv,xvid,webrip,web-dl,readnfo,ntsc,pal,limited,ws,uncut,unrated,internal,480p,festival,bluray,extended,italian,theatrical.cut,dubbed,collection,remastered,season,nlsubs,spanish,divx,x264,hdtvrip,dvdriptorrents,xxx,[^ ].*[. _-]subs,Plsubbed"
-scene_patterns="[. _-]*www[. _-].*[. _-]com[. _-]*,[. _-]*www[. _-].*[. _-]cd[. _-]*,aaf"
+movies_detect_patterns="HDTV,DVDRip,BDRip,BRRip,DVDR,576p,720p,1080p,HD1080p"
+movies_detect_patterns_pt_2="TS,PPVrip,TVRip,DVDSCR,R5,Workprint,SCR,Screener,HDRip,DVDScreener"
+other_movies_patterns="proper,repack,rerip,pdtv,hdtv,xvid,webrip,web-dl,readnfo,ntsc,pal,limited,ws,uncut,unrated,internal,480p,festival,bluray,extended,italian,theatrical.cut,dubbed,collection,remastered,season,nlsubs,spanish,divx,x264,hdtvrip,xxx,custom[. _-].*[. _-]subs,[^ ].*[. _-]subs,plsubbed,multisubs,multi-subs,retail"
+scene_patterns="[. _-]*www[. _-].*[. _-]com[. _-]*,[. _-]*www[. _-].*[. _-]cd[. _-]*,aaf,dvdriptorrents,skidrow"
 audio_quality_patterns="AC3,DTS,LiNE,CAM AUDIO,MD,LD,Studio Audio"
 ####################### Optional functionalities variables #######################
 #################### Set these variables to "no" to disable ######################
@@ -172,6 +172,7 @@ debug_mode="no"
 ## values can be "no", "daily" or "weekly"
 auto_update_script="no"
 ## In destructive_mode, torrentexpander can pause then remove torrent and data from your transmission torrent client
+remove_torrent_from_client="no"
 torrent_daemon_bin="/usr/local/bin/transmission-remote"
 torrent_daemon_login=""
 torrent_daemon_password=""
@@ -179,16 +180,30 @@ torrent_daemon_port="9091"
 ## Run Script - Will be run once torrentexpander is done
 ## You can input the path to a script of your choice or just type the name of a binary available in your PATH
 ## 3 types of script can be run by torrentexpander :
-##Ê- all_files_script sends every processed file to the script (the $file_path variable will be sent to your script as $1)
-## - processed_torrent_script sends only the resulting file or directory to the script (the $file_path variable will be sent to your script as $1)
+##Ê- all_files_script sends every processed file to the script (set any variable to file_path to send path to your script as $1, $2, $3, $4 or $5)
+## - processed_torrent_script sends only the resulting file or directory to the script (set any variable to file_path to send path to your script as $1, $2, $3, $4 or $5)
 ##		-> post tasks will then switch from copy to move mode
 ## - post_run_script only triggers a script without sending any variable
+###
 all_files_script_enabled="no"
 all_files_script=""
+all_files_script_variable_1=""
+all_files_script_variable_2=""
+all_files_script_variable_3=""
+all_files_script_variable_4=""
+all_files_script_variable_5=""
+###
 processed_torrent_script_enabled="no"
 processed_torrent_script=""
+processed_torrent_script_variable_1=""
+processed_torrent_script_variable_2=""
+processed_torrent_script_variable_3=""
+processed_torrent_script_variable_4=""
+processed_torrent_script_variable_5=""
+###
 post_run_script_enabled="no"
 post_run_script=""
+###
 ############################ END USER VARIABLES ##################################
 ##################################################################################
 
@@ -334,7 +349,7 @@ if [ "$all_files_script" ] && [[ "$check_settings" != *ll_files_script=* || "$ch
 	if [ ! -x "$all_files_script" ] && [ -x "$(for d in $(echo -e "$(echo -e "$PATH" | sed "s;:;\\\n;g")\n/Applications\n/nmt/apps\n/bin\n/usr/bin\n/usr/local/bin\n/share/Apps/TorrentExpander/bin/"); do if [ -d "$d" ]; then find "$d" -maxdepth 2 -name "$all_files_script"; fi; done | sed -n -e '1p')" ]; then all_files_script="$(for d in $(echo -e "$(echo -e "$PATH" | sed "s;:;\\\n;g")\n/Applications\n/nmt/apps\n/bin\n/usr/bin\n/usr/local/bin\n/share/Apps/TorrentExpander/bin/"); do if [ -d "$d" ]; then find "$d" -maxdepth 2 -name "$all_files_script"; fi; done | sed -n -e '1p')"; fi
 fi
 
-# Looking for all_files_script in your PATH variable or /Applications /nmt/apps /usr/local/bin directories
+# Looking for processed_torrent_script in your PATH variable or /Applications /nmt/apps /usr/local/bin directories
 if [ "$processed_torrent_script" ] && [[ "$check_settings" != *rocessed_torrent_script=* || "$check_settings" == *rocessed_torrent_script=incorrect_or_not_se* ]]; then
 	if [ ! -x "$processed_torrent_script" ] && [ -x "$(for d in $(echo -e "$(echo -e "$PATH" | sed "s;:;\\\n;g")\n/Applications\n/nmt/apps\n/bin\n/usr/bin\n/usr/local/bin\n/share/Apps/TorrentExpander/bin/"); do if [ -d "$d" ]; then find "$d" -maxdepth 2 -name "$processed_torrent_script"; fi; done | sed -n -e '1p')" ]; then processed_torrent_script="$(for d in $(echo -e "$(echo -e "$PATH" | sed "s;:;\\\n;g")\n/Applications\n/nmt/apps\n/bin\n/usr/bin\n/usr/local/bin\n/share/Apps/TorrentExpander/bin/"); do if [ -d "$d" ]; then find "$d" -maxdepth 2 -name "$processed_torrent_script"; fi; done | sed -n -e '1p')"; fi
 fi
@@ -378,7 +393,7 @@ elif [[ "$check_settings" != *hird_party_log=* ]]; then echo "third_party_log=no
 fi
 
 # Adding other values in settings file
-for c in $(echo -e "destructive_mode\ntv_shows_fix_numbering\nclean_up_filenames\nmovies_rename_schema\nsubtitles_handling\nrepack_handling\nwii_post\nimg_post\ntv_shows_post\ntv_shows_post_path_mode\nmovies_post\nforce_single_file_movies_folder\nmusic_post\nimdb_poster\nimdb_poster_format\nimdb_nfo\nimdb_fanart\nimdb_fanart_format\ndisable_nmj_scan\ndts_post\nuser_perm_post\ngroup_perm_post\nfiles_perm_post\nfolder_perm_post\nedit_perm_as_sudo\nreset_timestamp\nsupported_extensions\ntv_show_extensions\nmovies_extensions\nmusic_extensions\ndebug_mode\nauto_update_script\ntorrent_daemon_login\ntorrent_daemon_password\ntorrent_daemon_port\nall_files_script_enabled\nprocessed_torrent_script_enabled\npost_run_script_enabled"); do
+for c in $(echo -e "destructive_mode\ntv_shows_fix_numbering\nclean_up_filenames\nmovies_rename_schema\nsubtitles_handling\nrepack_handling\nwii_post\nimg_post\ntv_shows_post\ntv_shows_post_path_mode\nmovies_post\nforce_single_file_movies_folder\nmusic_post\nimdb_poster\nimdb_poster_format\nimdb_nfo\nimdb_fanart\nimdb_fanart_format\ndisable_nmj_scan\ndts_post\nuser_perm_post\ngroup_perm_post\nfiles_perm_post\nfolder_perm_post\nedit_perm_as_sudo\nreset_timestamp\nsupported_extensions\ntv_show_extensions\nmovies_extensions\nmusic_extensions\ndebug_mode\nauto_update_script\nremove_torrent_from_client\ntorrent_daemon_login\ntorrent_daemon_password\ntorrent_daemon_port\nall_files_script_enabled\nall_files_script_variable_1\nall_files_script_variable_2\nall_files_script_variable_3\nall_files_script_variable_4\nall_files_script_variable_5\nprocessed_torrent_script_enabled\nprocessed_torrent_script_variable_1\nprocessed_torrent_script_variable_2\nprocessed_torrent_script_variable_3\nprocessed_torrent_script_variable_4\nprocessed_torrent_script_variable_5\npost_run_script_enabled"); do
 	pat="$(echo "$c" | sed "s;^.\(.*\)$;\*\1=\*;")"
 	if [[ "$check_settings" != $pat ]]; then echo "$c=${!c}" >> "$settings_file"; fi
 done
@@ -395,11 +410,6 @@ if [ "$(echo "$check_settings" | egrep -i "([^\"]) ")" ] && [ "$gnu_sed_availabl
 
 # Fetching values from settings file
 source "$settings_file"
-
-# Hidden functionality that enables you to store movie patterns in settings file
-if [ "$movies_detect_patterns_override" ]; then movies_detect_patterns="$movies_detect_patterns_override"; fi
-if [ "$movies_detect_patterns_pt_2_override" ]; then movies_detect_patterns_pt_2="$movies_detect_patterns_pt_2_override"; fi
-if [ "$other_movies_patterns_override" ]; then other_movies_patterns="$other_movies_patterns_override"; fi
 
 # Adding trailing slash to destination paths
 if [[ "$tv_shows_post_path" != */ ]] && [ "$tv_shows_post" != "no" ]; then tv_shows_post_path="$tv_shows_post_path/"; fi
@@ -584,18 +594,18 @@ if [ ! -x "$mkvdts2ac3_bin" ] && [ "$dts_post" == "yes" ]; then echo "Path to mk
 
 if [ ! -x "$ccd2iso_bin" ] && [ "$img_post" == "yes" ]; then echo "Path to ccd2iso is incorrect - IMG to ISO Post will be disabled" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo -e "\nPath to ccd2iso is incorrect - IMG to ISO Post will be disabled\n"; fi; img_post="no"; fi
 
-if [ ! -x "$torrent_daemon_bin" ] && [ "$destructive_mode" == "yes" ]; then echo "Path to your torrent_daemon_bin is incorrect - Your torrent will not be removed from your torrent client" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo -e "\nPath to your torrent_daemon_bin is incorrect - Your torrent will not be removed from your torrent client\n"; fi; auto_delete_torrent="no"; fi
+if [ ! -x "$torrent_daemon_bin" ] && [ "$destructive_mode" == "yes" ] && [ "$remove_torrent_from_client" == "yes" ]; then echo "Path to your torrent_daemon_bin is incorrect - Your torrent will not be removed from your torrent client" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo -e "\nPath to your torrent_daemon_bin is incorrect - Your torrent will not be removed from your torrent client\n"; fi; auto_delete_torrent="no"; fi
 
-if [ ! -x "$all_files_script" ] && [ "$all_files_script_enabled" == "yes" ]; then echo "Path to your all_files_script is incorrect - This feature will be disabled" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo -e "\nPath to your all_files_script is incorrect - This feature will be disabled\n"; fi; all_files_script_enabled="no"; fi
+if [ ! -x "$all_files_script" ] && [ ! -x "$(which "$all_files_script")" ] && [ "$all_files_script_enabled" == "yes" ]; then echo "Path to your all_files_script is incorrect - This feature will be disabled" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo -e "\nPath to your all_files_script is incorrect - This feature will be disabled\n"; fi; all_files_script_enabled="no"; fi
 
-if [ ! -x "$processed_torrent_script" ] && [ "$processed_torrent_script_enabled" == "yes" ]; then echo "Path to your processed_torrent_script is incorrect - This feature will be disabled" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo -e "\nPath to your processed_torrent_script is incorrect - This feature will be disabled\n"; fi; processed_torrent_script_enabled="no"; fi
+if [ ! -x "$processed_torrent_script" ] && [ ! -x "$(which "$processed_torrent_script")" ] && [ "$processed_torrent_script_enabled" == "yes" ]; then echo "Path to your processed_torrent_script is incorrect - This feature will be disabled" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo -e "\nPath to your processed_torrent_script is incorrect - This feature will be disabled\n"; fi; processed_torrent_script_enabled="no"; fi
 
-if [ ! -x "$post_run_script" ] && [ "$post_run_script_enabled" == "yes" ]; then echo "Path to your post_run_script is incorrect - This feature will be disabled" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo -e "\nPath to your post_run_script is incorrect - This feature will be disabled\n"; fi; post_run_script_enabled="no"; fi
+if [ ! -x "$post_run_script" ] && [ ! -x "$(which "$post_run_script")" ] && [ "$post_run_script_enabled" == "yes" ]; then echo "Path to your post_run_script is incorrect - This feature will be disabled" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo -e "\nPath to your post_run_script is incorrect - This feature will be disabled\n"; fi; post_run_script_enabled="no"; fi
 
 if [[ "$supported_extensions_rev" =~ rar ]] || [[ "$tv_show_extensions_rev" =~ rar ]] || [[ "$movies_extensions_rev" =~ rar ]] || [[ "$music_extensions_rev" =~ rar ]] || [[ "$supported_extensions_rev" =~ zip ]] || [[ "$tv_show_extensions_rev" =~ zip ]] || [[ "$movies_extensions_rev" =~ zip ]] || [[ "$music_extensions_rev" =~ zip ]]; then echo "Your supported file extensions are incorrect please edit your torrentexpander_settings.ini file" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Your supported file extensions are incorrect please edit your torrentexpander_settings.ini file"; fi; quit_on_error="yes"; fi
 
 # If in third_party_log mode we turn tv_shows_post, music_post and movies_post from move to copy mode.
-if [[ "$third_party_log" != "no" && -f "$third_party_log" ]] || [[ "$processed_torrent_script_enabled" != "no" && -x "$processed_torrent_script" ]]; then
+if [[ "$third_party_log" != "no" && -f "$third_party_log" ]] || [[ "$processed_torrent_script_enabled" != "no" && -x "$processed_torrent_script" ]] || [[ "$processed_torrent_script_enabled" != "no" && -x "$(which "$processed_torrent_script")" ]]; then
 	if [ "$tv_shows_post" != "no" ]; then 
 		tv_shows_post="copy";
 	fi
@@ -779,7 +789,7 @@ fi
 
 
 # Trying to remove torrent from torrent client if destructive_mode is activated
-if [[ "$destructive_mode" == "yes" && "$torrent_name" ]] && [[ -x "$torrent_daemon_bin" && "$(echo "$torrent_daemon_bin" | grep "transmission-remote")" && "$torrent_daemon_port" ]]; then
+if [[ "$destructive_mode" == "yes" && "$torrent_name" ]] && [[ -x "$torrent_daemon_bin" && "$(echo "$torrent_daemon_bin" | grep "transmission-remote")" && "$torrent_daemon_port" ]] && [ "$remove_torrent_from_client" == "yes"Ê]; then
 	# Getting torrent ID
 	if [[ ! "$torrent_daemon_login" ]] || [[ ! "$torrent_daemon_password" ]]; then
 		daemon_ip="localhost:$torrent_daemon_port"
@@ -805,7 +815,7 @@ if [[ "$destructive_mode" == "yes" && "$torrent_name" ]] && [[ -x "$torrent_daem
 			fi
 		fi
 	fi
-elif [[ "$destructive_mode" == "yes" && "$torrent_name" ]] && [[ -x "$torrent_daemon_bin" && "$(echo "$torrent_daemon_bin" | grep "xmlrpc")" ]]; then
+elif [[ "$destructive_mode" == "yes" && "$torrent_name" ]] && [[ -x "$torrent_daemon_bin" && "$(echo "$torrent_daemon_bin" | grep "xmlrpc")" ]] && [ "$remove_torrent_from_client" == "yes"Ê]; then
 	# Getting torrent IDs
 	if [[ ! "$torrent_daemon_login" ]] || [[ ! "$torrent_daemon_password" ]]; then
 		daemon_ip="localhost"
@@ -844,10 +854,10 @@ fi
 
 
 # If torrent client daemon cannot be controlled, we ll remove the torrent anyway
-if [[ "$destructive_mode" == "yes" && -d "$current_folder" ]]; then
-	rm -rf "$current_folder";
-elif [[ "$destructive_mode" == "yes" && "$torrent" && -f "$torrent" ]]; then
-	rm -f "$torrent";
+if [[ "$destructive_mode" == "yes" && "$torrent" && -f "$torrent" ]]; then
+        rm -f "$torrent";
+elif [[ "$destructive_mode" == "yes" && "$current_folder" && -d "$current_folder" ]]; then
+        rm -rf "$current_folder";
 fi
 
 
@@ -1046,7 +1056,7 @@ if [ "$clean_up_filenames" == "yes" ] || [ "$imdb_funct_on" == "yes" ]; then for
 	# Add brackets around year for type_1 movies_rename_schema
 	title_clean_ter_other_pat=`echo "$title_clean_ter" | sed "s/^_//g" | sed "s/\(.*\) \([0-9][0-9][0-9][0-9]\)_*$/\1 (\2)/g" | sed "s/_*$//g"`
 	# Remove underscores at the beginning and at the end of the filename
-	title_clean_ter=`echo "$title_clean_ter" | sed "s/^_//g" | sed "s/_*$//g"`
+	title_clean_ter=`echo "$title_clean_ter" | sed "s/^[. _-]//g" | sed "s/[. _-]*$//g"`
 	if [[ "$repack_handling" == "yes" && "$(echo "$item" | egrep -i "([. _])repack([. _])|([. _])proper([. _])|([. _])rerip([. _])")" ]]; then is_repack=" REPACK"; else is_repack=""; fi
 	# Focusing on TV Series with a SXXEXX pattern
 	if [[ "$(echo "$title_clean_ter" | egrep -i "([sS])([0-9])([0-9])([eE])([0-9])([0-9])")" && "$(echo "$title_clean_ter" | egrep -i "$tv_show_extensions_rev")" ]] && [[ ! "$(echo "$title_clean_ter" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] || [[ "$(echo "$title_clean_ter" | egrep -i "([sS])([0-9])([0-9])([eE])([0-9])([0-9])")" && -d "$source" ]]; then
@@ -1065,17 +1075,17 @@ if [ "$clean_up_filenames" == "yes" ] || [ "$imdb_funct_on" == "yes" ]; then for
 	elif [[ "$movies_rename_schema" == "type_1" && "$(echo "$line" | egrep -i "$movies_extensions_rev")" ]] && [[ $files -eq 1 ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] || [[ "$movies_rename_schema" == "type_1" && -d "$source" ]]; then
 		ren_file=`echo "$title_clean_ter_other_pat$extension"`;
 		# Storing movie title in an imdb friendly format
-		imdb_title=`echo "$(basename "$title_clean_ter_other_pat")" | sed "s; (\([12]\)\([0-9]\)\([0-9]\)\([0-9]\))$; %28\1\2\3\4%29;g" | sed "s/^_//g" | sed "s/_*$//g" | sed "s; [aA][nN][dD] ; ;g" | sed "s; ;+;g"`;
+		imdb_title=`echo "$(basename "$title_clean_ter_other_pat")" | sed "s; (\([12]\)\([0-9]\)\([0-9]\)\([0-9]\))$; %28\1\2\3\4%29;g" | sed "s/^[. _-]*//g" | sed "s/[. _-]*$//g" | sed "s; [aA][nN][dD] ; ;g" | sed "s; ;+;g"`;
 	# Focusing on movies. Type_2 renaming will look like "Title YYYY (Video_Quality).ext"
 	elif [[ "$movies_rename_schema" == "type_2" && "$(echo "$line" | egrep -i "$movies_extensions_rev")" ]] && [[ $files -eq 1 ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] || [[ "$movies_rename_schema" == "type_2" && -d "$source" ]]; then
 		ren_file=`echo "$title_clean_ter$quality$extension"`;
 		# Storing movie title in an imdb friendly format
-		imdb_title=`echo "$(basename "$title_clean_ter_other_pat")" | sed "s; (\([12]\)\([0-9]\)\([0-9]\)\([0-9]\))$; %28\1\2\3\4%29;g" | sed "s/^_//g" | sed "s/_*$//g" | sed "s; [aA][nN][dD] ; ;g" | sed "s; ;+;g"`;
+		imdb_title=`echo "$(basename "$title_clean_ter_other_pat")" | sed "s; (\([12]\)\([0-9]\)\([0-9]\)\([0-9]\))$; %28\1\2\3\4%29;g" | sed "s/^[. _-]*//g" | sed "s/[. _-]*$//g" | sed "s; [aA][nN][dD] ; ;g" | sed "s; ;+;g"`;
 	# Focusing on movies. Type_3 renaming will look like "Title YYYY (Audio_Quality-Video_Quality).ext"
 	elif [[ "$movies_rename_schema" == "type_3" && "$(echo "$line" | egrep -i "$movies_extensions_rev")" ]] && [[ $files -eq 1 ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] || [[ "$movies_rename_schema" == "type_2" && -d "$source" ]]; then
 		ren_file=`echo "$title_clean_ter$quality_quality$extension"`;
 		# Storing movie title in an imdb friendly format
-		imdb_title=`echo "$(basename "$title_clean_ter_other_pat")" | sed "s; (\([12]\)\([0-9]\)\([0-9]\)\([0-9]\))$; %28\1\2\3\4%29;g" | sed "s/^_//g" | sed "s/_*$//g" | sed "s; [aA][nN][dD] ; ;g" | sed "s; ;+;g"`;
+		imdb_title=`echo "$(basename "$title_clean_ter_other_pat")" | sed "s; (\([12]\)\([0-9]\)\([0-9]\)\([0-9]\))$; %28\1\2\3\4%29;g" | sed "s/^[. _-]*//g" | sed "s/[. _-]*$//g" | sed "s; [aA][nN][dD] ; ;g" | sed "s; ;+;g"`;
 	fi
 	bis="_bis"
 	ren_location=`echo "$(dirname "$source")/$ren_file"`;
@@ -1503,6 +1513,12 @@ if [ "$folder_short" ]; then
 	done
 	# Moving the directory while renaming it with the optional number into brackets
 	mv -f "$temp_folder$folder_short" "$dest"
+	if [[ "$gnu_sed_available" == "yes" ]]; then
+    		sed -i "s;^$temp_folder$folder_short$;$dest;g" "$log_file";
+    	else
+    		sed -i '' "s;^$temp_folder$folder_short$;$dest;g" "$log_file";
+    fi
+    folder_short=`echo "$( basename "$dest" )"`
 elif [ ! "$folder_short" ]; then
 	for line in $(cat "$log_file"); do
 		item=`echo "$line"`;
@@ -1521,6 +1537,11 @@ elif [ ! "$folder_short" ]; then
 		done
 		# Moving the file while renaming it with the optional number into brackets
 		if [[ "$(echo "$line" | egrep -i "$temp_folder")" && -f "$item" ]]; then mv -f "$item" "$dest"; fi
+		if [[ "$gnu_sed_available" == "yes" ]]; then
+    		sed -i "s;^$item$;$dest;g" "$log_file";
+    	else
+    		sed -i '' "s;^$item$;$dest;g" "$log_file";
+    	fi
 	done
 fi
 
@@ -1613,13 +1634,22 @@ for line in $(cat "$log_file"); do
 	fi
 done
 
-if [[ "$all_files_script_enabled" == "yes" && -x "$all_files_script" ]]; then
+if [[ "$all_files_script_enabled" == "yes" && -x "$all_files_script" ]] || [[ "$all_files_script_enabled" == "yes" && -x "$(which "$all_files_script")" ]]; then
 	for file_path in $(echo -e "$files_list"); do
-		if [ -e "$file_path" ]; then
+		if [ -e "$file_path" ] && [ "$all_files_script_variable_5" ]; then
+			"$all_files_script" "$(if [ "$all_files_script_variable_1" == "file_path" ]; then echo "$file_path"; else echo "$all_files_script_variable_1"; fi)" "$(if [ "$all_files_script_variable_2" == "file_path" ]; then echo "$file_path"; else echo "$all_files_script_variable_2"; fi)" "$(if [ "$all_files_script_variable_3" == "file_path" ]; then echo "$file_path"; else echo "$all_files_script_variable_3"; fi)" "$(if [ "$all_files_script_variable_4" == "file_path" ]; then echo "$file_path"; else echo "$all_files_script_variable_4"; fi)" "$(if [ "$all_files_script_variable_5" == "file_path" ]; then echo "$file_path"; else echo "$all_files_script_variable_5"; fi)"
+		elif [ -e "$file_path" ] && [ "$all_files_script_variable_4" ]; then
+			"$all_files_script" "$(if [ "$all_files_script_variable_1" == "file_path" ]; then echo "$file_path"; else echo "$all_files_script_variable_1"; fi)" "$(if [ "$all_files_script_variable_2" == "file_path" ]; then echo "$file_path"; else echo "$all_files_script_variable_2"; fi)" "$(if [ "$all_files_script_variable_3" == "file_path" ]; then echo "$file_path"; else echo "$all_files_script_variable_3"; fi)" "$(if [ "$all_files_script_variable_4" == "file_path" ]; then echo "$file_path"; else echo "$all_files_script_variable_4"; fi)"
+		elif [ -e "$file_path" ] && [ "$all_files_script_variable_3" ]; then
+			"$all_files_script" "$(if [ "$all_files_script_variable_1" == "file_path" ]; then echo "$file_path"; else echo "$all_files_script_variable_1"; fi)" "$(if [ "$all_files_script_variable_2" == "file_path" ]; then echo "$file_path"; else echo "$all_files_script_variable_2"; fi)" "$(if [ "$all_files_script_variable_3" == "file_path" ]; then echo "$file_path"; else echo "$all_files_script_variable_3"; fi)"
+		elif [ -e "$file_path" ] && [ "$all_files_script_variable_2" ]; then
+			"$all_files_script" "$(if [ "$all_files_script_variable_1" == "file_path" ]; then echo "$file_path"; else echo "$all_files_script_variable_1"; fi)" "$(if [ "$all_files_script_variable_2" == "file_path" ]; then echo "$file_path"; else echo "$all_files_script_variable_2"; fi)"
+		else
 			"$all_files_script" "$file_path"
 		fi
 	done
 fi
+
 
 count=0 && files=$(( $count + $(cat "$log_file"|wc -l) ))
 if [[ $files -eq 1 ]]; then
@@ -1628,8 +1658,16 @@ elif [[ $files -gt 1 ]]; then
 	file_path=`echo "$destination_folder$folder_short"`;
 fi
 
-if [[ "$processed_torrent_script_enabled" == "yes" && -x "$processed_torrent_script" ]]; then
-	if [ -e "$file_path" ]; then
+if [[ "$processed_torrent_script_enabled" == "yes" && -x "$processed_torrent_script" ]] || [[ "$processed_torrent_script_enabled" == "yes" && -x "$(which "$processed_torrent_script")" ]]; then
+	if [ -e "$file_path" ] && [ "$processed_torrent_script_variable_5" ]; then
+		"$processed_torrent_script" "$(if [ "$processed_torrent_script_variable_1" == "file_path" ]; then echo "$file_path"; else echo "$processed_torrent_script_variable_1"; fi)" "$(if [ "$processed_torrent_script_variable_2" == "file_path" ]; then echo "$file_path"; else echo "$processed_torrent_script_variable_2"; fi)" "$(if [ "$processed_torrent_script_variable_3" == "file_path" ]; then echo "$file_path"; else echo "$processed_torrent_script_variable_3"; fi)" "$(if [ "$processed_torrent_script_variable_4" == "file_path" ]; then echo "$file_path"; else echo "$processed_torrent_script_variable_4"; fi)" "$(if [ "$processed_torrent_script_variable_5" == "file_path" ]; then echo "$file_path"; else echo "$processed_torrent_script_variable_5"; fi)"
+	elif [ -e "$file_path" ] && [ "$processed_torrent_script_variable_4" ]; then
+		"$processed_torrent_script" "$(if [ "$processed_torrent_script_variable_1" == "file_path" ]; then echo "$file_path"; else echo "$processed_torrent_script_variable_1"; fi)" "$(if [ "$processed_torrent_script_variable_2" == "file_path" ]; then echo "$file_path"; else echo "$processed_torrent_script_variable_2"; fi)" "$(if [ "$processed_torrent_script_variable_3" == "file_path" ]; then echo "$file_path"; else echo "$processed_torrent_script_variable_3"; fi)" "$(if [ "$processed_torrent_script_variable_4" == "file_path" ]; then echo "$file_path"; else echo "$processed_torrent_script_variable_4"; fi)"
+	elif [ -e "$file_path" ] && [ "$processed_torrent_script_variable_3" ]; then
+		"$processed_torrent_script" "$(if [ "$processed_torrent_script_variable_1" == "file_path" ]; then echo "$file_path"; else echo "$processed_torrent_script_variable_1"; fi)" "$(if [ "$processed_torrent_script_variable_2" == "file_path" ]; then echo "$file_path"; else echo "$processed_torrent_script_variable_2"; fi)" "$(if [ "$processed_torrent_script_variable_3" == "file_path" ]; then echo "$file_path"; else echo "$processed_torrent_script_variable_3"; fi)"
+	elif [ -e "$file_path" ] && [ "$processed_torrent_script_variable_2" ]; then
+		"$processed_torrent_script" "$(if [ "$processed_torrent_script_variable_1" == "file_path" ]; then echo "$file_path"; else echo "$processed_torrent_script_variable_1"; fi)" "$(if [ "$processed_torrent_script_variable_2" == "file_path" ]; then echo "$file_path"; else echo "$processed_torrent_script_variable_2"; fi)"
+	else
 		"$processed_torrent_script" "$file_path"
 	fi
 fi
@@ -1685,7 +1723,7 @@ IFS=$SAVEIFS
 export PATH="$path_backup"
 
 ## Starting the post_run_script
-if [[ "$post_run_script_enabled" == "yes" && -x "$post_run_script" ]]; then
+if [[ "$post_run_script_enabled" == "yes" && -x "$post_run_script" ]] || [[ "$post_run_script_enabled" == "yes" && -x "$(which "$post_run_script")" ]]; then
 	. "$post_run_script"
 	sleep 1
 fi
