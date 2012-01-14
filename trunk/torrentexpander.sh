@@ -1538,11 +1538,11 @@ if [ "$folder_short" ]; then
 	done
 	# Moving the directory while renaming it with the optional number into brackets
 	mv -f "$temp_folder$folder_short" "$dest"
-	if [[ "$gnu_sed_available" == "yes" ]]; then
-    		sed -i "s;^$temp_folder$folder_short$;$dest;g" "$log_file";
+		if [[ "$gnu_sed_available" == "yes" ]]; then
+    		sed -i "s;^$temp_folder$folder_short;$dest;g" "$log_file";
     	else
-    		sed -i '' "s;^$temp_folder$folder_short$;$dest;g" "$log_file";
-    fi
+    		sed -i '' "s;^$temp_folder$folder_short;$dest;g" "$log_file";
+    	fi
     folder_short=`echo "$( basename "$dest" )"`
 elif [ ! "$folder_short" ]; then
 	for line in $(cat "$log_file"); do
