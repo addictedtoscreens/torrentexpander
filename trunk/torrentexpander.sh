@@ -1045,6 +1045,7 @@ if [ "$clean_up_filenames" == "yes" ]; then temp_log_file="$(echo -e "$(cat "$lo
 fi
 
 if [ "$clean_up_filenames" == "yes" ] || [ "$imdb_funct_on" == "yes" ]; then for line in $(echo -e "$temp_log_file"); do
+	file_renamed="no";
 	item=`echo "$(basename "$line")"`;
 	ren_file=`echo "$item"`;
 	source=`echo "$line"`;
@@ -1089,29 +1090,34 @@ if [ "$clean_up_filenames" == "yes" ] || [ "$imdb_funct_on" == "yes" ]; then for
 		series_episode=`echo "$item" | sed 's;.*\([sS]\)\([0-9]\)\([0-9]\)\([eE]\)\([0-9]\)\([0-9]\).*;S\2\3E\5\6;g'`;
 		# The file will then be renamed "Title SXXEXX.ext", "Title SXXEXX (720p).ext" or "Title SXXEXX (1080p).ext"
 		ren_file=`echo "$series_title $series_episode$is_repack$quality$extension"`;
+		file_renamed="yes";
 	# Focusing on TV Shows with a YYYY.MM.DD pattern
 	elif [[ "$(echo "$item" | egrep -i "([0-9])([0-9])([0-9])([0-9]).([0-9])([0-9]).([0-9])([0-9])")" ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] && [[ -d "$source" || "$(echo "$line" | egrep -i "$tv_show_extensions_rev")" ]]; then
 		talk_show_title=`echo "$title_clean_ter" | sed 's/\([0-9]\)\([0-9]\)\([0-9]\)\([0-9]\).\([0-9]\)\([0-9]\).\([0-9]\)\([0-9]\)/\1\2\3\4-\5\6-\7\8/g'`;
 		# The file will then be renamed "Title YYYY-MM-DD.ext"
 		ren_file=`echo "$talk_show_title$quality$extension"`;
+		file_renamed="yes";
 	# Focusing on movies. Type_1 renaming will look like "Title (YYYY).ext"
 	elif [[ "$movies_rename_schema" == "type_1" ]] && [[ $files -eq 1 ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] && [[ -d "$source" || "$(echo "$line" | egrep -i "$movies_extensions_rev")" ]]; then
 		ren_file=`echo "$title_clean_ter_other_pat$extension"`;
 		# Storing movie title in an imdb friendly format
 		imdb_title=`echo "$(basename "$title_clean_ter_other_pat")" | sed "s; (\([12]\)\([0-9]\)\([0-9]\)\([0-9]\))$; %28\1\2\3\4%29;g" | sed "s/^[. _-]*//g" | sed "s/[. _-]*$//g" | sed "s; [aA][nN][dD] ; ;g" | sed "s; ;+;g"`;
+		file_renamed="yes";
 	# Focusing on movies. Type_2 renaming will look like "Title YYYY (Video_Quality).ext"
 	elif [[ "$movies_rename_schema" == "type_2" ]] && [[ $files -eq 1 ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] && [[ -d "$source" || "$(echo "$line" | egrep -i "$movies_extensions_rev")" ]]; then
 		ren_file=`echo "$title_clean_ter$quality$extension"`;
 		# Storing movie title in an imdb friendly format
 		imdb_title=`echo "$(basename "$title_clean_ter_other_pat")" | sed "s; (\([12]\)\([0-9]\)\([0-9]\)\([0-9]\))$; %28\1\2\3\4%29;g" | sed "s/^[. _-]*//g" | sed "s/[. _-]*$//g" | sed "s; [aA][nN][dD] ; ;g" | sed "s; ;+;g"`;
+		file_renamed="yes";
 	# Focusing on movies. Type_3 renaming will look like "Title YYYY (Audio_Quality-Video_Quality).ext"
 	elif [[ "$movies_rename_schema" == "type_3" ]] && [[ $files -eq 1 ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] && [[ -d "$source" || "$(echo "$line" | egrep -i "$movies_extensions_rev")" ]]; then
 		ren_file=`echo "$title_clean_ter$quality_quality$extension"`;
 		# Storing movie title in an imdb friendly format
 		imdb_title=`echo "$(basename "$title_clean_ter_other_pat")" | sed "s; (\([12]\)\([0-9]\)\([0-9]\)\([0-9]\))$; %28\1\2\3\4%29;g" | sed "s/^[. _-]*//g" | sed "s/[. _-]*$//g" | sed "s; [aA][nN][dD] ; ;g" | sed "s; ;+;g"`;
+		file_renamed="yes";
 	fi
 	#ÊMow we ll apply the renaming
-	if [[ "$item" == "$ren_file" && "$item" != "$title_clean_bis" ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] && [[ -d "$source" || "$(echo "$line" | egrep -i "$supported_extensions_rev")" ]]; then ren_file="$title_clean_bis$extension"; fi
+	if [[ "$file_renamed" != "yes" && "$item" != "$title_clean_bis" ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] && [[ -d "$source" || "$(echo "$line" | egrep -i "$supported_extensions_rev")" ]]; then ren_file="$title_clean_bis$extension"; fi
 	bis="_bis"
 	ren_location=`echo "$(dirname "$source")/$ren_file"`;
 	ren_temp_location=`echo "$(dirname "$source")/$ren_file$bis"`;
@@ -1519,7 +1525,7 @@ fi
 ## Deleting unnecessary surrounding folder
 if [[ "$folder_short" && -d "$temp_folder$folder_short" ]]; then
 	files_in_folder_short=$(ls -1 "$temp_folder$folder_short" | wc -l)
-	if [[ "$music_post" == "move" && $files_in_folder_short -eq 0 ]] || [[ "$tv_shows_post" == "move" && $files_in_folder_short -eq 0 ]] || [[ "$movies_post" == "move" && $files_in_folder_short -eq 0 ]]; then rm -rf "$temp_folder$folder_short" && folder_short=""; fi
+	if [[ "$music_post" == "move" && $files_in_folder_short -eq 0 ]] || [[ "$tv_shows_post" == "move" && $files_in_folder_short -eq 0 ]] || [[ "$movies_post" == "move" && $files_in_folder_short -eq 0 ]]; then rm -rf "$temp_folder$folder_short" && folder_short="" && echo > "$log_file"; fi
 fi
 
 
@@ -1612,15 +1618,8 @@ done
 ## Reset timestamp (mtime)
 ## Modification time of the file will be set to the moment the script ends. Useful to find the latest downloads
 if [ "$has_display" == "yes" ] && [ "$reset_timestamp" == "yes" ]; then step_number=$(( $step_number + 1 )) && echo "Step $step_number : Resetting mtime";  fi
-# setting mtime for files in log_file
-for line in $(cat "$log_file"); do
-	if [ "$reset_timestamp" == "yes" ]; then
-		item=`echo "$line"`
-		touch "$line"
-	fi
-done
-# setting mtime for files copied or moved during the optional move / copy routine
-for line in $(echo -e "$additional_list"); do
+# setting mtime for files
+for line in $(echo -e "$all_files_list"); do
 	if [ "$reset_timestamp" == "yes" ]; then
 		item=`echo "$line"`
 		touch "$line"
@@ -1658,6 +1657,7 @@ for line in $(cat "$log_file"); do
 		files_list="$files_list\n$line"
 	fi
 done
+
 
 if [[ "$all_files_script_enabled" == "yes" && -x "$all_files_script" ]] || [[ "$all_files_script_enabled" == "yes" && -x "$(which "$all_files_script")" ]]; then
 	for file_path in $(echo -e "$files_list"); do
