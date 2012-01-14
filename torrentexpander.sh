@@ -1069,7 +1069,7 @@ if [ "$clean_up_filenames" == "yes" ] || [ "$imdb_funct_on" == "yes" ]; then for
 	# Remove scene names in filename
 	for i in $(echo -e "$(echo "$scene_patterns" | sed "s;,;\\\n;g")"); do if [ "$(echo "$title_clean_bis" | egrep -i "[. _-]$i[. _-]")" ]; then regexp_pat="$(echo "$i" | sed "s/[aA]/[aA]/g" | sed "s/[bB]/[bB]/g" | sed "s/[cC]/[cC]/g" | sed "s/[dD]/[dD]/g" | sed "s/[eE]/[eE]/g" | sed "s/[fF]/[fF]/g" | sed "s/[gG]/[gG]/g" | sed "s/[hH]/[hH]/g" | sed "s/[iI]/[iI]/g" | sed "s/[jJ]/[jJ]/g" | sed "s/[kK]/[kK]/g" | sed "s/[lL]/[lL]/g" | sed "s/[mM]/[mM]/g" | sed "s/[nN]/[nN]/g" | sed "s/[oO]/[oO]/g" | sed "s/[pP]/[pP]/g" | sed "s/[qQ]/[qQ]/g" | sed "s/[rR]/[rR]/g" | sed "s/[sS]/[sS]/g" | sed "s/[tT]/[tT]/g" | sed "s/[uU]/[uU]/g" | sed "s/[vV]/[vV]/g" | sed "s/[wW]/[wW]/g" | sed "s/[xX]/[xX]/g" | sed "s/[yY]/[yY]/g" | sed "s/[zZ]/[zZ]/g")"; title_clean_bis="$(echo "$title_clean_bis" | sed "s;[. _-]$regexp_pat[. _-];_;")"; fi; done
 	# Backup some variables
-	title_clean_bis=`echo "$title_clean_bis" | sed 's/[()]//g' | sed 's/\[//g' | sed 's/\]//g' | sed "s/^[. _-]*//g" | sed "s/[. _-]*$//g"`;
+	title_clean_bis=`echo "$title_clean_bis" | sed 's/[()]//g' | sed 's/\[//g' | sed 's/\]//g' | sed "s/^[. _-]*//g" | sed "s/[. _-]*$//g" | sed "s/_/ /g"`;
 	title_clean_ter=`echo "$title_clean_bis" | sed "s/^/_/g" | sed "s/$/_/g"`;	
 	temp_title_clean_ter="$title_clean_ter";
 	# Here we ll try to guess the audio quality of the file based on patterns
@@ -1111,7 +1111,7 @@ if [ "$clean_up_filenames" == "yes" ] || [ "$imdb_funct_on" == "yes" ]; then for
 		imdb_title=`echo "$(basename "$title_clean_ter_other_pat")" | sed "s; (\([12]\)\([0-9]\)\([0-9]\)\([0-9]\))$; %28\1\2\3\4%29;g" | sed "s/^[. _-]*//g" | sed "s/[. _-]*$//g" | sed "s; [aA][nN][dD] ; ;g" | sed "s; ;+;g"`;
 	fi
 	#ÊMow we ll apply the renaming
-	if [[ "$item" == "$ren_file" && "$item" != "$title_clean_bis" ]] ; then ren_file="$title_clean_bis$extension"; fi
+	if [[ "$item" == "$ren_file" && "$item" != "$title_clean_bis" ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] && [[ -d "$source" || "$(echo "$line" | egrep -i "$supported_extensions_rev")" ]]; then ren_file="$title_clean_bis$extension"; fi
 	bis="_bis"
 	ren_location=`echo "$(dirname "$source")/$ren_file"`;
 	ren_temp_location=`echo "$(dirname "$source")/$ren_file$bis"`;
