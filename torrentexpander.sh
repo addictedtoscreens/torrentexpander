@@ -96,7 +96,7 @@ music_extensions="mp3,m4a,wav"
 # scene patterns is used for scenes that add their name at the beginning of the file name
 movies_detect_patterns="HDTV,DVDRip,BDRip,BRRip,DVDR,576p,720p,1080p,HD1080p"
 movies_detect_patterns_pt_2="TS,PPVrip,TVRip,DVDSCR,R5,Workprint,SCR,Screener,HDRip,DVDScreener"
-other_movies_patterns="real[. _-]proper,proper,repack,resync,syncfix,rerip,pdtv,hdtv,xvid,webrip,web-dl,readnfo,ntsc,pal,limited,ws,uncut,unrated,internal,480p,festival,bluray,extended,italian,theatrical.cut,dubbed,collection,remastered,season,nlsubs,spanish,divx,x264,hdtvrip,xxx,custom[. _-].*[. _-]subs,[^ ].*[. _-]subs,plsub,subtit,tsxvid,plsubbed,multisubs,multi-subs,retail,telesync,telecine,dvb,swesub,vostfr"
+other_movies_patterns="real[. _-]proper,proper,repack,resync,syncfix,rerip,pdtv,hdtv,xvid,webrip,web-dl,readnfo,ntsc,pal,limited,ws,uncut,unrated,internal,480p,festival,bluray,extended,italian,theatrical.cut,dubbed,collection,remastered,season,nlsubs,spanish,divx,x264,hdtvrip,xxx,custom[. _-].*[. _-]subs,[^ ].*[. _-]subs,plsub,subtit,tsxvid,plsubbed,subbed,multisubs,multi-subs,retail,telesync,telecine,dvb,swesub,vostfr"
 scene_patterns="\[[. _-]*www[. _-].*[. _-].*[. _-]*\],aaf,dvdriptorrents,skidrow,klaxxon,axxo,vomit,dita,omifast,extratorrent,2lions,fxm,duqa,newartriot,nhanc3,ddc,keltz,fqm,eztv"
 audio_quality_patterns="AC3,DTS,LiNE,CAM AUDIO,MD,LD,Studio Audio"
 ####################### Optional functionalities variables #######################
@@ -339,7 +339,7 @@ fi
 
 # Looking for a torrent client in the PATH variable or /Applications /nmt/apps /usr/local/bin directories
 if [[ "$check_settings" != *orrent_daemon_bin=* || "$check_settings" == *orrent_daemon_bin=incorrect_or_not_se* ]]; then
-	if [ ! -x "$torrent_daemon_bin" ] && [ -x "$(for d in $(echo -e "/Applications\n/usr/local/bin\n/nmt/apps\n/bin\n/usr/bin\n$(echo -e "$PATH" | sed "s;:;\\\n;g")"); do if [ -d "$d" ]; then find "$d" -maxdepth 2 -name transmission-remote; fi; done | sed -n -e '1p')" ]; then torrent_daemon_bin="$(for d in $(echo -e "/Applications\n/usr/local/bin\n/nmt/apps\n/bin\n/usr/bin\n$(echo -e "$PATH" | sed "s;:;\\\n;g")"); do if [ -d "$d" ]; then find "$d" -maxdepth 2 -name transmission-remote; fi; done | sed -n -e '1p')"; fi
+	if [ ! -x "$torrent_daemon_bin" ] && [ -x "$(for d in $(echo -e "/share/Apps/Transmission/bin\n/Applications\n/usr/local/bin\n/nmt/apps\n/bin\n/usr/bin\n$(echo -e "$PATH" | sed "s;:;\\\n;g")"); do if [ -d "$d" ]; then find "$d" -maxdepth 2 -name transmission-remote; fi; done | sed -n -e '1p')" ]; then torrent_daemon_bin="$(for d in $(echo -e "/share/Apps/Transmission/bin\n/Applications\n/usr/local/bin\n/nmt/apps\n/bin\n/usr/bin\n$(echo -e "$PATH" | sed "s;:;\\\n;g")"); do if [ -d "$d" ]; then find "$d" -maxdepth 2 -name transmission-remote; fi; done | sed -n -e '1p')"; fi
 	# If transmission-remote is unavailable we give xmlrpc a try
 	if [ ! -x "$torrent_daemon_bin" ] && [ -x "$(for d in $(echo -e "/Applications\n/usr/local/bin\n/nmt/apps\n/bin\n/usr/bin\n$(echo -e "$PATH" | sed "s;:;\\\n;g")"); do if [ -d "$d" ]; then find "$d" -maxdepth 2 -name xmlrpc; fi; done | sed -n -e '1p')" ]; then torrent_daemon_bin="$(for d in $(echo -e "/Applications\n/usr/local/bin\n/nmt/apps\n/bin\n/usr/bin\n$(echo -e "$PATH" | sed "s;:;\\\n;g")"); do if [ -d "$d" ]; then find "$d" -maxdepth 2 -name xmlrpc; fi; done | sed -n -e '1p')"; fi
 fi
