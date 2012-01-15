@@ -1,7 +1,7 @@
 {
     appinfo_format="1",
     name="TorrentExpander",
-    version="r147",
+    version="r156",
     enabled="1",
     setup_script="setup.sh"
 }
