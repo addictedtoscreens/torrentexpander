@@ -78,9 +78,9 @@ destination_folder="/path/to/your/destination/folder/"
 destructive_mode="no"
 ################################ Software paths ##################################
 ################# Please check if these variables are correct ####################
-unrar_bin="/usr/bin/unrar"
-unzip_bin="/usr/bin/unzip"
-wget_curl="usr/bin/wget"
+unrar_bin="/usr/local/bin/unrar"
+unzip_bin="/usr/local/bin/unzip"
+wget_curl="/usr/local/bin/wget"
 ccd2iso_bin="/usr/bin/ccd2iso"
 mkvdts2ac3_bin="/path/to/mkvdts2ac3.sh"
 ##################### Supported file extensions - Comma separated ################
