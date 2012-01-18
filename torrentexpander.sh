@@ -180,9 +180,25 @@ torrent_daemon_port="9091"
 ## Run Script - Will be run once torrentexpander is done
 ## You can input the path to a script of your choice or just type the name of a binary available in your PATH
 ## 3 types of script can be run by torrentexpander :
-##Ê- all_files_script sends every processed file to the script (set any variable to file_path to send path to your script as $1, $2, $3, $4 or $5)
-## - processed_torrent_script sends only the resulting file or directory to the script (set any variable to file_path to send path to your script as $1, $2, $3, $4 or $5)
+##Ê- all_files_script sends every processed file to the script
+##      -> set any variable to file_path to send path to your script as $1, $2, $3, $4 or $5
+##      -> set any variable to name_without_extension to send filename without extension to your script as $1, $2, $3, $4 or $5
+##      -> set any variable to name_with_extension to send filename with extension to your script as $1, $2, $3, $4 or $5
+##      -> set any variable to imdb_title to send IMDB title to your script as $1, $2, $3, $4 or $5
+##      -> set any variable to imdb_id to send IMDB ID to your script as $1, $2, $3, $4 or $5
+##      -> set any variable to imdb_url to send IMDB URL to your script as $1, $2, $3, $4 or $5
+##      -> set any variable to imdb_poster_url to send IMDB Poster URL to your script as $1, $2, $3, $4 or $5
+##      -> set any variable to tmdb_fanart_url to send TMDB Fanart URL to your script as $1, $2, $3, $4 or $5
+## - processed_torrent_script sends only the resulting file or directory to the script
 ##		-> post tasks will then switch from copy to move mode
+##      -> set any variable to file_path to send path to your script as $1, $2, $3, $4 or $5
+##      -> set any variable to name_without_extension to send filename without extension to your script as $1, $2, $3, $4 or $5
+##      -> set any variable to name_with_extension to send filename with extension to your script as $1, $2, $3, $4 or $5
+##      -> set any variable to imdb_title to send IMDB title to your script as $1, $2, $3, $4 or $5
+##      -> set any variable to imdb_id to send IMDB ID to your script as $1, $2, $3, $4 or $5
+##      -> set any variable to imdb_url to send IMDB URL to your script as $1, $2, $3, $4 or $5
+##      -> set any variable to imdb_poster_url to send IMDB Poster URL to your script as $1, $2, $3, $4 or $5
+##      -> set any variable to tmdb_fanart_url to send TMDB Fanart URL to your script as $1, $2, $3, $4 or $5
 ## - post_run_script only triggers a script without sending any variable
 ###
 all_files_script_enabled="no"
@@ -564,8 +580,7 @@ if [ -f "$errors_file" ]; then rm -f "$errors_file"; fi
 # If some optional variables are incorrect, the script will continue but those features will be disabled
 
 if [ ! -d "$(dirname "$destination_folder")" ]; then echo "Your destination folder is incorrect please edit your torrentexpander_settings.ini file" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo -e "Your destination folder is incorrect please edit your torrentexpander_settings.ini file\n"; fi; quit_on_error="yes"; fi
-if [ ! -w "$(dirname "$destination_folder")" ]; then echo "Permissions on your destination folder are incorrect please edit your torrentexpander_settings.ini file or your permissions for this folder" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo -e "\nPermissions on your destination folder are incorrect please edit your torrentexpander_settings.ini file or your permissions for this folder\n"; fi; quit_on_error="yes"; fi
-if [ -d "$(dirname "$destination_folder")" ] && [ ! -d "$destination_folder" ]; then mkdir -p "$destination_folder"; fi
+if [[ -d "$(dirname "$destination_folder")" && ! -d "$destination_folder" && -w "$(dirname "$destination_folder")" ]]; then mkdir -p "$destination_folder"; fi
 if [[ ! -w "$destination_folder" || ! -d "$destination_folder" ]]; then echo "Permissions on your destination folder are incorrect please edit your torrentexpander_settings.ini file or your permissions for this folder" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo -e "\nPermissions on your destination folder are incorrect please edit your torrentexpander_settings.ini file or your permissions for this folder\n"; fi; quit_on_error="yes"; fi
 
 if [ ! -d "$temp_directory" ]; then echo "Your temp folder path is incorrect please edit your torrentexpander_settings.ini file" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo -e "\nYour temp folder path is incorrect please edit your torrentexpander_settings.ini file\n"; fi; quit_on_error="yes"; fi
@@ -1098,19 +1113,19 @@ if [ "$clean_up_filenames" == "yes" ] || [ "$imdb_funct_on" == "yes" ]; then for
 		ren_file=`echo "$talk_show_title$quality$extension"`;
 		file_renamed="yes";
 	# Focusing on movies. Type_1 renaming will look like "Title (YYYY).ext"
-	elif [[ "$movies_rename_schema" == "type_1" ]] && [[ $files -eq 1 ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] && [[ -d "$source" || "$(echo "$line" | egrep -i "$movies_extensions_rev")" ]]; then
+	elif [[ "$movies_rename_schema" == "type_1" ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] && [[ "$(echo "$line" | egrep -i "$movies_extensions_rev")" && $files -eq 1 ]] || [ -d "$source" ]; then
 		ren_file=`echo "$title_clean_ter_other_pat$extension"`;
 		# Storing movie title in an imdb friendly format
 		imdb_title=`echo "$(basename "$title_clean_ter_other_pat")" | sed "s; (\([12]\)\([0-9]\)\([0-9]\)\([0-9]\))$; %28\1\2\3\4%29;g" | sed "s/^[. _-]*//g" | sed "s/[. _-]*$//g" | sed "s; [aA][nN][dD] ; ;g" | sed "s; ;+;g"`;
 		file_renamed="yes";
 	# Focusing on movies. Type_2 renaming will look like "Title YYYY (Video_Quality).ext"
-	elif [[ "$movies_rename_schema" == "type_2" ]] && [[ $files -eq 1 ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] && [[ -d "$source" || "$(echo "$line" | egrep -i "$movies_extensions_rev")" ]]; then
+	elif [[ "$movies_rename_schema" == "type_2" ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] && [[ "$(echo "$line" | egrep -i "$movies_extensions_rev")" && $files -eq 1 ]] || [ -d "$source" ]; then
 		ren_file=`echo "$title_clean_ter$quality$extension"`;
 		# Storing movie title in an imdb friendly format
 		imdb_title=`echo "$(basename "$title_clean_ter_other_pat")" | sed "s; (\([12]\)\([0-9]\)\([0-9]\)\([0-9]\))$; %28\1\2\3\4%29;g" | sed "s/^[. _-]*//g" | sed "s/[. _-]*$//g" | sed "s; [aA][nN][dD] ; ;g" | sed "s; ;+;g"`;
 		file_renamed="yes";
 	# Focusing on movies. Type_3 renaming will look like "Title YYYY (Audio_Quality-Video_Quality).ext"
-	elif [[ "$movies_rename_schema" == "type_3" ]] && [[ $files -eq 1 ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] && [[ -d "$source" || "$(echo "$line" | egrep -i "$movies_extensions_rev")" ]]; then
+	elif [[ "$movies_rename_schema" == "type_3" ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] && [[ "$(echo "$line" | egrep -i "$movies_extensions_rev")" && $files -eq 1 ]] || [ -d "$source" ]; then
 		ren_file=`echo "$title_clean_ter$quality_quality$extension"`;
 		# Storing movie title in an imdb friendly format
 		imdb_title=`echo "$(basename "$title_clean_ter_other_pat")" | sed "s; (\([12]\)\([0-9]\)\([0-9]\)\([0-9]\))$; %28\1\2\3\4%29;g" | sed "s/^[. _-]*//g" | sed "s/[. _-]*$//g" | sed "s; [aA][nN][dD] ; ;g" | sed "s; ;+;g"`;
@@ -1642,6 +1657,7 @@ if [ "$delete_third_party_log" == "yes" ] && [ "$third_party_log" != "no" ] && [
 ##################################################################################
 ## Starting the all_files_script and processed_torrent_script
 
+# Consolidating files list
 for line in $(echo -e "$additional_list"); do
 	if [ -f "$line" ]; then
 		for line2 in $(cat "$log_file"); do
@@ -1658,24 +1674,143 @@ for line in $(cat "$log_file"); do
 	fi
 done
 
+# Correcting IMDB title
+if [ "$imdb_title" ]; then imdb_title="$(echo $imdb_title | sed 's;%28;(;g' | sed 's;%29;);g' | sed 's;\+; ;g' | sed "s;%20; ;g")"; fi
 
+# Setting IMDB and TMDB variables for all_files_script
+if [ "$all_files_script_variable_1" == "imdb_title" ]; then
+		all_files_script_variable_1="$imdb_title";
+	elif [ "$all_files_script_variable_1" == "imdb_url" ]; then
+		all_files_script_variable_1="$imdb_url";
+	elif [ "$all_files_script_variable_1" == "imdb_id" ]; then
+		all_files_script_variable_1="$imdb_id";
+	elif [ "$all_files_script_variable_1" == "poster_url" ]; then
+		all_files_script_variable_1="$poster_url";
+	elif [ "$all_files_script_variable_1" == "fanart_url" ]; then
+		all_files_script_variable_1="$fanart_url";
+fi
+if [ "$all_files_script_variable_2" == "imdb_title" ]; then
+		all_files_script_variable_2="$imdb_title";
+	elif [ "$all_files_script_variable_2" == "imdb_url" ]; then
+		all_files_script_variable_2="$imdb_url";
+	elif [ "$all_files_script_variable_2" == "imdb_id" ]; then
+		all_files_script_variable_2="$imdb_id";
+	elif [ "$all_files_script_variable_2" == "poster_url" ]; then
+		all_files_script_variable_2="$poster_url";
+	elif [ "$all_files_script_variable_2" == "fanart_url" ]; then
+		all_files_script_variable_2="$fanart_url";
+fi
+if [ "$all_files_script_variable_3" == "imdb_title" ]; then
+		all_files_script_variable_3="$imdb_title";
+	elif [ "$all_files_script_variable_3" == "imdb_url" ]; then
+		all_files_script_variable_3="$imdb_url";
+	elif [ "$all_files_script_variable_3" == "imdb_id" ]; then
+		all_files_script_variable_3="$imdb_id";
+	elif [ "$all_files_script_variable_3" == "poster_url" ]; then
+		all_files_script_variable_3="$poster_url";
+	elif [ "$all_files_script_variable_3" == "fanart_url" ]; then
+		all_files_script_variable_3="$fanart_url";
+fi
+if [ "$all_files_script_variable_4" == "imdb_title" ]; then
+		all_files_script_variable_4="$imdb_title";
+	elif [ "$all_files_script_variable_4" == "imdb_url" ]; then
+		all_files_script_variable_4="$imdb_url";
+	elif [ "$all_files_script_variable_4" == "imdb_id" ]; then
+		all_files_script_variable_4="$imdb_id";
+	elif [ "$all_files_script_variable_4" == "poster_url" ]; then
+		all_files_script_variable_4="$poster_url";
+	elif [ "$all_files_script_variable_4" == "fanart_url" ]; then
+		all_files_script_variable_4="$fanart_url";
+fi
+if [ "$all_files_script_variable_5" == "imdb_title" ]; then
+		all_files_script_variable_5="$imdb_title";
+	elif [ "$all_files_script_variable_5" == "imdb_url" ]; then
+		all_files_script_variable_5="$imdb_url";
+	elif [ "$all_files_script_variable_5" == "imdb_id" ]; then
+		all_files_script_variable_5="$imdb_id";
+	elif [ "$all_files_script_variable_5" == "poster_url" ]; then
+		all_files_script_variable_5="$poster_url";
+	elif [ "$all_files_script_variable_5" == "fanart_url" ]; then
+		all_files_script_variable_5="$fanart_url";
+fi
+
+# Setting IMDB and TMDB variables for processed_torrent_script
+if [ "$processed_torrent_script_variable_1" == "imdb_title" ]; then
+		processed_torrent_script_variable_1="$imdb_title";
+	elif [ "$processed_torrent_script_variable_1" == "imdb_url" ]; then
+		processed_torrent_script_variable_1="$imdb_url";
+	elif [ "$processed_torrent_script_variable_1" == "imdb_id" ]; then
+		processed_torrent_script_variable_1="$imdb_id";
+	elif [ "$processed_torrent_script_variable_1" == "poster_url" ]; then
+		processed_torrent_script_variable_1="$poster_url";
+	elif [ "$processed_torrent_script_variable_1" == "fanart_url" ]; then
+		processed_torrent_script_variable_1="$fanart_url";
+fi
+if [ "$processed_torrent_script_variable_2" == "imdb_title" ]; then
+		processed_torrent_script_variable_2="$imdb_title";
+	elif [ "$processed_torrent_script_variable_2" == "imdb_url" ]; then
+		processed_torrent_script_variable_2="$imdb_url";
+	elif [ "$processed_torrent_script_variable_2" == "imdb_id" ]; then
+		processed_torrent_script_variable_2="$imdb_id";
+	elif [ "$processed_torrent_script_variable_2" == "poster_url" ]; then
+		processed_torrent_script_variable_2="$poster_url";
+	elif [ "$processed_torrent_script_variable_2" == "fanart_url" ]; then
+		processed_torrent_script_variable_2="$fanart_url";
+fi
+if [ "$processed_torrent_script_variable_3" == "imdb_title" ]; then
+		processed_torrent_script_variable_3="$imdb_title";
+	elif [ "$processed_torrent_script_variable_3" == "imdb_url" ]; then
+		processed_torrent_script_variable_3="$imdb_url";
+	elif [ "$processed_torrent_script_variable_3" == "imdb_id" ]; then
+		processed_torrent_script_variable_3="$imdb_id";
+	elif [ "$processed_torrent_script_variable_3" == "poster_url" ]; then
+		processed_torrent_script_variable_3="$poster_url";
+	elif [ "$processed_torrent_script_variable_3" == "fanart_url" ]; then
+		processed_torrent_script_variable_3="$fanart_url";
+fi
+if [ "$processed_torrent_script_variable_4" == "imdb_title" ]; then
+		processed_torrent_script_variable_4="$imdb_title";
+	elif [ "$processed_torrent_script_variable_4" == "imdb_url" ]; then
+		processed_torrent_script_variable_4="$imdb_url";
+	elif [ "$processed_torrent_script_variable_4" == "imdb_id" ]; then
+		processed_torrent_script_variable_4="$imdb_id";
+	elif [ "$processed_torrent_script_variable_4" == "poster_url" ]; then
+		processed_torrent_script_variable_4="$poster_url";
+	elif [ "$processed_torrent_script_variable_4" == "fanart_url" ]; then
+		processed_torrent_script_variable_4="$fanart_url";
+fi
+if [ "$processed_torrent_script_variable_5" == "imdb_title" ]; then
+		processed_torrent_script_variable_5="$imdb_title";
+	elif [ "$processed_torrent_script_variable_5" == "imdb_url" ]; then
+		processed_torrent_script_variable_5="$imdb_url";
+	elif [ "$processed_torrent_script_variable_5" == "imdb_id" ]; then
+		processed_torrent_script_variable_5="$imdb_id";
+	elif [ "$processed_torrent_script_variable_5" == "poster_url" ]; then
+		processed_torrent_script_variable_5="$poster_url";
+	elif [ "$processed_torrent_script_variable_5" == "fanart_url" ]; then
+		processed_torrent_script_variable_5="$fanart_url";
+fi
+
+# Running the all_files_script
 if [[ "$all_files_script_enabled" == "yes" && -x "$all_files_script" ]] || [[ "$all_files_script_enabled" == "yes" && -x "$(which "$all_files_script")" ]]; then
 	for file_path in $(echo -e "$files_list"); do
+		name_with_extension="$(basename "$file_path")"
+		name_without_extension="$(echo "$name_with_extension" | sed 's/\(.*\)\..\{3,4\}$/\1/')"
 		if [ -e "$file_path" ] && [ "$all_files_script_variable_5" ]; then
-			"$all_files_script" "$(if [ "$all_files_script_variable_1" == "file_path" ]; then echo "$file_path"; else echo "$all_files_script_variable_1"; fi)" "$(if [ "$all_files_script_variable_2" == "file_path" ]; then echo "$file_path"; else echo "$all_files_script_variable_2"; fi)" "$(if [ "$all_files_script_variable_3" == "file_path" ]; then echo "$file_path"; else echo "$all_files_script_variable_3"; fi)" "$(if [ "$all_files_script_variable_4" == "file_path" ]; then echo "$file_path"; else echo "$all_files_script_variable_4"; fi)" "$(if [ "$all_files_script_variable_5" == "file_path" ]; then echo "$file_path"; else echo "$all_files_script_variable_5"; fi)"
+			"$all_files_script" "$(if [ "$all_files_script_variable_1" == "file_path" ]; then echo "$file_path"; elif [ "$all_files_script_variable_1" == "name_with_extension" ]; then echo "$name_with_extension"; elif [ "$all_files_script_variable_1" == "name_without_extension" ]; then echo "$name_without_extension"; else echo "$all_files_script_variable_1"; fi)" "$(if [ "$all_files_script_variable_2" == "file_path" ]; then echo "$file_path"; elif [ "$all_files_script_variable_2" == "name_with_extension" ]; then echo "$name_with_extension"; elif [ "$all_files_script_variable_2" == "name_without_extension" ]; then echo "$name_without_extension"; else echo "$all_files_script_variable_2"; fi)" "$(if [ "$all_files_script_variable_3" == "file_path" ]; then echo "$file_path"; elif [ "$all_files_script_variable_3" == "name_with_extension" ]; then echo "$name_with_extension"; elif [ "$all_files_script_variable_3" == "name_without_extension" ]; then echo "$name_without_extension"; else echo "$all_files_script_variable_3"; fi)" "$(if [ "$all_files_script_variable_4" == "file_path" ]; then echo "$file_path"; elif [ "$all_files_script_variable_4" == "name_with_extension" ]; then echo "$name_with_extension"; elif [ "$all_files_script_variable_4" == "name_without_extension" ]; then echo "$name_without_extension"; else echo "$all_files_script_variable_4"; fi)" "$(if [ "$all_files_script_variable_5" == "file_path" ]; then echo "$file_path"; elif [ "$all_files_script_variable_5" == "name_with_extension" ]; then echo "$name_with_extension"; elif [ "$all_files_script_variable_5" == "name_without_extension" ]; then echo "$name_without_extension"; else echo "$all_files_script_variable_5"; fi)"
 		elif [ -e "$file_path" ] && [ "$all_files_script_variable_4" ]; then
-			"$all_files_script" "$(if [ "$all_files_script_variable_1" == "file_path" ]; then echo "$file_path"; else echo "$all_files_script_variable_1"; fi)" "$(if [ "$all_files_script_variable_2" == "file_path" ]; then echo "$file_path"; else echo "$all_files_script_variable_2"; fi)" "$(if [ "$all_files_script_variable_3" == "file_path" ]; then echo "$file_path"; else echo "$all_files_script_variable_3"; fi)" "$(if [ "$all_files_script_variable_4" == "file_path" ]; then echo "$file_path"; else echo "$all_files_script_variable_4"; fi)"
+			"$all_files_script" "$(if [ "$all_files_script_variable_1" == "file_path" ]; then echo "$file_path"; elif [ "$all_files_script_variable_1" == "name_with_extension" ]; then echo "$name_with_extension"; elif [ "$all_files_script_variable_1" == "name_without_extension" ]; then echo "$name_without_extension"; else echo "$all_files_script_variable_1"; fi)" "$(if [ "$all_files_script_variable_2" == "file_path" ]; then echo "$file_path"; elif [ "$all_files_script_variable_2" == "name_with_extension" ]; then echo "$name_with_extension"; elif [ "$all_files_script_variable_2" == "name_without_extension" ]; then echo "$name_without_extension"; else echo "$all_files_script_variable_2"; fi)" "$(if [ "$all_files_script_variable_3" == "file_path" ]; then echo "$file_path"; elif [ "$all_files_script_variable_3" == "name_with_extension" ]; then echo "$name_with_extension"; elif [ "$all_files_script_variable_3" == "name_without_extension" ]; then echo "$name_without_extension"; else echo "$all_files_script_variable_3"; fi)" "$(if [ "$all_files_script_variable_4" == "file_path" ]; then echo "$file_path"; elif [ "$all_files_script_variable_4" == "name_with_extension" ]; then echo "$name_with_extension"; elif [ "$all_files_script_variable_4" == "name_without_extension" ]; then echo "$name_without_extension"; else echo "$all_files_script_variable_4"; fi)"
 		elif [ -e "$file_path" ] && [ "$all_files_script_variable_3" ]; then
-			"$all_files_script" "$(if [ "$all_files_script_variable_1" == "file_path" ]; then echo "$file_path"; else echo "$all_files_script_variable_1"; fi)" "$(if [ "$all_files_script_variable_2" == "file_path" ]; then echo "$file_path"; else echo "$all_files_script_variable_2"; fi)" "$(if [ "$all_files_script_variable_3" == "file_path" ]; then echo "$file_path"; else echo "$all_files_script_variable_3"; fi)"
+			"$all_files_script" "$(if [ "$all_files_script_variable_1" == "file_path" ]; then echo "$file_path"; elif [ "$all_files_script_variable_1" == "name_with_extension" ]; then echo "$name_with_extension"; elif [ "$all_files_script_variable_1" == "name_without_extension" ]; then echo "$name_without_extension"; else echo "$all_files_script_variable_1"; fi)" "$(if [ "$all_files_script_variable_2" == "file_path" ]; then echo "$file_path"; elif [ "$all_files_script_variable_2" == "name_with_extension" ]; then echo "$name_with_extension"; elif [ "$all_files_script_variable_2" == "name_without_extension" ]; then echo "$name_without_extension"; else echo "$all_files_script_variable_2"; fi)" "$(if [ "$all_files_script_variable_3" == "file_path" ]; then echo "$file_path"; elif [ "$all_files_script_variable_3" == "name_with_extension" ]; then echo "$name_with_extension"; elif [ "$all_files_script_variable_3" == "name_without_extension" ]; then echo "$name_without_extension"; else echo "$all_files_script_variable_3"; fi)"
 		elif [ -e "$file_path" ] && [ "$all_files_script_variable_2" ]; then
-			"$all_files_script" "$(if [ "$all_files_script_variable_1" == "file_path" ]; then echo "$file_path"; else echo "$all_files_script_variable_1"; fi)" "$(if [ "$all_files_script_variable_2" == "file_path" ]; then echo "$file_path"; else echo "$all_files_script_variable_2"; fi)"
+			"$all_files_script" "$(if [ "$all_files_script_variable_1" == "file_path" ]; then echo "$file_path"; elif [ "$all_files_script_variable_1" == "name_with_extension" ]; then echo "$name_with_extension"; elif [ "$all_files_script_variable_1" == "name_without_extension" ]; then echo "$name_without_extension"; else echo "$all_files_script_variable_1"; fi)" "$(if [ "$all_files_script_variable_2" == "file_path" ]; then echo "$file_path"; elif [ "$all_files_script_variable_2" == "name_with_extension" ]; then echo "$name_with_extension"; elif [ "$all_files_script_variable_2" == "name_without_extension" ]; then echo "$name_without_extension"; else echo "$all_files_script_variable_2"; fi)"
 		else
-			"$all_files_script" "$file_path"
+			"$all_files_script" "$(if [ "$all_files_script_variable_1" == "name_with_extension" ]; then echo "$name_with_extension"; elif [ "$all_files_script_variable_1" == "name_without_extension" ]; then echo "$name_without_extension"; else echo "$file_path"; fi)"
 		fi
 	done
 fi
 
-
+# Setting file_path for processed_torrent_script
 count=0 && files=$(( $count + $(cat "$log_file"|wc -l) ))
 if [[ $files -eq 1 ]]; then
 	file_path="$(cat "$log_file")";
@@ -1683,17 +1818,20 @@ elif [[ $files -gt 1 ]]; then
 	file_path=`echo "$destination_folder$folder_short"`;
 fi
 
+# Running the processed_files_script
 if [[ "$processed_torrent_script_enabled" == "yes" && -x "$processed_torrent_script" ]] || [[ "$processed_torrent_script_enabled" == "yes" && -x "$(which "$processed_torrent_script")" ]]; then
+	name_with_extension="$(basename "$file_path")"
+	name_without_extension="$(echo "$name_with_extension" | sed 's/\(.*\)\..\{3,4\}$/\1/')"
 	if [ -e "$file_path" ] && [ "$processed_torrent_script_variable_5" ]; then
-		"$processed_torrent_script" "$(if [ "$processed_torrent_script_variable_1" == "file_path" ]; then echo "$file_path"; else echo "$processed_torrent_script_variable_1"; fi)" "$(if [ "$processed_torrent_script_variable_2" == "file_path" ]; then echo "$file_path"; else echo "$processed_torrent_script_variable_2"; fi)" "$(if [ "$processed_torrent_script_variable_3" == "file_path" ]; then echo "$file_path"; else echo "$processed_torrent_script_variable_3"; fi)" "$(if [ "$processed_torrent_script_variable_4" == "file_path" ]; then echo "$file_path"; else echo "$processed_torrent_script_variable_4"; fi)" "$(if [ "$processed_torrent_script_variable_5" == "file_path" ]; then echo "$file_path"; else echo "$processed_torrent_script_variable_5"; fi)"
+		"$processed_torrent_script" "$(if [ "$processed_torrent_script_variable_1" == "file_path" ]; then echo "$file_path"; elif [ "$processed_torrent_script_variable_1" == "name_with_extension" ]; then echo "$name_with_extension"; elif [ "$processed_torrent_script_variable_1" == "name_without_extension" ]; then echo "$name_without_extension"; else echo "$processed_torrent_script_variable_1"; fi)" "$(if [ "$processed_torrent_script_variable_2" == "file_path" ]; then echo "$file_path"; elif [ "$processed_torrent_script_variable_2" == "name_with_extension" ]; then echo "$name_with_extension"; elif [ "$processed_torrent_script_variable_2" == "name_without_extension" ]; then echo "$name_without_extension"; else echo "$processed_torrent_script_variable_2"; fi)" "$(if [ "$processed_torrent_script_variable_3" == "file_path" ]; then echo "$file_path"; elif [ "$processed_torrent_script_variable_3" == "name_with_extension" ]; then echo "$name_with_extension"; elif [ "$processed_torrent_script_variable_3" == "name_without_extension" ]; then echo "$name_without_extension"; else echo "$processed_torrent_script_variable_3"; fi)" "$(if [ "$processed_torrent_script_variable_4" == "file_path" ]; then echo "$file_path"; elif [ "$processed_torrent_script_variable_4" == "name_with_extension" ]; then echo "$name_with_extension"; elif [ "$processed_torrent_script_variable_4" == "name_without_extension" ]; then echo "$name_without_extension"; else echo "$processed_torrent_script_variable_4"; fi)" "$(if [ "$processed_torrent_script_variable_5" == "file_path" ]; then echo "$file_path"; elif [ "$processed_torrent_script_variable_5" == "name_with_extension" ]; then echo "$name_with_extension"; elif [ "$processed_torrent_script_variable_5" == "name_without_extension" ]; then echo "$name_without_extension"; else echo "$processed_torrent_script_variable_5"; fi)"
 	elif [ -e "$file_path" ] && [ "$processed_torrent_script_variable_4" ]; then
-		"$processed_torrent_script" "$(if [ "$processed_torrent_script_variable_1" == "file_path" ]; then echo "$file_path"; else echo "$processed_torrent_script_variable_1"; fi)" "$(if [ "$processed_torrent_script_variable_2" == "file_path" ]; then echo "$file_path"; else echo "$processed_torrent_script_variable_2"; fi)" "$(if [ "$processed_torrent_script_variable_3" == "file_path" ]; then echo "$file_path"; else echo "$processed_torrent_script_variable_3"; fi)" "$(if [ "$processed_torrent_script_variable_4" == "file_path" ]; then echo "$file_path"; else echo "$processed_torrent_script_variable_4"; fi)"
+		"$processed_torrent_script" "$(if [ "$processed_torrent_script_variable_1" == "file_path" ]; then echo "$file_path"; elif [ "$processed_torrent_script_variable_1" == "name_with_extension" ]; then echo "$name_with_extension"; elif [ "$processed_torrent_script_variable_1" == "name_without_extension" ]; then echo "$name_without_extension"; else echo "$processed_torrent_script_variable_1"; fi)" "$(if [ "$processed_torrent_script_variable_2" == "file_path" ]; then echo "$file_path"; elif [ "$processed_torrent_script_variable_2" == "name_with_extension" ]; then echo "$name_with_extension"; elif [ "$processed_torrent_script_variable_2" == "name_without_extension" ]; then echo "$name_without_extension"; else echo "$processed_torrent_script_variable_2"; fi)" "$(if [ "$processed_torrent_script_variable_3" == "file_path" ]; then echo "$file_path"; elif [ "$processed_torrent_script_variable_3" == "name_with_extension" ]; then echo "$name_with_extension"; elif [ "$processed_torrent_script_variable_3" == "name_without_extension" ]; then echo "$name_without_extension"; else echo "$processed_torrent_script_variable_3"; fi)" "$(if [ "$processed_torrent_script_variable_4" == "file_path" ]; then echo "$file_path"; elif [ "$processed_torrent_script_variable_4" == "name_with_extension" ]; then echo "$name_with_extension"; elif [ "$processed_torrent_script_variable_4" == "name_without_extension" ]; then echo "$name_without_extension"; else echo "$processed_torrent_script_variable_4"; fi)"
 	elif [ -e "$file_path" ] && [ "$processed_torrent_script_variable_3" ]; then
-		"$processed_torrent_script" "$(if [ "$processed_torrent_script_variable_1" == "file_path" ]; then echo "$file_path"; else echo "$processed_torrent_script_variable_1"; fi)" "$(if [ "$processed_torrent_script_variable_2" == "file_path" ]; then echo "$file_path"; else echo "$processed_torrent_script_variable_2"; fi)" "$(if [ "$processed_torrent_script_variable_3" == "file_path" ]; then echo "$file_path"; else echo "$processed_torrent_script_variable_3"; fi)"
+		"$processed_torrent_script" "$(if [ "$processed_torrent_script_variable_1" == "file_path" ]; then echo "$file_path"; elif [ "$processed_torrent_script_variable_1" == "name_with_extension" ]; then echo "$name_with_extension"; elif [ "$processed_torrent_script_variable_1" == "name_without_extension" ]; then echo "$name_without_extension"; else echo "$processed_torrent_script_variable_1"; fi)" "$(if [ "$processed_torrent_script_variable_2" == "file_path" ]; then echo "$file_path"; elif [ "$processed_torrent_script_variable_2" == "name_with_extension" ]; then echo "$name_with_extension"; elif [ "$processed_torrent_script_variable_2" == "name_without_extension" ]; then echo "$name_without_extension"; else echo "$processed_torrent_script_variable_2"; fi)" "$(if [ "$processed_torrent_script_variable_3" == "file_path" ]; then echo "$file_path"; elif [ "$processed_torrent_script_variable_3" == "name_with_extension" ]; then echo "$name_with_extension"; elif [ "$processed_torrent_script_variable_3" == "name_without_extension" ]; then echo "$name_without_extension"; else echo "$processed_torrent_script_variable_3"; fi)"
 	elif [ -e "$file_path" ] && [ "$processed_torrent_script_variable_2" ]; then
-		"$processed_torrent_script" "$(if [ "$processed_torrent_script_variable_1" == "file_path" ]; then echo "$file_path"; else echo "$processed_torrent_script_variable_1"; fi)" "$(if [ "$processed_torrent_script_variable_2" == "file_path" ]; then echo "$file_path"; else echo "$processed_torrent_script_variable_2"; fi)"
+		"$processed_torrent_script" "$(if [ "$processed_torrent_script_variable_1" == "file_path" ]; then echo "$file_path"; elif [ "$processed_torrent_script_variable_1" == "name_with_extension" ]; then echo "$name_with_extension"; elif [ "$processed_torrent_script_variable_1" == "name_without_extension" ]; then echo "$name_without_extension"; else echo "$processed_torrent_script_variable_1"; fi)" "$(if [ "$processed_torrent_script_variable_2" == "file_path" ]; then echo "$file_path"; elif [ "$processed_torrent_script_variable_2" == "name_with_extension" ]; then echo "$name_with_extension"; elif [ "$processed_torrent_script_variable_2" == "name_without_extension" ]; then echo "$name_without_extension"; else echo "$processed_torrent_script_variable_2"; fi)"
 	else
-		"$processed_torrent_script" "$file_path"
+		"$processed_torrent_script" "$(if [ "$processed_torrent_script_variable_1" == "name_with_extension" ]; then echo "$name_with_extension"; elif [ "$processed_torrent_script_variable_1" == "name_without_extension" ]; then echo "$name_without_extension"; else echo "$file_path"; fi)"
 	fi
 fi
 
