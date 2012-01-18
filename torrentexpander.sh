@@ -1113,19 +1113,37 @@ if [ "$clean_up_filenames" == "yes" ] || [ "$imdb_funct_on" == "yes" ]; then for
 		ren_file=`echo "$talk_show_title$quality$extension"`;
 		file_renamed="yes";
 	# Focusing on movies. Type_1 renaming will look like "Title (YYYY).ext"
-	elif [[ "$movies_rename_schema" == "type_1" ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] && [[ "$(echo "$line" | egrep -i "$movies_extensions_rev")" && $files -eq 1 ]] || [ -d "$source" ]; then
+	elif [[ "$movies_rename_schema" == "type_1" ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] && [[ "$(echo "$line" | egrep -i "$movies_extensions_rev")" && $files -eq 1 ]]; then
+		ren_file=`echo "$title_clean_ter_other_pat$extension"`;
+		# Storing movie title in an imdb friendly format
+		imdb_title=`echo "$(basename "$title_clean_ter_other_pat")" | sed "s; (\([12]\)\([0-9]\)\([0-9]\)\([0-9]\))$; %28\1\2\3\4%29;g" | sed "s/^[. _-]*//g" | sed "s/[. _-]*$//g" | sed "s; [aA][nN][dD] ; ;g" | sed "s; ;+;g"`;
+		file_renamed="yes";
+	# Focusing on movies in directories. Type_1 renaming will look like "Title (YYYY).ext"
+	elif [[ "$movies_rename_schema" == "type_1" ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] && [[ "$(cat "$log_file" | egrep -i "$movies_extensions_rev")" && -d "$source" ]]; then
 		ren_file=`echo "$title_clean_ter_other_pat$extension"`;
 		# Storing movie title in an imdb friendly format
 		imdb_title=`echo "$(basename "$title_clean_ter_other_pat")" | sed "s; (\([12]\)\([0-9]\)\([0-9]\)\([0-9]\))$; %28\1\2\3\4%29;g" | sed "s/^[. _-]*//g" | sed "s/[. _-]*$//g" | sed "s; [aA][nN][dD] ; ;g" | sed "s; ;+;g"`;
 		file_renamed="yes";
 	# Focusing on movies. Type_2 renaming will look like "Title YYYY (Video_Quality).ext"
-	elif [[ "$movies_rename_schema" == "type_2" ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] && [[ "$(echo "$line" | egrep -i "$movies_extensions_rev")" && $files -eq 1 ]] || [ -d "$source" ]; then
+	elif [[ "$movies_rename_schema" == "type_2" ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] && [[ "$(echo "$line" | egrep -i "$movies_extensions_rev")" && $files -eq 1 ]]; then
+		ren_file=`echo "$title_clean_ter$quality$extension"`;
+		# Storing movie title in an imdb friendly format
+		imdb_title=`echo "$(basename "$title_clean_ter_other_pat")" | sed "s; (\([12]\)\([0-9]\)\([0-9]\)\([0-9]\))$; %28\1\2\3\4%29;g" | sed "s/^[. _-]*//g" | sed "s/[. _-]*$//g" | sed "s; [aA][nN][dD] ; ;g" | sed "s; ;+;g"`;
+		file_renamed="yes";
+	# Focusing on movies in directories. Type_2 renaming will look like "Title YYYY (Video_Quality).ext"
+	elif [[ "$movies_rename_schema" == "type_2" ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] && [[ "$(cat "$log_file" | egrep -i "$movies_extensions_rev")" && -d "$source" ]]; then
 		ren_file=`echo "$title_clean_ter$quality$extension"`;
 		# Storing movie title in an imdb friendly format
 		imdb_title=`echo "$(basename "$title_clean_ter_other_pat")" | sed "s; (\([12]\)\([0-9]\)\([0-9]\)\([0-9]\))$; %28\1\2\3\4%29;g" | sed "s/^[. _-]*//g" | sed "s/[. _-]*$//g" | sed "s; [aA][nN][dD] ; ;g" | sed "s; ;+;g"`;
 		file_renamed="yes";
 	# Focusing on movies. Type_3 renaming will look like "Title YYYY (Audio_Quality-Video_Quality).ext"
-	elif [[ "$movies_rename_schema" == "type_3" ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] && [[ "$(echo "$line" | egrep -i "$movies_extensions_rev")" && $files -eq 1 ]] || [ -d "$source" ]; then
+	elif [[ "$movies_rename_schema" == "type_3" ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] && [[ "$(echo "$line" | egrep -i "$movies_extensions_rev")" && $files -eq 1 ]]; then
+		ren_file=`echo "$title_clean_ter$quality_quality$extension"`;
+		# Storing movie title in an imdb friendly format
+		imdb_title=`echo "$(basename "$title_clean_ter_other_pat")" | sed "s; (\([12]\)\([0-9]\)\([0-9]\)\([0-9]\))$; %28\1\2\3\4%29;g" | sed "s/^[. _-]*//g" | sed "s/[. _-]*$//g" | sed "s; [aA][nN][dD] ; ;g" | sed "s; ;+;g"`;
+		file_renamed="yes";
+	# Focusing on movies in directories. Type_3 renaming will look like "Title YYYY (Audio_Quality-Video_Quality).ext"
+	elif [[ "$movies_rename_schema" == "type_3" ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] && [[ "$(cat "$log_file" | egrep -i "$movies_extensions_rev")" && -d "$source" ]]; then
 		ren_file=`echo "$title_clean_ter$quality_quality$extension"`;
 		# Storing movie title in an imdb friendly format
 		imdb_title=`echo "$(basename "$title_clean_ter_other_pat")" | sed "s; (\([12]\)\([0-9]\)\([0-9]\)\([0-9]\))$; %28\1\2\3\4%29;g" | sed "s/^[. _-]*//g" | sed "s/[. _-]*$//g" | sed "s; [aA][nN][dD] ; ;g" | sed "s; ;+;g"`;
