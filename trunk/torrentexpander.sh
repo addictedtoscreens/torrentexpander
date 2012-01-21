@@ -96,8 +96,8 @@ music_extensions="mp3,m4a,wav"
 # scene patterns is used for scenes that add their name at the beginning of the file name
 movies_detect_patterns="HDTV,DVDRip,BDRip,BRRip,DVDR,576p,720p,1080p,HD1080p"
 movies_detect_patterns_pt_2="TS,PPVrip,TVRip,DVDSCR,R5,Workprint,SCR,Screener,HDRip,DVDScreener"
-other_movies_patterns="real[. _-]proper,proper,repack,resync,syncfix,rerip,pdtv,hdtv,xvid,webrip,web-dl,readnfo,ntsc,pal,limited,ws,uncut,unrated,internal,480p,festival,bluray,extended,italian,theatrical.cut,dubbed,collection,remastered,season,nlsubs,spanish,divx,x264,hdtvrip,xxx,custom[. _-].*[. _-]subs,[^ ].*[. _-]subs,plsub,subtit,tsxvid,plsubbed,subbed,multisubs,multi-subs,retail,telesync,telecine,dvb,swesub,vostfr"
-scene_patterns="\[[. _-]*www[. _-].*[. _-].*[. _-]*\],aaf,dvdriptorrents,skidrow,klaxxon,axxo,vomit,dita,omifast,extratorrent,2lions,fxm,duqa,newartriot,nhanc3,ddc,keltz,fqm,eztv"
+other_movies_patterns="real[. _-]proper,proper,repack,resync,syncfix,rerip,pdtv,hdtv,xvid,webrip,web-dl,readnfo,ntsc,pal,ws,uncut,unrated,internal,480p,festival,bluray,extended,italian,theatrical.cut,dubbed,collection,remastered,season,nlsubs,spanish,divx,x264,hdtvrip,xxx,custom[. _-].*[. _-]subs,[^ ].*[. _-]subs,plsub,subtit,tsxvid,plsubbed,subbed,multisubs,multi-subs,retail,telesync,telecine,dvb,swesub,vostfr"
+scene_patterns="\[[. _-]*www[. _-].*[. _-].*[. _-]*\],aaf,dvdriptorrents,skidrow,klaxxon,axxo,vomit,dita,omifast,extratorrent,2lions,fxm,duqa,newartriot,nhanc3,ddc,keltz,fqm,eztv,limited"
 audio_quality_patterns="AC3,DTS,LiNE,CAM AUDIO,MD,LD,Studio Audio"
 ####################### Optional functionalities variables #######################
 #################### Set these variables to "no" to disable ######################
@@ -741,6 +741,7 @@ for item in $(if [[ "$current_folder" ]]; then find "$current_folder" -type d -f
 		# Find the right .rar file
 		if [[ "$(ls "$item" | egrep -i "part001\.rar$")" ]]; then rarFile=`ls "$item" | egrep -i "part001\.rar$"` && searchPath="$item/$rarFile";
 		elif [[ "$(ls "$item" | egrep -i "part01\.rar$")" ]]; then rarFile=`ls "$item" | egrep -i "part01\.rar$"` && searchPath="$item/$rarFile";
+		elif [[ "$(ls "$item" | egrep -i "part1\.rar$")" ]]; then rarFile=`ls "$item" | egrep -i "part1\.rar$"` && searchPath="$item/$rarFile";
 		elif [[ -d "$item" && "$(ls "$item" | egrep -i "\.rar$")" ]]; then searchPath=`find "$item" -maxdepth 1 ! -name "._*" -type f -follow | egrep -i "\.rar$"`;
 		elif [[ "$(echo "$torrent" | egrep -i "\.rar$" )" ]]; then searchPath=`echo "$item" | egrep -i "\.rar$"`;
 		# switch back to the .001 file
@@ -905,6 +906,7 @@ for item in $(find "$temp_folder_without_slash" -type d); do
 		# Fetch .rar that were previously rared
 		if [[ "$(ls "$item" | egrep -i "part001\.rar$")" ]]; then rarFile=`ls "$item" | egrep -i "part001\.rar$"` && searchPath="$item/$rarFile";
 		elif [[ "$(ls "$item" | egrep -i "part01\.rar$")" ]]; then rarFile=`ls "$item" | egrep -i "part01\.rar$"` && searchPath="$item/$rarFile";
+		elif [[ "$(ls "$item" | egrep -i "part1\.rar$")" ]]; then rarFile=`ls "$item" | egrep -i "part1\.rar$"` && searchPath="$item/$rarFile";
 		elif [[ -d "$item" && "$(ls "$item" | egrep -i "\.rar$")" ]]; then searchPath=`find "$item" -maxdepth 1 ! -name "._*" -type f -follow | egrep -i "\.rar$"`;
 		elif [[ "$(echo "$torrent" | egrep -i "\.rar$" )" ]]; then searchPath=`echo "$item" | egrep -i "\.rar$"`;
 		elif [[ "$(ls "$item" | egrep -i "\.001$")" ]]; then rarFile=`ls "$item" | egrep -i "\.001$"` && searchPath="$item/$rarFile";
