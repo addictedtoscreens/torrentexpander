@@ -1067,9 +1067,13 @@ if [ "$clean_up_filenames" == "yes" ] || [ "$imdb_funct_on" == "yes" ]; then for
 	ren_file=`echo "$item"`;
 	source=`echo "$line"`;
 	# Resetting quality and audio quality in order not to keep values from previous pass
-	quality=""
-	audio_quality=""
-	movie_year=""
+	if [[ "$(cat "$log_file" | egrep -i "$movies_extensions_rev")" && -d "$source" ]]; then
+		movie_year="$(echo "$movie_year" | sed 's;^ ;;g')"
+	else
+		quality="";
+		audio_quality="";
+		movie_year="";
+	fi
 	movie_year_bis=""
 	movie_year_ter=""
 	# When renaming a folder we ll use an empty extension
@@ -1085,8 +1089,12 @@ if [ "$clean_up_filenames" == "yes" ] || [ "$imdb_funct_on" == "yes" ]; then for
 	# Once this is done we ll remove the underscore at the beginning of the name
 	title_clean_bis=`echo "$title_clean" | sed 's/\([\._]\)\([^ ]\)/ \2/g' | sed "s/^/_/g" | sed "s/$/_/g" | sed 's/\+/ /g' | sed "s/A/a/g" | sed "s/B/b/g" | sed "s/C/c/g" | sed "s/D/d/g" | sed "s/E/e/g" | sed "s/F/f/g" | sed "s/G/g/g" | sed "s/H/h/g" | sed "s/I/i/g" | sed "s/J/j/g" | sed "s/K/k/g" | sed "s/L/l/g" | sed "s/M/m/g" | sed "s/N/n/g" | sed "s/O/o/g" | sed "s/P/p/g" | sed "s/Q/q/g" | sed "s/R/r/g" | sed "s/S/s/g" | sed "s/T/t/g" | sed "s/U/u/g" | sed "s/V/v/g" | sed "s/W/w/g" | sed "s/X/x/g" | sed "s/Y/y/g" | sed "s/Z/z/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*a/\1\2\3A/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*b/\1\2\3B/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*c/\1\2\3C/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*d/\1\2\3D/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*e/\1\2\3E/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*f/\1\2\3F/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*g/\1\2\3G/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*h/\1\2\3H/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*i/\1\2\3I/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*j/\1\2\3J/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*k/\1\2\3K/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*l/\1\2\3L/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*m/\1\2\3M/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*n/\1\2\3N/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*o/\1\2\3O/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*p/\1\2\3P/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*q/\1\2\3Q/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*r/\1\2\3R/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*s/\1\2\3S/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*t/\1\2\3T/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*u/\1\2\3U/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*v/\1\2\3V/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*w/\1\2\3W/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*x/\1\2\3X/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*y/\1\2\3Y/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*z/\1\2\3Z/g"`;
 	
-	# Backing up a value we ll reuse later
-	movie_year=`echo "$title_clean_bis" | grep "[. _-]\([0-9][0-9][0-9][0-9]\)[. _-]*.*$" | sed 's/[()]//g' | sed 's/\[//g' | sed 's/\]//g' | sed "s;\([^_]\)$;\1_;g" | sed "s/.*[. _-]\([0-9][0-9][0-9][0-9]\)[. _-]*.*$/\1/g"`
+	# Backing up year to reuse it later
+	if [[ "$(cat "$log_file" | egrep -i "$movies_extensions_rev")" && -d "$source" && "$(echo "$title_clean_bis" | grep "[. _-]\([0-9][0-9][0-9][0-9]\)[. _-]*.*$")" == "" ]]; then
+		echo > /dev/null 2>&1;
+	else
+		movie_year=`echo "$title_clean_bis" | grep "[. _-]\([0-9][0-9][0-9][0-9]\)[. _-]*.*$" | sed 's/[()]//g' | sed 's/\[//g' | sed 's/\]//g' | sed "s;\([^_]\)$;\1_;g" | sed "s/.*[. _-]\([0-9][0-9][0-9][0-9]\)[. _-]*.*$/\1/g"`
+	fi
 	if [ "$movie_year" ]; then movie_year_bis=" ($movie_year)"; fi
 	if [ "$movie_year" ]; then movie_year_ter=" %28$movie_year%29"; fi
 	if [ "$movie_year" ]; then movie_year=" $movie_year"; fi
