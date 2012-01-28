@@ -96,8 +96,8 @@ music_extensions="mp3,m4a,wav"
 # scene patterns is used for scenes that add their name at the beginning of the file name
 movies_detect_patterns="HDTV,DVDRip,BDRip,BRRip,DVDR,576p,720p,1080p,HD1080p"
 movies_detect_patterns_pt_2="TS,PPVrip,TVRip,DVDSCR,R5,Workprint,SCR,Screener,HDRip,DVDScreener"
-other_movies_patterns="real[. _-]proper,proper,repack,resync,syncfix,rerip,pdtv,hdtv,xvid,webrip,web-dl,readnfo,ntsc,pal,ws,uncut,unrated,internal,480p,festival,bluray,extended,italian,theatrical.cut,dubbed,collection,remastered,season,nlsubs,spanish,divx,x264,hdtvrip,xxx,custom[. _-].*[. _-]subs,[^ ].*[. _-]subs,plsub,subtit,tsxvid,plsubbed,subbed,multisubs,multi-subs,retail,telesync,telecine,dvb,swesub,vostfr"
-scene_patterns="\[[. _-]*www[. _-].*[. _-].*[. _-]*\],aaf,dvdriptorrents,skidrow,klaxxon,axxo,vomit,dita,omifast,extratorrent,2lions,fxm,duqa,newartriot,nhanc3,ddc,keltz,fqm,eztv,limited"
+other_movies_patterns="pdtv,hdtv,xvid,webrip,web-dl,readnfo,ntsc,pal,ws,uncut,unrated,internal,480p,festival,bluray,extended,italian,dubbed,collection,season,nlsubs,spanish,divx,x264,hdtvrip,xxx,custom[. _-].*[. _-]subs,[^ ].*[. _-]subs,plsub,subtit,tsxvid,plsubbed,subbed,multisubs,multi-subs,retail,telesync,telecine,dvb,swesub,vostfr"
+scene_patterns="\[[. _-]*www[. _-].*[. _-].*[. _-]*\],aaf,dvdriptorrents,skidrow,klaxxon,axxo,vomit,dita,omifast,extratorrent,2lions,fxm,duqa,newartriot,nhanc3,ddc,keltz,fqm,eztv,limited,real[. _-]proper,proper,repack,resync,syncfix,rerip,theatrical.cut,remastered"
 audio_quality_patterns="AC3,DTS,LiNE,CAM AUDIO,MD,LD,Studio Audio"
 ####################### Optional functionalities variables #######################
 #################### Set these variables to "no" to disable ######################
@@ -1069,6 +1069,9 @@ if [ "$clean_up_filenames" == "yes" ] || [ "$imdb_funct_on" == "yes" ]; then for
 	# Resetting quality and audio quality in order not to keep values from previous pass
 	quality=""
 	audio_quality=""
+	movie_year=""
+	movie_year_bis=""
+	movie_year_ter=""
 	# When renaming a folder we ll use an empty extension
 	# We ll get rid of the extension in the title_clean variable 
 	if [ -d "$source" ]; then extension="" && title_clean=`echo "$item"`; else extension=`echo "$item" | sed 's;.*\.;.;'` && title_clean=`echo "$item" | sed 's/\(.*\)\..*/\1/'`; fi
@@ -1081,28 +1084,106 @@ if [ "$clean_up_filenames" == "yes" ] || [ "$imdb_funct_on" == "yes" ]; then for
 	# We'll try not to fuck up capitalization in names like McLachlan or MacDonald
 	# Once this is done we ll remove the underscore at the beginning of the name
 	title_clean_bis=`echo "$title_clean" | sed 's/\([\._]\)\([^ ]\)/ \2/g' | sed "s/^/_/g" | sed "s/$/_/g" | sed 's/\+/ /g' | sed "s/A/a/g" | sed "s/B/b/g" | sed "s/C/c/g" | sed "s/D/d/g" | sed "s/E/e/g" | sed "s/F/f/g" | sed "s/G/g/g" | sed "s/H/h/g" | sed "s/I/i/g" | sed "s/J/j/g" | sed "s/K/k/g" | sed "s/L/l/g" | sed "s/M/m/g" | sed "s/N/n/g" | sed "s/O/o/g" | sed "s/P/p/g" | sed "s/Q/q/g" | sed "s/R/r/g" | sed "s/S/s/g" | sed "s/T/t/g" | sed "s/U/u/g" | sed "s/V/v/g" | sed "s/W/w/g" | sed "s/X/x/g" | sed "s/Y/y/g" | sed "s/Z/z/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*a/\1\2\3A/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*b/\1\2\3B/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*c/\1\2\3C/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*d/\1\2\3D/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*e/\1\2\3E/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*f/\1\2\3F/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*g/\1\2\3G/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*h/\1\2\3H/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*i/\1\2\3I/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*j/\1\2\3J/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*k/\1\2\3K/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*l/\1\2\3L/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*m/\1\2\3M/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*n/\1\2\3N/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*o/\1\2\3O/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*p/\1\2\3P/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*q/\1\2\3Q/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*r/\1\2\3R/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*s/\1\2\3S/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*t/\1\2\3T/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*u/\1\2\3U/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*v/\1\2\3V/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*w/\1\2\3W/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*x/\1\2\3X/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*y/\1\2\3Y/g" | sed "s/\([. _-]\)\(mc\)*\(mac\)*z/\1\2\3Z/g"`;
-	# Remove unnecessary information in filename
-	for i in $(echo -e "$(echo "$other_movies_patterns" | sed "s;,;\\\n;g")"); do if [ "$(echo "$title_clean_bis" | egrep -i "[. _-]$i[. _-]")" ]; then regexp_pat="$(echo "$i" | sed "s/[aA]/[aA]/g" | sed "s/[bB]/[bB]/g" | sed "s/[cC]/[cC]/g" | sed "s/[dD]/[dD]/g" | sed "s/[eE]/[eE]/g" | sed "s/[fF]/[fF]/g" | sed "s/[gG]/[gG]/g" | sed "s/[hH]/[hH]/g" | sed "s/[iI]/[iI]/g" | sed "s/[jJ]/[jJ]/g" | sed "s/[kK]/[kK]/g" | sed "s/[lL]/[lL]/g" | sed "s/[mM]/[mM]/g" | sed "s/[nN]/[nN]/g" | sed "s/[oO]/[oO]/g" | sed "s/[pP]/[pP]/g" | sed "s/[qQ]/[qQ]/g" | sed "s/[rR]/[rR]/g" | sed "s/[sS]/[sS]/g" | sed "s/[tT]/[tT]/g" | sed "s/[uU]/[uU]/g" | sed "s/[vV]/[vV]/g" | sed "s/[wW]/[wW]/g" | sed "s/[xX]/[xX]/g" | sed "s/[yY]/[yY]/g" | sed "s/[zZ]/[zZ]/g")"; title_clean_bis="$(echo "$title_clean_bis" | sed "s;$(echo "$title_clean_bis" | egrep -o "[. _-]$regexp_pat[. _-]").*;_;")"; fi; done
-	title_clean_bis="$(echo "$title_clean_bis" | sed "s/^/_/g")"
-	# Remove scene names in filename
-	for i in $(echo -e "$(echo "$scene_patterns" | sed "s;,;\\\n;g")"); do if [ "$(echo "$title_clean_bis" | egrep -i "[. _-]$i[. _-]")" ]; then regexp_pat="$(echo "$i" | sed "s/[aA]/[aA]/g" | sed "s/[bB]/[bB]/g" | sed "s/[cC]/[cC]/g" | sed "s/[dD]/[dD]/g" | sed "s/[eE]/[eE]/g" | sed "s/[fF]/[fF]/g" | sed "s/[gG]/[gG]/g" | sed "s/[hH]/[hH]/g" | sed "s/[iI]/[iI]/g" | sed "s/[jJ]/[jJ]/g" | sed "s/[kK]/[kK]/g" | sed "s/[lL]/[lL]/g" | sed "s/[mM]/[mM]/g" | sed "s/[nN]/[nN]/g" | sed "s/[oO]/[oO]/g" | sed "s/[pP]/[pP]/g" | sed "s/[qQ]/[qQ]/g" | sed "s/[rR]/[rR]/g" | sed "s/[sS]/[sS]/g" | sed "s/[tT]/[tT]/g" | sed "s/[uU]/[uU]/g" | sed "s/[vV]/[vV]/g" | sed "s/[wW]/[wW]/g" | sed "s/[xX]/[xX]/g" | sed "s/[yY]/[yY]/g" | sed "s/[zZ]/[zZ]/g")"; title_clean_bis="$(echo "$title_clean_bis" | sed "s;[. _-]$regexp_pat[. _-];_;")"; fi; done
-	# Backup some variables
-	title_clean_bis=`echo "$title_clean_bis" | sed 's/[()]//g' | sed 's/\[//g' | sed 's/\]//g' | sed "s/^[. _-]*//g" | sed "s/[. _-]*$//g" | sed "s/_/ /g"`;
-	title_clean_ter=`echo "$title_clean_bis" | sed "s/^/_/g" | sed "s/$/_/g"`;	
-	temp_title_clean_ter="$title_clean_ter";
+	
+	# Backing up a value we ll reuse later
+	movie_year=`echo "$title_clean_bis" | grep "[. _-]\([0-9][0-9][0-9][0-9]\)[. _-]*.*$" | sed 's/[()]//g' | sed 's/\[//g' | sed 's/\]//g' | sed "s;\([^_]\)$;\1_;g" | sed "s/.*[. _-]\([0-9][0-9][0-9][0-9]\)[. _-]*.*$/\1/g"`
+	if [ "$movie_year" ]; then movie_year_bis=" ($movie_year)"; fi
+	if [ "$movie_year" ]; then movie_year_ter=" %28$movie_year%29"; fi
+	if [ "$movie_year" ]; then movie_year=" $movie_year"; fi
+	
 	# Here we ll try to guess the audio quality of the file based on patterns
-	for aq in $(echo -e "$(echo "$audio_quality_patterns" | sed "s;,;\\\n;g")"); do if [ "$(echo "$temp_title_clean_ter" | egrep -i "[. _-]$aq[. _-]")" ]; then regexp_pat="$(echo "$aq" | sed "s/[aA]/[aA]/g" | sed "s/[bB]/[bB]/g" | sed "s/[cC]/[cC]/g" | sed "s/[dD]/[dD]/g" | sed "s/[eE]/[eE]/g" | sed "s/[fF]/[fF]/g" | sed "s/[gG]/[gG]/g" | sed "s/[hH]/[hH]/g" | sed "s/[iI]/[iI]/g" | sed "s/[jJ]/[jJ]/g" | sed "s/[kK]/[kK]/g" | sed "s/[lL]/[lL]/g" | sed "s/[mM]/[mM]/g" | sed "s/[nN]/[nN]/g" | sed "s/[oO]/[oO]/g" | sed "s/[pP]/[pP]/g" | sed "s/[qQ]/[qQ]/g" | sed "s/[rR]/[rR]/g" | sed "s/[sS]/[sS]/g" | sed "s/[tT]/[tT]/g" | sed "s/[uU]/[uU]/g" | sed "s/[vV]/[vV]/g" | sed "s/[wW]/[wW]/g" | sed "s/[xX]/[xX]/g" | sed "s/[yY]/[yY]/g" | sed "s/[zZ]/[zZ]/g")"; audio_quality="$aq"; temp_title_clean_ter="$(echo "$temp_title_clean_ter" | sed "s;$(echo "$temp_title_clean_ter" | egrep -o "[. _-]$regexp_pat[. _-]").*;_;")"; fi; done
+	title_clean_bis="$(echo "$title_clean_bis" | sed "s;\([^_]\)$;\1_;g" | sed 's/[()]//g')"
+	movies_title_clean_bis="$(echo "$title_clean_bis" | sed 's/[()]//g')"
+	if [[ "$(echo "$line" | egrep -i "$movies_extensions_rev")" && $files -eq 1 ]] || [[ "$(cat "$log_file" | egrep -i "$movies_extensions_rev")" && -d "$source" ]]; then
+		for aq in $(echo -e "$(echo "$audio_quality_patterns" | sed "s;,;\\\n;g")"); do
+			if [ "$(echo "$movies_title_clean_bis" | egrep -i "[. _-]$aq[. _-]")" ]; then
+				regexp_pat="$(echo "$aq" | sed "s/[aA]/[aA]/g" | sed "s/[bB]/[bB]/g" | sed "s/[cC]/[cC]/g" | sed "s/[dD]/[dD]/g" | sed "s/[eE]/[eE]/g" | sed "s/[fF]/[fF]/g" | sed "s/[gG]/[gG]/g" | sed "s/[hH]/[hH]/g" | sed "s/[iI]/[iI]/g" | sed "s/[jJ]/[jJ]/g" | sed "s/[kK]/[kK]/g" | sed "s/[lL]/[lL]/g" | sed "s/[mM]/[mM]/g" | sed "s/[nN]/[nN]/g" | sed "s/[oO]/[oO]/g" | sed "s/[pP]/[pP]/g" | sed "s/[qQ]/[qQ]/g" | sed "s/[rR]/[rR]/g" | sed "s/[sS]/[sS]/g" | sed "s/[tT]/[tT]/g" | sed "s/[uU]/[uU]/g" | sed "s/[vV]/[vV]/g" | sed "s/[wW]/[wW]/g" | sed "s/[xX]/[xX]/g" | sed "s/[yY]/[yY]/g" | sed "s/[zZ]/[zZ]/g")";
+				audio_quality="$aq";
+				movies_title_clean_bis="$(echo "$movies_title_clean_bis" | sed "s;$(echo "$movies_title_clean_bis" | egrep -o "[. _-]$regexp_pat[. _-]").*;_;")";
+			fi
+		done
+	else
+		for aq in $(echo -e "$(echo "$audio_quality_patterns" | sed "s;,;\\\n;g")"); do
+			if [ "$(echo "$title_clean_bis" | egrep -i "[. _-]$aq[. _-]")" ]; then
+				regexp_pat="$(echo "$aq" | sed "s/[aA]/[aA]/g" | sed "s/[bB]/[bB]/g" | sed "s/[cC]/[cC]/g" | sed "s/[dD]/[dD]/g" | sed "s/[eE]/[eE]/g" | sed "s/[fF]/[fF]/g" | sed "s/[gG]/[gG]/g" | sed "s/[hH]/[hH]/g" | sed "s/[iI]/[iI]/g" | sed "s/[jJ]/[jJ]/g" | sed "s/[kK]/[kK]/g" | sed "s/[lL]/[lL]/g" | sed "s/[mM]/[mM]/g" | sed "s/[nN]/[nN]/g" | sed "s/[oO]/[oO]/g" | sed "s/[pP]/[pP]/g" | sed "s/[qQ]/[qQ]/g" | sed "s/[rR]/[rR]/g" | sed "s/[sS]/[sS]/g" | sed "s/[tT]/[tT]/g" | sed "s/[uU]/[uU]/g" | sed "s/[vV]/[vV]/g" | sed "s/[wW]/[wW]/g" | sed "s/[xX]/[xX]/g" | sed "s/[yY]/[yY]/g" | sed "s/[zZ]/[zZ]/g")";
+				title_clean_bis="$(echo "$title_clean_bis" | sed "s;$(echo "$title_clean_bis" | egrep -o "[. _-]$regexp_pat[. _-]");_;")";
+			fi
+		done
+	fi
+	
 	# Here we ll try to guess the video quality of the file based on patterns and aggregate audio quality
-	for q in $(echo -e "$(echo "$movies_detect_patterns,$movies_detect_patterns_pt_2" | sed "s;,;\\\n;g")"); do if [ "$(echo "$title_clean_ter" | egrep -i "[. _-]$q[. _-]")" ]; then regexp_pat="$(echo "$q" | sed "s/[aA]/[aA]/g" | sed "s/[bB]/[bB]/g" | sed "s/[cC]/[cC]/g" | sed "s/[dD]/[dD]/g" | sed "s/[eE]/[eE]/g" | sed "s/[fF]/[fF]/g" | sed "s/[gG]/[gG]/g" | sed "s/[hH]/[hH]/g" | sed "s/[iI]/[iI]/g" | sed "s/[jJ]/[jJ]/g" | sed "s/[kK]/[kK]/g" | sed "s/[lL]/[lL]/g" | sed "s/[mM]/[mM]/g" | sed "s/[nN]/[nN]/g" | sed "s/[oO]/[oO]/g" | sed "s/[pP]/[pP]/g" | sed "s/[qQ]/[qQ]/g" | sed "s/[rR]/[rR]/g" | sed "s/[sS]/[sS]/g" | sed "s/[tT]/[tT]/g" | sed "s/[uU]/[uU]/g" | sed "s/[vV]/[vV]/g" | sed "s/[wW]/[wW]/g" | sed "s/[xX]/[xX]/g" | sed "s/[yY]/[yY]/g" | sed "s/[zZ]/[zZ]/g")"; quality=" ($q)" && quality_quality=" ($audio_quality-$q)"; title_clean_ter="$(echo "$title_clean_ter" | sed "s;$(echo "$title_clean_ter" | egrep -o "[. _-]$regexp_pat[. _-]").*;_;")"; fi; done
-	# Add brackets around year for type_1 movies_rename_schema
-	title_clean_ter_other_pat=`echo "$title_clean_ter" | sed "s/^_//g" | sed "s/\(.*\) \([0-9][0-9][0-9][0-9]\)_*$/\1 (\2)/g" | sed "s/_*$//g"`
+	title_clean_bis="$(echo "$title_clean_bis" | sed "s;\([^_]\)$;\1_;g")"
+	movies_title_clean_bis="$(echo "$movies_title_clean_bis" | sed "s;\([^_]\)$;\1_;g")"
+	if [[ "$(echo "$line" | egrep -i "$movies_extensions_rev")" && $files -eq 1 ]] || [[ "$(cat "$log_file" | egrep -i "$movies_extensions_rev")" && -d "$source" ]]; then
+		for q in $(echo -e "$(echo "$movies_detect_patterns,$movies_detect_patterns_pt_2" | sed "s;,;\\\n;g")"); do
+			if [ "$(echo "$movies_title_clean_bis" | egrep -i "[. _-]$q[. _-]")" ]; then
+				regexp_pat="$(echo "$q" | sed "s/[aA]/[aA]/g" | sed "s/[bB]/[bB]/g" | sed "s/[cC]/[cC]/g" | sed "s/[dD]/[dD]/g" | sed "s/[eE]/[eE]/g" | sed "s/[fF]/[fF]/g" | sed "s/[gG]/[gG]/g" | sed "s/[hH]/[hH]/g" | sed "s/[iI]/[iI]/g" | sed "s/[jJ]/[jJ]/g" | sed "s/[kK]/[kK]/g" | sed "s/[lL]/[lL]/g" | sed "s/[mM]/[mM]/g" | sed "s/[nN]/[nN]/g" | sed "s/[oO]/[oO]/g" | sed "s/[pP]/[pP]/g" | sed "s/[qQ]/[qQ]/g" | sed "s/[rR]/[rR]/g" | sed "s/[sS]/[sS]/g" | sed "s/[tT]/[tT]/g" | sed "s/[uU]/[uU]/g" | sed "s/[vV]/[vV]/g" | sed "s/[wW]/[wW]/g" | sed "s/[xX]/[xX]/g" | sed "s/[yY]/[yY]/g" | sed "s/[zZ]/[zZ]/g")";
+				quality=" ($q)"
+				quality_quality=" ($audio_quality-$q)";
+				movies_title_clean_bis="$(echo "$movies_title_clean_bis" | sed "s;$(echo "$movies_title_clean_bis" | egrep -o "[. _-]$regexp_pat[. _-]").*;_;")";
+			fi
+		done
+	else
+		for q in $(echo -e "$(echo "$movies_detect_patterns,$movies_detect_patterns_pt_2" | sed "s;,;\\\n;g")"); do
+			if [ "$(echo "$title_clean_bis" | egrep -i "[. _-]$q[. _-]")" ]; then
+				regexp_pat="$(echo "$q" | sed "s/[aA]/[aA]/g" | sed "s/[bB]/[bB]/g" | sed "s/[cC]/[cC]/g" | sed "s/[dD]/[dD]/g" | sed "s/[eE]/[eE]/g" | sed "s/[fF]/[fF]/g" | sed "s/[gG]/[gG]/g" | sed "s/[hH]/[hH]/g" | sed "s/[iI]/[iI]/g" | sed "s/[jJ]/[jJ]/g" | sed "s/[kK]/[kK]/g" | sed "s/[lL]/[lL]/g" | sed "s/[mM]/[mM]/g" | sed "s/[nN]/[nN]/g" | sed "s/[oO]/[oO]/g" | sed "s/[pP]/[pP]/g" | sed "s/[qQ]/[qQ]/g" | sed "s/[rR]/[rR]/g" | sed "s/[sS]/[sS]/g" | sed "s/[tT]/[tT]/g" | sed "s/[uU]/[uU]/g" | sed "s/[vV]/[vV]/g" | sed "s/[wW]/[wW]/g" | sed "s/[xX]/[xX]/g" | sed "s/[yY]/[yY]/g" | sed "s/[zZ]/[zZ]/g")";
+				quality=" ($q)"
+				title_clean_bis="$(echo "$title_clean_bis" | sed "s;$(echo "$title_clean_bis" | egrep -o "[. _-]$regexp_pat[. _-]");_;")";
+			fi
+		done
+	fi
+	
+	# Remove unnecessary information in filename
+	title_clean_bis="$(echo "$title_clean_bis" | sed "s;\([^_]\)$;\1_;g")"
+	movies_title_clean_bis="$(echo "$movies_title_clean_bis" | sed "s;\([^_]\)$;\1_;g")"
+	if [[ "$(echo "$line" | egrep -i "$movies_extensions_rev")" && $files -eq 1 ]] || [[ "$(cat "$log_file" | egrep -i "$movies_extensions_rev")" && -d "$source" ]]; then
+		for i in $(echo -e "$(echo "$other_movies_patterns" | sed "s;,;\\\n;g")"); do
+			if [ "$(echo "$movies_title_clean_bis" | egrep -i "[. _-]$i[. _-]")" ]; then
+				regexp_pat="$(echo "$i" | sed "s/[aA]/[aA]/g" | sed "s/[bB]/[bB]/g" | sed "s/[cC]/[cC]/g" | sed "s/[dD]/[dD]/g" | sed "s/[eE]/[eE]/g" | sed "s/[fF]/[fF]/g" | sed "s/[gG]/[gG]/g" | sed "s/[hH]/[hH]/g" | sed "s/[iI]/[iI]/g" | sed "s/[jJ]/[jJ]/g" | sed "s/[kK]/[kK]/g" | sed "s/[lL]/[lL]/g" | sed "s/[mM]/[mM]/g" | sed "s/[nN]/[nN]/g" | sed "s/[oO]/[oO]/g" | sed "s/[pP]/[pP]/g" | sed "s/[qQ]/[qQ]/g" | sed "s/[rR]/[rR]/g" | sed "s/[sS]/[sS]/g" | sed "s/[tT]/[tT]/g" | sed "s/[uU]/[uU]/g" | sed "s/[vV]/[vV]/g" | sed "s/[wW]/[wW]/g" | sed "s/[xX]/[xX]/g" | sed "s/[yY]/[yY]/g" | sed "s/[zZ]/[zZ]/g")";
+				movies_title_clean_bis="$(echo "$movies_title_clean_bis" | sed "s;$(echo "$movies_title_clean_bis" | egrep -o "[. _-]$regexp_pat[. _-]").*;_;")";
+			fi
+		done
+	else
+		for i in $(echo -e "$(echo "$other_movies_patterns" | sed "s;,;\\\n;g")"); do
+			if [ "$(echo "$title_clean_bis" | egrep -i "[. _-]$i[. _-]")" ]; then
+				regexp_pat="$(echo "$i" | sed "s/[aA]/[aA]/g" | sed "s/[bB]/[bB]/g" | sed "s/[cC]/[cC]/g" | sed "s/[dD]/[dD]/g" | sed "s/[eE]/[eE]/g" | sed "s/[fF]/[fF]/g" | sed "s/[gG]/[gG]/g" | sed "s/[hH]/[hH]/g" | sed "s/[iI]/[iI]/g" | sed "s/[jJ]/[jJ]/g" | sed "s/[kK]/[kK]/g" | sed "s/[lL]/[lL]/g" | sed "s/[mM]/[mM]/g" | sed "s/[nN]/[nN]/g" | sed "s/[oO]/[oO]/g" | sed "s/[pP]/[pP]/g" | sed "s/[qQ]/[qQ]/g" | sed "s/[rR]/[rR]/g" | sed "s/[sS]/[sS]/g" | sed "s/[tT]/[tT]/g" | sed "s/[uU]/[uU]/g" | sed "s/[vV]/[vV]/g" | sed "s/[wW]/[wW]/g" | sed "s/[xX]/[xX]/g" | sed "s/[yY]/[yY]/g" | sed "s/[zZ]/[zZ]/g")";
+				title_clean_bis="$(echo "$title_clean_bis" | sed "s;$(echo "$title_clean_bis" | egrep -o "[. _-]$regexp_pat[. _-]");_;")";
+			fi
+		done
+	fi
+
+	# Remove scene names in filename
+	title_clean_bis="$(echo "$title_clean_bis" | sed "s;\([^_]\)$;\1_;g" | sed "s;^\([^_]\);_\1;g")"
+	movies_title_clean_bis="$(echo "$movies_title_clean_bis" | sed "s;\([^_]\)$;\1_;g" | sed "s;^\([^_]\);_\1;g")"
+	if [[ "$(echo "$line" | egrep -i "$movies_extensions_rev")" && $files -eq 1 ]] || [[ "$(cat "$log_file" | egrep -i "$movies_extensions_rev")" && -d "$source" ]]; then
+		for i in $(echo -e "$(echo "$scene_patterns" | sed "s;,;\\\n;g")"); do
+			if [ "$(echo "$movies_title_clean_bis" | egrep -i "[. _-]$i[. _-]")" ]; then
+				regexp_pat="$(echo "$i" | sed "s/[aA]/[aA]/g" | sed "s/[bB]/[bB]/g" | sed "s/[cC]/[cC]/g" | sed "s/[dD]/[dD]/g" | sed "s/[eE]/[eE]/g" | sed "s/[fF]/[fF]/g" | sed "s/[gG]/[gG]/g" | sed "s/[hH]/[hH]/g" | sed "s/[iI]/[iI]/g" | sed "s/[jJ]/[jJ]/g" | sed "s/[kK]/[kK]/g" | sed "s/[lL]/[lL]/g" | sed "s/[mM]/[mM]/g" | sed "s/[nN]/[nN]/g" | sed "s/[oO]/[oO]/g" | sed "s/[pP]/[pP]/g" | sed "s/[qQ]/[qQ]/g" | sed "s/[rR]/[rR]/g" | sed "s/[sS]/[sS]/g" | sed "s/[tT]/[tT]/g" | sed "s/[uU]/[uU]/g" | sed "s/[vV]/[vV]/g" | sed "s/[wW]/[wW]/g" | sed "s/[xX]/[xX]/g" | sed "s/[yY]/[yY]/g" | sed "s/[zZ]/[zZ]/g")"; title_clean_bis="$(echo "$title_clean_bis" | sed "s;[. _-]$regexp_pat[. _-];_;")";
+				movies_title_clean_bis="$(echo "$movies_title_clean_bis" | sed "s;[. _-]$regexp_pat[. _-];_;")"
+			fi
+		done
+	else
+		for i in $(echo -e "$(echo "$scene_patterns" | sed "s;,;\\\n;g")"); do
+			if [ "$(echo "$title_clean_bis" | egrep -i "[. _-]$i[. _-]")" ]; then
+				regexp_pat="$(echo "$i" | sed "s/[aA]/[aA]/g" | sed "s/[bB]/[bB]/g" | sed "s/[cC]/[cC]/g" | sed "s/[dD]/[dD]/g" | sed "s/[eE]/[eE]/g" | sed "s/[fF]/[fF]/g" | sed "s/[gG]/[gG]/g" | sed "s/[hH]/[hH]/g" | sed "s/[iI]/[iI]/g" | sed "s/[jJ]/[jJ]/g" | sed "s/[kK]/[kK]/g" | sed "s/[lL]/[lL]/g" | sed "s/[mM]/[mM]/g" | sed "s/[nN]/[nN]/g" | sed "s/[oO]/[oO]/g" | sed "s/[pP]/[pP]/g" | sed "s/[qQ]/[qQ]/g" | sed "s/[rR]/[rR]/g" | sed "s/[sS]/[sS]/g" | sed "s/[tT]/[tT]/g" | sed "s/[uU]/[uU]/g" | sed "s/[vV]/[vV]/g" | sed "s/[wW]/[wW]/g" | sed "s/[xX]/[xX]/g" | sed "s/[yY]/[yY]/g" | sed "s/[zZ]/[zZ]/g")"; title_clean_bis="$(echo "$title_clean_bis" | sed "s;[. _-]$regexp_pat[. _-];_;")";
+				title_clean_bis="$(echo "$title_clean_bis" | sed "s;[. _-]$regexp_pat[. _-];_;")"
+			fi
+		done
+	fi
+	
+	# Doing some more cleanup
+	title_clean_bis=`echo "$title_clean_bis" | sed 's/[()]//g' | sed 's/\[//g' | sed 's/\]//g' | sed "s/^[. _-]*//g" | sed "s/[. _-]*$//g" | sed "s/_/ /g"`;
+	movies_title_clean_bis=`echo "$movies_title_clean_bis" | sed 's/[. _-][0-9][0-9][0-9][0-9][. _-].*//g' | sed 's/[()]//g' | sed 's/\[//g' | sed 's/\]//g' | sed "s/^[. _-]*//g" | sed "s/[. _-]*$//g" | sed "s/_/ /g"`;
+
 	# Remove underscores at the beginning and at the end of the filename
-	title_clean_ter=`echo "$title_clean_ter" | sed "s/^[. _-]*//g" | sed "s/[. _-]*$//g"`
+	title_clean_ter=`echo "$title_clean_bis" | sed "s/^[. _-]*//g" | sed "s/[. _-]*$//g"`;
+	movies_title_clean_ter=`echo "$movies_title_clean_bis" | sed 's/[()]//g' | sed 's/\[//g' | sed 's/\]//g' | sed "s/^[. _-]*//g" | sed "s/[. _-]*$//g" | sed "s/_/ /g"`;
 	if [[ "$repack_handling" == "yes" && "$(echo "$item" | egrep -i "([. _])repack([. _])|([. _])proper([. _])|([. _])rerip([. _])")" ]]; then is_repack=" REPACK"; else is_repack=""; fi
+
 	# Focusing on TV Series with a SXXEXX pattern
 	if [[ "$(echo "$item" | egrep -i "([sS])([0-9])([0-9])([eE])([0-9])([0-9])")" ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] && [[ -d "$source" ||Ê"$(echo "$line" | egrep -i "$tv_show_extensions_rev")" ]]; then
 		# For TV series we ll only display quality with 720p and 1080p files
-		if [ "$quality" != " (720p)" ] && [ "$quality" != " (1080p)" ]; then quality=""; fi
+		if [[ "$quality" != " (720p)" && "$quality" != " (1080p)" ]] || [[ "$movies_rename_schema" == "type_1" ]]; then quality=""; fi
 		series_title=`echo "$title_clean_ter" | sed 's;.\([sS]\)\([0-9]\)\([0-9]\)\([eE]\)\([0-9]\)\([0-9]\).*;;'`;
 		series_episode=`echo "$item" | sed 's;.*\([sS]\)\([0-9]\)\([0-9]\)\([eE]\)\([0-9]\)\([0-9]\).*;S\2\3E\5\6;g'`;
 		# The file will then be renamed "Title SXXEXX.ext", "Title SXXEXX (720p).ext" or "Title SXXEXX (1080p).ext"
@@ -1116,43 +1197,43 @@ if [ "$clean_up_filenames" == "yes" ] || [ "$imdb_funct_on" == "yes" ]; then for
 		file_renamed="yes";
 	# Focusing on movies. Type_1 renaming will look like "Title (YYYY).ext"
 	elif [[ "$movies_rename_schema" == "type_1" ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] && [[ "$(echo "$line" | egrep -i "$movies_extensions_rev")" && $files -eq 1 ]]; then
-		ren_file=`echo "$title_clean_ter_other_pat$extension"`;
+		ren_file=`echo "$movies_title_clean_ter$movie_year_bis$extension"`;
 		# Storing movie title in an imdb friendly format
-		imdb_title=`echo "$(basename "$title_clean_ter_other_pat")" | sed "s; (\([12]\)\([0-9]\)\([0-9]\)\([0-9]\))$; %28\1\2\3\4%29;g" | sed "s/^[. _-]*//g" | sed "s/[. _-]*$//g" | sed "s; [aA][nN][dD] ; ;g" | sed "s; ;+;g"`;
+		imdb_title=`echo "$(basename "$movies_title_clean_ter")$movie_year_ter" | sed "s/^[. _-]*//g" | sed "s/[. _-]*$//g" | sed "s; [aA][nN][dD] ; ;g" | sed "s; ;+;g"`;
 		file_renamed="yes";
 	# Focusing on movies in directories. Type_1 renaming will look like "Title (YYYY).ext"
 	elif [[ "$movies_rename_schema" == "type_1" ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] && [[ "$(cat "$log_file" | egrep -i "$movies_extensions_rev")" && -d "$source" ]]; then
-		ren_file=`echo "$title_clean_ter_other_pat$extension"`;
+		ren_file=`echo "$movies_title_clean_ter$movie_year_bis$extension"`;
 		# Storing movie title in an imdb friendly format
-		imdb_title=`echo "$(basename "$title_clean_ter_other_pat")" | sed "s; (\([12]\)\([0-9]\)\([0-9]\)\([0-9]\))$; %28\1\2\3\4%29;g" | sed "s/^[. _-]*//g" | sed "s/[. _-]*$//g" | sed "s; [aA][nN][dD] ; ;g" | sed "s; ;+;g"`;
+		imdb_title=`echo "$(basename "$movies_title_clean_ter")$movie_year_ter" | sed "s/^[. _-]*//g" | sed "s/[. _-]*$//g" | sed "s; [aA][nN][dD] ; ;g" | sed "s; ;+;g"`;
 		file_renamed="yes";
 	# Focusing on movies. Type_2 renaming will look like "Title YYYY (Video_Quality).ext"
 	elif [[ "$movies_rename_schema" == "type_2" ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] && [[ "$(echo "$line" | egrep -i "$movies_extensions_rev")" && $files -eq 1 ]]; then
-		ren_file=`echo "$title_clean_ter$quality$extension"`;
+		ren_file=`echo "$movies_title_clean_ter$movie_year$quality$extension"`;
 		# Storing movie title in an imdb friendly format
-		imdb_title=`echo "$(basename "$title_clean_ter_other_pat")" | sed "s; (\([12]\)\([0-9]\)\([0-9]\)\([0-9]\))$; %28\1\2\3\4%29;g" | sed "s/^[. _-]*//g" | sed "s/[. _-]*$//g" | sed "s; [aA][nN][dD] ; ;g" | sed "s; ;+;g"`;
+		imdb_title=`echo "$(basename "$movies_title_clean_ter")$movie_year_ter" | sed "s/^[. _-]*//g" | sed "s/[. _-]*$//g" | sed "s; [aA][nN][dD] ; ;g" | sed "s; ;+;g"`;
 		file_renamed="yes";
 	# Focusing on movies in directories. Type_2 renaming will look like "Title YYYY (Video_Quality).ext"
 	elif [[ "$movies_rename_schema" == "type_2" ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] && [[ "$(cat "$log_file" | egrep -i "$movies_extensions_rev")" && -d "$source" ]]; then
-		ren_file=`echo "$title_clean_ter$quality$extension"`;
+		ren_file=`echo "$movies_title_clean_ter$movie_year$quality$extension"`;
 		# Storing movie title in an imdb friendly format
-		imdb_title=`echo "$(basename "$title_clean_ter_other_pat")" | sed "s; (\([12]\)\([0-9]\)\([0-9]\)\([0-9]\))$; %28\1\2\3\4%29;g" | sed "s/^[. _-]*//g" | sed "s/[. _-]*$//g" | sed "s; [aA][nN][dD] ; ;g" | sed "s; ;+;g"`;
+		imdb_title=`echo "$(basename "$movies_title_clean_ter")$movie_year_ter" | sed "s/^[. _-]*//g" | sed "s/[. _-]*$//g" | sed "s; [aA][nN][dD] ; ;g" | sed "s; ;+;g"`;
 		file_renamed="yes";
 	# Focusing on movies. Type_3 renaming will look like "Title YYYY (Audio_Quality-Video_Quality).ext"
 	elif [[ "$movies_rename_schema" == "type_3" ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] && [[ "$(echo "$line" | egrep -i "$movies_extensions_rev")" && $files -eq 1 ]]; then
-		ren_file=`echo "$title_clean_ter$quality_quality$extension"`;
+		ren_file=`echo "$movies_title_clean_ter$quality_quality$extension"`;
 		# Storing movie title in an imdb friendly format
-		imdb_title=`echo "$(basename "$title_clean_ter_other_pat")" | sed "s; (\([12]\)\([0-9]\)\([0-9]\)\([0-9]\))$; %28\1\2\3\4%29;g" | sed "s/^[. _-]*//g" | sed "s/[. _-]*$//g" | sed "s; [aA][nN][dD] ; ;g" | sed "s; ;+;g"`;
+		imdb_title=`echo "$(basename "$movies_title_clean_ter")$movie_year_ter" | sed "s/^[. _-]*//g" | sed "s/[. _-]*$//g" | sed "s; [aA][nN][dD] ; ;g" | sed "s; ;+;g"`;
 		file_renamed="yes";
 	# Focusing on movies in directories. Type_3 renaming will look like "Title YYYY (Audio_Quality-Video_Quality).ext"
 	elif [[ "$movies_rename_schema" == "type_3" ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] && [[ "$(cat "$log_file" | egrep -i "$movies_extensions_rev")" && -d "$source" ]]; then
-		ren_file=`echo "$title_clean_ter$quality_quality$extension"`;
+		ren_file=`echo "$movies_title_clean_ter$quality_quality$extension"`;
 		# Storing movie title in an imdb friendly format
-		imdb_title=`echo "$(basename "$title_clean_ter_other_pat")" | sed "s; (\([12]\)\([0-9]\)\([0-9]\)\([0-9]\))$; %28\1\2\3\4%29;g" | sed "s/^[. _-]*//g" | sed "s/[. _-]*$//g" | sed "s; [aA][nN][dD] ; ;g" | sed "s; ;+;g"`;
+		imdb_title=`echo "$(basename "$movies_title_clean_ter")$movie_year_ter" | sed "s/^[. _-]*//g" | sed "s/[. _-]*$//g" | sed "s; [aA][nN][dD] ; ;g" | sed "s; ;+;g"`;
 		file_renamed="yes";
 	fi
 	#ÊMow we ll apply the renaming
-	if [[ "$file_renamed" != "yes" && "$item" != "$title_clean_bis" ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] && [[ -d "$source" || "$(echo "$line" | egrep -i "$supported_extensions_rev")" ]]; then ren_file="$title_clean_bis$extension"; fi
+	if [[ "$file_renamed" != "yes" && "$item" != "$title_clean_ter" ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] && [[ -d "$source" || "$(echo "$line" | egrep -i "$supported_extensions_rev")" ]]; then ren_file="$title_clean_ter$extension"; fi
 	bis="_bis"
 	ren_location=`echo "$(dirname "$source")/$ren_file"`;
 	ren_temp_location=`echo "$(dirname "$source")/$ren_file$bis"`;
@@ -1676,6 +1757,9 @@ if [ "$delete_third_party_log" == "yes" ] && [ "$third_party_log" != "no" ] && [
 
 ##################################################################################
 ## Starting the all_files_script and processed_torrent_script
+
+if [[ "$has_display" == "yes" && "$all_files_script_enabled" == "yes" ]] || [[ "$has_display" == "yes" && "$processed_torrent_script_enabled" == "yes" ]]; then step_number=$(( $step_number + 1 )) && echo "Step $step_number : Running custom scripts";  fi
+
 
 # Consolidating files list
 for line in $(echo -e "$additional_list"); do
