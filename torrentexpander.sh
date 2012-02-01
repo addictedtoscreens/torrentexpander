@@ -1072,6 +1072,7 @@ if [ "$clean_up_filenames" == "yes" ] || [ "$imdb_funct_on" == "yes" ]; then for
 	else
 		quality="";
 		audio_quality="";
+		quality_quality="";
 		movie_year="";
 	fi
 	movie_year_bis=""
@@ -1183,10 +1184,16 @@ if [ "$clean_up_filenames" == "yes" ] || [ "$imdb_funct_on" == "yes" ]; then for
 	
 	# Doing some more cleanup
 	title_clean_bis=`echo "$title_clean_bis" | sed 's/[()]//g' | sed 's/\[//g' | sed 's/\]//g' | sed "s/^[. _-]*//g" | sed "s/[. _-]*$//g" | sed "s/_/ /g"`;
+	if [[ "$(echo "$line" | egrep -i "$movies_extensions_rev")" && $files -eq 1 ]] || [[ "$(cat "$log_file" | egrep -i "$movies_extensions_rev")" && -d "$source" ]]; then
+		series_title_clean_bis=`echo "$movies_title_clean_bis" | sed 's/[()]//g' | sed 's/\[//g' | sed 's/\]//g' | sed "s/^[. _-]*//g" | sed "s/[. _-]*$//g" | sed "s/_/ /g"`;
+	else
+		series_title_clean_bis=`echo "$title_clean_bis" | sed 's/[()]//g' | sed 's/\[//g' | sed 's/\]//g' | sed "s/^[. _-]*//g" | sed "s/[. _-]*$//g" | sed "s/_/ /g"`;
+	fi
 	movies_title_clean_bis=`echo "$movies_title_clean_bis" | sed 's/[. _-][0-9][0-9][0-9][0-9][. _-].*//g' | sed 's/[()]//g' | sed 's/\[//g' | sed 's/\]//g' | sed "s/^[. _-]*//g" | sed "s/[. _-]*$//g" | sed "s/_/ /g"`;
 
 	# Remove underscores at the beginning and at the end of the filename
 	title_clean_ter=`echo "$title_clean_bis" | sed "s/^[. _-]*//g" | sed "s/[. _-]*$//g"`;
+	series_title_clean_ter=`echo "$series_title_clean_bis" | sed "s/^[. _-]*//g" | sed "s/[. _-]*$//g"`;
 	movies_title_clean_ter=`echo "$movies_title_clean_bis" | sed 's/[()]//g' | sed 's/\[//g' | sed 's/\]//g' | sed "s/^[. _-]*//g" | sed "s/[. _-]*$//g" | sed "s/_/ /g"`;
 	if [[ "$repack_handling" == "yes" && "$(echo "$item" | egrep -i "([. _])repack([. _])|([. _])proper([. _])|([. _])rerip([. _])")" ]]; then is_repack=" REPACK"; else is_repack=""; fi
 
@@ -1194,16 +1201,18 @@ if [ "$clean_up_filenames" == "yes" ] || [ "$imdb_funct_on" == "yes" ]; then for
 	if [[ "$(echo "$item" | egrep -i "([sS])([0-9])([0-9])([eE])([0-9])([0-9])")" ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] && [[ -d "$source" ||Ê"$(echo "$line" | egrep -i "$tv_show_extensions_rev")" ]]; then
 		# For TV series we ll only display quality with 720p and 1080p files
 		if [[ "$quality" != " (720p)" && "$quality" != " (1080p)" ]] || [[ "$movies_rename_schema" == "type_1" ]]; then quality=""; fi
-		series_title=`echo "$title_clean_ter" | sed 's;.\([sS]\)\([0-9]\)\([0-9]\)\([eE]\)\([0-9]\)\([0-9]\).*;;'`;
+		series_title=`echo "$series_title_clean_ter" | sed 's;.\([sS]\)\([0-9]\)\([0-9]\)\([eE]\)\([0-9]\)\([0-9]\).*;;'`;
 		series_episode=`echo "$item" | sed 's;.*\([sS]\)\([0-9]\)\([0-9]\)\([eE]\)\([0-9]\)\([0-9]\).*;S\2\3E\5\6;g'`;
 		# The file will then be renamed "Title SXXEXX.ext", "Title SXXEXX (720p).ext" or "Title SXXEXX (1080p).ext"
 		ren_file=`echo "$series_title $series_episode$is_repack$quality$extension"`;
 		file_renamed="yes";
 	# Focusing on TV Shows with a YYYY.MM.DD pattern
 	elif [[ "$(echo "$item" | egrep -i "([0-9])([0-9])([0-9])([0-9]).([0-9])([0-9]).([0-9])([0-9])")" ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] && [[ -d "$source" || "$(echo "$line" | egrep -i "$tv_show_extensions_rev")" ]]; then
-		talk_show_title=`echo "$title_clean_ter" | sed 's/\([0-9]\)\([0-9]\)\([0-9]\)\([0-9]\).\([0-9]\)\([0-9]\).\([0-9]\)\([0-9]\)/\1\2\3\4-\5\6-\7\8/g'`;
+		# For TV series we ll only display quality with 720p and 1080p files
+		if [[ "$quality" != " (720p)" && "$quality" != " (1080p)" ]] || [[ "$movies_rename_schema" == "type_1" ]]; then quality=""; fi
+		talk_show_title=`echo "$series_title_clean_ter" | sed 's/\([0-9]\)\([0-9]\)\([0-9]\)\([0-9]\).\([0-9]\)\([0-9]\).\([0-9]\)\([0-9]\)/\1\2\3\4-\5\6-\7\8/g'`;
 		# The file will then be renamed "Title YYYY-MM-DD.ext"
-		ren_file=`echo "$talk_show_title$quality$extension"`;
+		ren_file=`echo "$talk_show_title$is_repack$quality$extension"`;
 		file_renamed="yes";
 	# Focusing on movies. Type_1 renaming will look like "Title (YYYY).ext"
 	elif [[ "$movies_rename_schema" == "type_1" ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] && [[ "$(echo "$line" | egrep -i "$movies_extensions_rev")" && $files -eq 1 ]]; then
