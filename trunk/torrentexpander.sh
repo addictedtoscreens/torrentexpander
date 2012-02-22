@@ -26,7 +26,7 @@ fi
 
 ##################################################################################
 ##                   TORRENTEXPANDER 
-##                   v0.19
+##                   v0.20
 ##
 ## You can use and modify this script to your convenience
 ## Any suggestion on how to improve this script will be welcome
@@ -180,7 +180,7 @@ torrent_daemon_port="9091"
 ## Run Script - Will be run once torrentexpander is done
 ## You can input the path to a script of your choice or just type the name of a binary available in your PATH
 ## 3 types of script can be run by torrentexpander :
-##Ê- all_files_script sends every processed file to the script
+## - all_files_script sends every processed file to the script
 ##      -> set any variable to file_path to send path to your script as $1, $2, $3, $4 or $5
 ##      -> set any variable to name_without_extension to send filename without extension to your script as $1, $2, $3, $4 or $5
 ##      -> set any variable to name_with_extension to send filename with extension to your script as $1, $2, $3, $4 or $5
@@ -826,7 +826,7 @@ if [ "$has_display" == "yes" ] && [[ "$destructive_mode" == "yes" && "$torrent_n
 fi
 
 # Trying to remove torrent from torrent client if destructive_mode is activated
-if [[ "$destructive_mode" == "yes" && "$torrent_name" ]] && [[ -x "$torrent_daemon_bin" && "$(echo "$torrent_daemon_bin" | grep "transmission-remote")" && "$torrent_daemon_port" ]] && [ "$remove_torrent_from_client" == "yes"Ê]; then
+if [[ "$destructive_mode" == "yes" && "$torrent_name" ]] && [[ -x "$torrent_daemon_bin" && "$(echo "$torrent_daemon_bin" | grep "transmission-remote")" && "$torrent_daemon_port" ]] && [ "$remove_torrent_from_client" == "yes" ]; then
 	# Getting torrent ID
 	if [[ ! "$torrent_daemon_login" ]] || [[ ! "$torrent_daemon_password" ]]; then
 		daemon_ip="localhost:$torrent_daemon_port"
@@ -852,7 +852,7 @@ if [[ "$destructive_mode" == "yes" && "$torrent_name" ]] && [[ -x "$torrent_daem
 			fi
 		fi
 	fi
-elif [[ "$destructive_mode" == "yes" && "$torrent_name" ]] && [[ -x "$torrent_daemon_bin" && "$(echo "$torrent_daemon_bin" | grep "xmlrpc")" ]] && [ "$remove_torrent_from_client" == "yes"Ê]; then
+elif [[ "$destructive_mode" == "yes" && "$torrent_name" ]] && [[ -x "$torrent_daemon_bin" && "$(echo "$torrent_daemon_bin" | grep "xmlrpc")" ]] && [ "$remove_torrent_from_client" == "yes" ]; then
 	# Getting torrent IDs
 	if [[ ! "$torrent_daemon_login" ]] || [[ ! "$torrent_daemon_password" ]]; then
 		daemon_ip="localhost"
@@ -1201,7 +1201,7 @@ if [ "$clean_up_filenames" == "yes" ] || [ "$imdb_funct_on" == "yes" ]; then for
 	if [[ "$repack_handling" == "yes" && "$(echo "$item" | egrep -i "([. _])repack([. _])|([. _])proper([. _])|([. _])rerip([. _])")" ]]; then is_repack=" REPACK"; else is_repack=""; fi
 
 	# Focusing on TV Series with a SXXEXX pattern
-	if [[ "$(echo "$item" | egrep -i "([sS])([0-9])([0-9])([eE])([0-9])([0-9])")" ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] && [[ -d "$source" ||Ê"$(echo "$line" | egrep -i "$tv_show_extensions_rev")" ]]; then
+	if [[ "$(echo "$item" | egrep -i "([sS])([0-9])([0-9])([eE])([0-9])([0-9])")" ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] && [[ -d "$source" || "$(echo "$line" | egrep -i "$tv_show_extensions_rev")" ]]; then
 		# For TV series we ll only display quality with 720p and 1080p files
 		if [[ "$quality" != " (720p)" && "$quality" != " (1080p)" ]] || [[ "$movies_rename_schema" == "type_1" ]]; then quality=""; fi
 		series_title=`echo "$series_title_clean_ter" | sed 's;.\([sS]\)\([0-9]\)\([0-9]\)\([eE]\)\([0-9]\)\([0-9]\).*;;'`;
@@ -1254,7 +1254,7 @@ if [ "$clean_up_filenames" == "yes" ] || [ "$imdb_funct_on" == "yes" ]; then for
 		imdb_title=`echo "$(basename "$movies_title_clean_ter")$movie_year_ter" | sed "s/^[. _-]*//g" | sed "s/[. _-]*$//g" | sed "s; [aA][nN][dD] ; ;g" | sed "s; ;+;g"`;
 		file_renamed="yes";
 	fi
-	#ÊMow we ll apply the renaming
+	# Now we ll apply the renaming
 	if [[ "$file_renamed" != "yes" && "$item" != "$title_clean_ter" ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] && [[ -d "$source" || "$(echo "$line" | egrep -i "$supported_extensions_rev")" ]]; then ren_file="$title_clean_ter$extension"; fi
 	bis="_bis"
 	ren_location=`echo "$(dirname "$source")/$ren_file"`;
