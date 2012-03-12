@@ -1097,7 +1097,7 @@ if [ "$clean_up_filenames" == "yes" ] || [ "$imdb_funct_on" == "yes" ]; then for
 	if [[ "$(cat "$log_file" | egrep -i "$movies_extensions_rev")" && -d "$source" && "$(echo "$title_clean_bis" | grep "[. _-]\([0-9][0-9][0-9][0-9]\)[. _-]*.*$")" == "" ]]; then
 		echo > /dev/null 2>&1;
 	else
-		movie_year=`echo "$title_clean_bis" | grep "[. _-]\([0-9][0-9][0-9][0-9]\)[. _-]*.*$" | sed 's/[()]//g' | sed 's/\[//g' | sed 's/\]//g' | sed "s;\([^_]\)$;\1_;g" | sed "s/.*[. _-]\([0-9][0-9][0-9][0-9]\)[. _-]*.*$/\1/g"`
+		movie_year=`echo "$title_clean_bis" | grep "[. _-]\([0-9][0-9][0-9][0-9]\)[. _-]*.*$" | sed 's/[()]//g' | sed 's/\[//g' | sed 's/\]//g' | sed "s;\([^_]\)$;\1_;g" | sed "s/1080/_/g" | sed "s/.*[. _-]\([0-9][0-9][0-9][0-9]\)[. _-]*.*$/\1/g"`
 	fi
 	if [ "$movie_year" ]; then movie_year_bis=" ($movie_year)"; fi
 	if [ "$movie_year" ]; then movie_year_ter=" %28$movie_year%29"; fi
