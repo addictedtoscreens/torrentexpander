@@ -583,9 +583,10 @@ if [ ! -d "$(dirname "$destination_folder")" ]; then echo "Your destination fold
 if [[ -d "$(dirname "$destination_folder")" && ! -d "$destination_folder" && -w "$(dirname "$destination_folder")" ]]; then mkdir -p "$destination_folder"; fi
 if [[ ! -w "$destination_folder" || ! -d "$destination_folder" ]]; then echo "Permissions on your destination folder are incorrect please edit your torrentexpander_settings.ini file or your permissions for this folder" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo -e "\nPermissions on your destination folder are incorrect please edit your torrentexpander_settings.ini file or your permissions for this folder\n"; fi; quit_on_error="yes"; fi
 
-if [ ! -d "$temp_directory" ]; then echo "Your temp folder path is incorrect please edit your torrentexpander_settings.ini file" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo -e "\nYour temp folder path is incorrect please edit your torrentexpander_settings.ini file\n"; fi; quit_on_error="yes"; fi
-if [ -d "$temp_folder" ]; then echo "Temp folder already exists. Please delete it or edit your torrentexpander_settings.ini file" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo -e "\nTemp folder already exists. Please delete it or edit your torrentexpander_settings.ini file\n"; fi; quit_on_error="yes"; fi
-if [[ ! -w "$temp_directory" ]]; then echo "Permissions on your temp folder are incorrect please edit your torrentexpander_settings.ini file or your permissions for this folder" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo -e "\nPermissions on your temp folder are incorrect please edit your torrentexpander_settings.ini file or your permissions for this folder\n"; fi; quit_on_error="yes"; fi
+## This part of the script has been moved a bit later in the script
+# if [ ! -d "$temp_directory" ]; then echo "Your temp folder path is incorrect please edit your torrentexpander_settings.ini file" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo -e "\nYour temp folder path is incorrect please edit your torrentexpander_settings.ini file\n"; fi; quit_on_error="yes"; fi
+# if [ -d "$temp_folder" ]; then echo "Temp folder already exists. Please delete it or edit your torrentexpander_settings.ini file" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo -e "\nTemp folder already exists. Please delete it or edit your torrentexpander_settings.ini file\n"; fi; quit_on_error="yes"; fi
+# if [[ ! -w "$temp_directory" ]]; then echo "Permissions on your temp folder are incorrect please edit your torrentexpander_settings.ini file or your permissions for this folder" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo -e "\nPermissions on your temp folder are incorrect please edit your torrentexpander_settings.ini file or your permissions for this folder\n"; fi; quit_on_error="yes"; fi
 
 if [ ! -d "$tv_shows_post_path" ] && [ "$tv_shows_post" != "no" ]; then	echo "Your TV Shows path is incorrect - TV Shows Post will be disabled" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Your TV Shows path is incorrect - TV Shows Post will be disabled"; fi; tv_shows_post="no"; fi
 if [[ ! -w "$tv_shows_post_path" && "$tv_shows_post" != "no" ]]; then echo "Permissions on your TV Shows folder are incorrect please edit your torrentexpander_settings.ini file or your permissions for this folder - TV Shows Post will be disabled" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo -e "\nPermissions on your TV Shows folder are incorrect please edit your torrentexpander_settings.ini file or your permissions for this folder - TV Shows Post will be disabled\n"; fi; tv_shows_post="no"; fi
@@ -658,7 +659,12 @@ if [ ! -f "$log_file" ]; then
 	touch "$log_file"
 fi
 
+
 ##################################################################################
+
+if [ ! -d "$temp_directory" ]; then echo "Your temp folder path is incorrect please edit your torrentexpander_settings.ini file" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo -e "\nYour temp folder path is incorrect please edit your torrentexpander_settings.ini file\n"; fi; quit_on_error="yes"; fi
+if [ -d "$temp_folder" ]; then echo "Temp folder already exists. Please delete it or edit your torrentexpander_settings.ini file" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo -e "\nTemp folder already exists. Please delete it or edit your torrentexpander_settings.ini file\n"; fi; quit_on_error="yes"; fi
+if [[ ! -w "$temp_directory" ]]; then echo "Permissions on your temp folder are incorrect please edit your torrentexpander_settings.ini file or your permissions for this folder" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo -e "\nPermissions on your temp folder are incorrect please edit your torrentexpander_settings.ini file or your permissions for this folder\n"; fi; quit_on_error="yes"; fi
 
 # Creating temp folder
 mkdir -p "$temp_folder"
