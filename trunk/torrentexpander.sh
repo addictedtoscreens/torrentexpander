@@ -1204,7 +1204,7 @@ if [ "$clean_up_filenames" == "yes" ] || [ "$imdb_funct_on" == "yes" ]; then for
 	title_clean_ter=`echo "$title_clean_bis" | sed "s/^[. _-]*//g" | sed "s/[. _-]*$//g"`;
 	series_title_clean_ter=`echo "$series_title_clean_bis" | sed "s/^[. _-]*//g" | sed "s/[. _-]*$//g"`;
 	movies_title_clean_ter=`echo "$movies_title_clean_bis" | sed 's/[()]//g' | sed 's/\[//g' | sed 's/\]//g' | sed "s/^[. _-]*//g" | sed "s/[. _-]*$//g" | sed "s/_/ /g"`;
-	if [[ "$repack_handling" == "yes" && "$(echo "$item" | egrep -i "([. _])repack([. _])|([. _])proper([. _])|([. _])rerip([. _])")" ]]; then is_repack=" REPACK"; else is_repack=""; fi
+	if [[ "$repack_handling" == "yes" && "$(echo "$item" | egrep -i "([. _])repack([. _])|([. _])proper([. _])|([. _])rerip([. _])|([. _])real([. _])")" ]]; then is_repack=" REPACK"; else is_repack=""; fi
 
 	# Focusing on TV Series with a SXXEXX pattern
 	if [[ "$(echo "$item" | egrep -i "([sS])([0-9])([0-9])([eE])([0-9])([0-9])")" ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] && [[ -d "$source" || "$(echo "$line" | egrep -i "$tv_show_extensions_rev")" ]]; then
@@ -1326,14 +1326,14 @@ if [ "$imdb_title" ] && [ "$imdb_funct_on" == "yes" ] && [ "$subtitles_mode" != 
 	# Downloading imdbWebService XML and storing it in a variable
 	if [[ "$wget_curl" == *wget* ]]; then
 		# Using wget to fetch data if available
-		xml_cont=`echo "$("$wget_curl" -q "http://dedi603.seedhost.eu/imdbWebService.php?m=$imdb_title&o=xml" -O -; wait)"`;
+		xml_cont=`echo "$("$wget_curl" -q "http://ks391601.kimsufi.com/imdbWebService.php?m=$imdb_title&o=xml" -O -; wait)"`;
 	elif [[ "$wget_curl" == *curl* ]]; then
 		# Using curl to fetch data if available
-		xml_cont=`echo "$("$wget_curl" -silent -i "http://dedi603.seedhost.eu/imdbWebService.php?m=$imdb_title&o=xml"; wait)"`;
+		xml_cont=`echo "$("$wget_curl" -silent -i "http://ks391601.kimsufi.com/imdbWebService.php?m=$imdb_title&o=xml"; wait)"`;
 	fi
 	
 	# Adding XML path to the debug log
-	if [[ "$debug_mode" == "yes" ]]; then echo "IMDB XML URL: http://dedi603.seedhost.eu/imdbWebService.php?m=$imdb_title&o=xml" >> "$debug_log"; fi
+	if [[ "$debug_mode" == "yes" ]]; then echo "IMDB XML URL: http://ks391601.kimsufi.com/imdbWebService.php?m=$imdb_title&o=xml" >> "$debug_log"; fi
 	if [ "$xml_cont" ]; then
 		# Getting IMDB URL from the XML file
 		imdb_url=`echo "$(echo "$xml_cont" | grep "<IMDB_URL>" | sed 's/^[ \t]*//' | sed 's/[ \t]*$//' | sed 's/<[^>]*>//g')"`;
