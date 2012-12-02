@@ -19,7 +19,7 @@ Add this line to your _~/.rtorrent.rc_ config file, using a text editor:
 system.method.set_key = event.download.finished,torrentexpander,"execute=/path/to/your/torrentexpander.sh,$d.get_base_path=,$d.get_base_filename="
 }}}
 
-Insted of this, if you want use Torrentexapander only after you have finish to seed, use this (raccomanded):
+Instead of this, if you want use Torrentexapander only after you have finish to seed, use this (raccomanded):
 
 {{{
 system.method.set_key = event.download.closed,torrentexpander,"execute=/path/to/your/torrentexpander.sh,$d.get_base_path=,$d.get_base_filename="
@@ -29,4 +29,21 @@ Now you are ready to configure:
 
 {{{
 ./torrentexpander.sh
+}}}
+
+
+----
+
+==If you want to use torrentexpander only for certain torrent, then you could use label==
+----
+
+Ho to configure rtorrent?
+{{{
+system.method.set_key = event.download.closed,torrentexpander,"execute=~/torrentexpander.sh,$d.get_base_path=,$d.get_base_filename=,$d.get_custom1="
+}}}
+
+How to add?
+{{{
+  if [ "$use_rtorrent_label" == "yes" && "$3" == "rtorrent_label"]; then USE TORRENTEXPANDER FOR THIS TORRENT
+  fi
 }}}
