@@ -26,7 +26,7 @@ fi
 
 ##################################################################################
 ##                   TORRENTEXPANDER 
-##                   v0.20
+##                   v0.21
 ##
 ## You can use and modify this script to your convenience
 ## Any suggestion on how to improve this script will be welcome
@@ -94,11 +94,11 @@ music_extensions="mp3,m4a,wav"
 ############# You must have at least one pattern enabled in each field ###########
 # movies_detect_patterns and movies_detect_patterns_pt_2 are the same - only splitted
 # scene patterns is used for scenes that add their name at the beginning of the file name
-movies_detect_patterns="HDTV,DVDRip,BDRip,BRRip,DVDR,576p,720p,1080p,HD1080p"
+movies_detect_patterns="HDTV,DVDRip,BDRip,BRRip,DVDR,576p,3D HSBS 720p,720p,3D HSBS 1080p,1080p,HD1080p"
 movies_detect_patterns_pt_2="TS,PPVrip,TVRip,DVDSCR,R5,Workprint,SCR,Screener,HDRip,DVDScreener"
-other_movies_patterns="pdtv,hdtv,xvid,webrip,web-dl,readnfo,ntsc,pal,ws,uncut,unrated,internal,480p,festival,bluray,extended,italian,dubbed,collection,season,nlsubs,spanish,divx,x264,hdtvrip,xxx,custom[. _-].*[. _-]subs,[^ ].*[. _-]subs,plsub,subtit,tsxvid,plsubbed,subbed,multisubs,multi-subs,retail,telesync,telecine,dvb,swesub,vostfr,3d,sbs"
-scene_patterns="\[[. _-]*www[. _-].*[. _-].*[. _-]*\],aaf,dvdriptorrents,skidrow,klaxxon,axxo,vomit,dita,omifast,extratorrent,2lions,fxm,duqa,newartriot,nhanc3,ddc,keltz,fqm,eztv,limited,real[. _-]proper,proper,repack,resync,syncfix,rerip,theatrical.cut,remastered"
-audio_quality_patterns="AC3,DTS,LiNE,CAM AUDIO,MD,LD,Studio Audio"
+other_movies_patterns="pdtv,hdtv,xvid,webrip,web-dl,readnfo,ntsc,pal,ws,uncut,unrated,internal,480p,festival,bluray,extended,italian,dubbed,collection,season,nlsubs,spanish,divx,x264,hdtvrip,xxx,custom[. _-].*[. _-]subs,[^ ].*[. _-]subs,plsub,subtit,tsxvid,plsubbed,subbed,multisubs,multi-subs,fansub,retail,telesync,telecine,dvb,swesub,vostfr,3d,sbs,dvd,eng,dvd5,dvd9,torrent,torrents,www,x264,dvdripspanish,half-sbs,full-sbs"
+scene_patterns="\[[. _-]*www[. _-].*[. _-].*[. _-]*\],aaf,dvdriptorrents,skidrow,klaxxon,axxo,vomit,dita,omifast,extratorrent,2lions,fxm,duqa,newartriot,nhanc3,ddc,keltz,\[fileking[. _-]pl\],fqm,eztv,limited,real[. _-]proper,proper,repack,resync,syncfix,rerip,theatrical.cut,remastered,convert"
+audio_quality_patterns="AC3,DTS,LiNE,CAM AUDIO,LD,Studio Audio"
 ####################### Optional functionalities variables #######################
 #################### Set these variables to "no" to disable ######################
 ## Fix numbering for TV Shows - Switch variable to "yes" to enable
@@ -620,7 +620,7 @@ if [ ! -x "$processed_torrent_script" ] && [ ! -x "$(which "$processed_torrent_s
 
 if [ ! -x "$post_run_script" ] && [ ! -x "$(which "$post_run_script")" ] && [ "$post_run_script_enabled" == "yes" ]; then echo "Path to your post_run_script is incorrect - This feature will be disabled" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo -e "\nPath to your post_run_script is incorrect - This feature will be disabled\n"; fi; post_run_script_enabled="no"; fi
 
-if [[ "$supported_extensions_rev" =~ rar ]] || [[ "$tv_show_extensions_rev" =~ rar ]] || [[ "$movies_extensions_rev" =~ rar ]] || [[ "$music_extensions_rev" =~ rar ]] || [[ "$supported_extensions_rev" =~ zip ]] || [[ "$tv_show_extensions_rev" =~ zip ]] || [[ "$movies_extensions_rev" =~ zip ]] || [[ "$music_extensions_rev" =~ zip ]]; then echo "Your supported file extensions are incorrect please edit your torrentexpander_settings.ini file" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Your supported file extensions are incorrect please edit your torrentexpander_settings.ini file"; fi; quit_on_error="yes"; fi
+if [[ "$supported_extensions_rev" == *rar* ]] || [[ "$tv_show_extensions_rev" == *rar* ]] || [[ "$movies_extensions_rev" == *rar* ]] || [[ "$music_extensions_rev" == *rar* ]] || [[ "$supported_extensions_rev" == *zip* ]] || [[ "$tv_show_extensions_rev" == *zip* ]] || [[ "$movies_extensions_rev" == *zip* ]] || [[ "$music_extensions_rev" == *zip* ]]; then echo "Your supported file extensions are incorrect please edit your torrentexpander_settings.ini file" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Your supported file extensions are incorrect please edit your torrentexpander_settings.ini file"; fi; quit_on_error="yes"; fi
 
 # If in third_party_log mode we turn tv_shows_post, music_post and movies_post from move to copy mode.
 if [[ "$third_party_log" != "no" && -f "$third_party_log" ]] || [[ "$processed_torrent_script_enabled" != "no" && -x "$processed_torrent_script" ]] || [[ "$processed_torrent_script_enabled" != "no" && -x "$(which "$processed_torrent_script")" ]]; then
@@ -780,6 +780,13 @@ for item in $(if [[ "$current_folder" ]]; then find "$current_folder" -type d -f
 		elif [[ "$unzip_bin" == *7z* ]] && [ "$has_display" == "yes" ]; then for f in $(echo -e "$searchPath"); do "$unzip_bin" x -y `echo "$f"` -o"$temp_folder"; done
 		elif [[ "$unzip_bin" == *7z* ]]; then for f in $(echo -e "$searchPath"); do "$unzip_bin" x -y `echo "$f"` -o"$temp_folder" > /dev/null 2>&1; done
 		fi
+	fi
+done
+
+for item in $(if [[ "$current_folder" ]]; then find "$current_folder" -type d -follow; else echo "$torrent"; fi); do
+	# Don t bother with Mac OS X invisible files
+	if [[ "$item" == */.AppleDouble ]] || [[ "$item" == */._* ]] || [[ "$item" == */.DS_Store* ]]; then
+		echo "" > /dev/null 2>&1
 	# Now fetch all other files and copy them to the temp folder, or move them if in destructive mode
 	elif [[ "$(ls $item | egrep -i -v "\.[0-9][0-9][0-9]$|\.r[0-9][0-9]$|\.rar$|\.001$|\.zip$")" ]]; then
 		# 
@@ -788,10 +795,24 @@ for item in $(if [[ "$current_folder" ]]; then find "$current_folder" -type d -f
 		elif [[ "$(echo "$item" | egrep -i -v "\.[0-9][0-9][0-9]$|\.r[0-9][0-9]$|\.rar$|\.001$|\.zip$")" ]]; then otherFiles=`echo "$item" | egrep -i -v "\.[0-9][0-9][0-9]$|\.r[0-9][0-9]$|\.rar$|\.001$|\.zip$"`
 		dest_path=`echo "$temp_folder"`
 		fi
-		if [[ "$nice_available" == "yes" && "$destructive_mode" != "yes" ]]; then for f in $(echo -e "$otherFiles"); do otherFile=`echo "$f"`; if [ ! -d "$dest_path" ]; then mkdir -p "$dest_path"; fi; nice -n 15 cp -f "$otherFile" "$dest_path"; done
-		elif [[ "$nice_available" != "yes" && "$destructive_mode" != "yes" ]]; then for f in $(echo -e "$otherFiles"); do otherFile=`echo "$f"`; if [ ! -d "$dest_path" ]; then mkdir -p "$dest_path"; fi; cp -f "$otherFile" "$dest_path"; done
-		elif [ "$destructive_mode" == "yes" ]; then for f in $(echo -e "$otherFiles"); do otherFile=`echo "$f"`; if [ ! -d "$dest_path" ]; then mkdir -p "$dest_path"; fi; nice -n 15 mv -f "$otherFile" "$dest_path"; done
-		fi
+		for f in $(echo -e "$otherFiles"); do
+			if [ ! -d "$dest_path" ]; then mkdir -p "$dest_path"; fi
+			otherFile=`echo "$f"`
+			count=1
+			dest_path_2=`echo "$dest_path$(basename "$otherFile")"`
+			while [ -f "$dest_path_2" ]; do
+				if [[ count -eq 1 ]]; then
+					dest_path_2=`echo "$dest_path$(echo "$(basename "$otherFile")" | sed 's/\(.*\)\..*/\1/')$(echo "$otherFile" | sed 's;.*\.;.;')"`;
+				else
+					dest_path_2=`echo "$dest_path$(echo "$(basename "$otherFile")" | sed 's/\(.*\)\..*/\1/') [$count]$(echo "$otherFile" | sed 's;.*\.;.;')"`;
+				fi
+				count=$(( count + 1 ))
+			done
+			if [[ "$nice_available" == "yes" && "$destructive_mode" != "yes" ]]; then nice -n 15 cp -f "$otherFile" "$dest_path_2";
+			elif [[ "$nice_available" != "yes" && "$destructive_mode" != "yes" ]]; then cp -f "$otherFile" "$dest_path_2";
+			elif [ "$destructive_mode" == "yes" ]; then nice -n 15 mv -f "$otherFile" "$dest_path_2";
+			fi
+		done
 	fi
 done
 
@@ -806,9 +827,10 @@ fi
 # Make sure torrentexpander did not fail
 if [[ "$destructive_mode" == "yes" ]] && [[ -d "$current_folder" || -f "$torrent" ]]; then
 	temp_size=$(du -a -c "$temp_folder" | sed -n '$p' | sed "s;\([0-9]*\)\t.*;\1;")
+	count=0 && files=$(( $count + $(find "$temp_folder_without_slash" -type f | wc -l) ))
 	if [[ "$current_folder" ]]; then torrent_size=$(du -a -c "$current_folder" | sed -n '$p' | sed "s;\([0-9]*\)\t.*;\1;"); else echo torrent_size=$(du -a -c "$torrent" | sed -n '$p' | sed "s;\([0-9]*\)\t.*;\1;"); fi
 	temp_size=$(( $temp_size + ( $temp_size / 10 ) ))
-	if [ "$temp_size" -lt "$torrent_size" ]; then destructive_mode="no"; fi
+	if [ "$temp_size" -lt "$torrent_size" ] || [[ $files -eq 0 ]]; then destructive_mode="no"; fi
 fi
 
 # If in GUI mode, we ask the user if he wants to remove this torrent from his torrent client
@@ -840,7 +862,7 @@ if [[ "$destructive_mode" == "yes" && "$torrent_name" ]] && [[ -x "$torrent_daem
 	elif [[ "$torrent_daemon_login" ]] && [[ "$torrent_daemon_password" ]]; then
 		daemon_ip="localhost:$torrent_daemon_port"
 		daemon_l_p="$torrent_daemon_login:$torrent_daemon_password"
-		torrent_id=$("$torrent_daemon_bin" "$daemon_ip" -n "$daemon_l_p" -l > /dev/null 2>&1 | grep "$torrent_name" | sed "s;^ \([0-9]*\)   .*;\1;")
+		torrent_id=$("$torrent_daemon_bin" "$daemon_ip" -n "$daemon_l_p" -l > /dev/null 2>&1 | grep "$torrent_name" | sed "s;^ *\([0-9]*\).*$;\1;")
 	fi
 	# Pausing and deleting torrent
 	if [[ "$torrent_id" ]]; then
@@ -964,15 +986,28 @@ count=0 && files=$(( $count + $(find "$temp_folder_without_slash" -type f | egre
 
 ## No supported file, disable all optional features except for permissions and timestamp
 if [[ $files -eq 0 ]]; then
-	tv_shows_fix_numbering="no" && clean_up_filenames="no" && dts_post="no" && img_post="no" && wii_post="no" && tv_shows_post="no" && music_post="no" && movies_post="no" && imdb_poster="no" && imdb_nfo="no" && imdb_fanart="no" && debug_mode="no" && subtitles_handling="no"
-	if [ ! "$folder_short" ]; then folder_short=`echo "$torrent" | sed 's/\(.*\)\..*/\1/' | sed 's;.*/;;g'`; fi
-	for item in $(find "$temp_folder" -type f); do
-		item=`echo "$item"`
-		mkdir -p "$temp_folder$folder_short/"
-		mv -f "$item" "$temp_folder$folder_short/"
-		echo "$item" >> "$log_file"
-	done
+	tv_shows_fix_numbering="no" && clean_up_filenames="no" && dts_post="no" && img_post="no" && wii_post="no" && tv_shows_post="no" && music_post="no" && movies_post="no" && imdb_poster="no" && imdb_nfo="no" && imdb_fanart="no" && debug_mode="no" && subtitles_handling="no" && repack_handling="no" && force_single_file_movies_folder="no" && disable_nmj_scan="no"
+	count=0 && files=$(( $count + $(find "$temp_folder_without_slash" -type f | wc -l) ))
+	if [[ $files -eq 0 ]]; then
+		# No file at all something is wrong so we disable all features
+		if [[ "$has_display" == "yes" ]]; then
+			step_number=$(( $step_number + 1 ));
+			echo "Step $step_number : Uh Oh, Something went wrong, I cannot continue";
+		fi
+		destructive_mode="no" && user_perm_post="no" && group_perm_post="no" && files_perm_post="no" && folder_perm_post="no" && edit_perm_as_sudo="no" && third_party_log="no" && reset_timestamp="no" && remove_torrent_from_client="no" && all_files_script_enabled="no" && processed_torrent_script_enabled="no" && post_run_script_enabled="no" && script_failed="yes"
+	else
+		# Unsupported files only so we will only do the bare minimum
+		if [ ! "$folder_short" ]; then folder_short=`echo "$torrent" | sed 's/\(.*\)\..*/\1/' | sed 's;.*/;;g'`; fi
+		for item in $(find "$temp_folder" -type f); do
+			item=`echo "$item"`
+			mkdir -p "$temp_folder$folder_short/"
+			mv -f "$item" "$temp_folder$folder_short/"
+			echo "$item" >> "$log_file"
+		done
+	fi
 fi
+
+
 
 ## If only one resulting file rename it according to the initial torrent
 if [[ $files -eq 1 ]]; then
@@ -1013,7 +1048,6 @@ for item in $(find "$temp_folder$folder_short" -type f | egrep -i "$supported_ex
 	echo "$item" >> "$log_file"
 done
 fi
-
 
 ######################### Optional functionalities ################################
 
@@ -1674,7 +1708,7 @@ fi
 
 
 ## Move content of temp folder to destination folder
-if [ "$folder_short" ]; then
+if [[ "$folder_short" && "$script_failed" != "yes" ]]; then
 	count=1
 	dest=`echo "$destination_folder$folder_short"`
 	# Adding a number into brackets if there s already a directory with the same name
@@ -1694,7 +1728,7 @@ if [ "$folder_short" ]; then
     		sed -i '' "s;^$temp_folder$folder_short;$dest;g" "$log_file";
     	fi
     folder_short=`echo "$( basename "$dest" )"`
-elif [ ! "$folder_short" ]; then
+elif [[ ! "$folder_short" && "$script_failed" != "yes" ]]; then
 	for line in $(cat "$log_file"); do
 		item=`echo "$line"`;
 		title_clean=`echo "$(basename "$item")" | sed 's/\(.*\)\..*/\1/'`
@@ -1774,6 +1808,7 @@ done
 ## Use a source / destination log shared with a third party app - Add path to enable
 count=0 && files=$(( $count + $(cat "$log_file"|wc -l) ))
 # If only one file, add its path to the third_party_log file
+if [[ $files -eq 0 ]] && [ "$third_party_log" != "no" ] && [ "$subtitles_mode" != "yes" ]; then echo "" > "$third_party_log"; fi
 if [[ $files -eq 1 ]] && [ "$third_party_log" != "no" ] && [ "$subtitles_mode" != "yes" ]; then echo "$(cat "$log_file")" > "$third_party_log"; fi
 if [[ $files -gt 1 ]] && [ "$third_party_log" != "no" ] && [ "$subtitles_mode" != "yes" ]; then folder_name=`echo "$destination_folder$folder_short"`; echo "$folder_name" > "$third_party_log"; fi
 # If we end up with a directory, add its path to the third_party_log file
