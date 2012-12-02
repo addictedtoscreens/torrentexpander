@@ -28,7 +28,7 @@ With some old versions of Transmission, you may need to use this line instead in
 Transmission is sometimes run by a custom user, leading with some issues when transmission is used to trigger torrentexpander.
 There are two ways to solve that
 
-==Quick and dirty way==
+==Solving permissions issues the quick and dirty way==
 
 By default the transmission daemon runs as debian-transmission on debian or Ubuntu
 
@@ -42,7 +42,7 @@ or sometimes
 USERNAME=your_login_here
 
 
-==Recommended way==
+==Solving permissions issues the recommended way==
 
 First, cd to the desired folder and create a folder for Transmission to use:
 cd /home/user/Downloads
