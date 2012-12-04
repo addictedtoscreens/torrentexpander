@@ -11,13 +11,13 @@ feeds:
       max: bdrip
     include: series_list.yml
     set:
-      path: /directory/where/your/series/are/stored/%(series_name)s/Season %(series_season)s/
-      filename: '%(series_name)s S%(series_season)02dE%(series_episode)02d.avi'
+      path: /'directory/where/your/series/are/stored/{{series_name}}/Season {{series_season}}/'
+      filename: '{{series_name}} S{{series_season|pad(2)}}E{{series_episode|pad(2)}}{{filename | pathext}}'
     exec:
       auto_escape: yes
       fail_entries: yes
       on_output:
-        for_accepted: mkdir -p %(path)s && echo %(location)s > /path/to/your/third_party_log_files.log && /path/to/torrentexpander.sh && mv "$(cat "/path/to/your/third_party_log_files.log")" %(path)s%(filename)s && rm /path/to/your/third_party_log_files.log
+        for_accepted: mkdir -p "{{path}}" && echo "{{location}}" > /path/to/your/third_party_log_files.log && /path/to/torrentexpander.sh && mv "$(cat "/path/to/your/third_party_log_files.log")" "{{path}}{{filename}}" && rm /path/to/your/third_party_log_files.log
 ##############################################################
 <br />
 And here are the settings that are required for my script to work with Flexget :<br /><br />
