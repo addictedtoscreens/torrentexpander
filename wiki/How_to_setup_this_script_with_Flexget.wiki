@@ -14,8 +14,8 @@ feeds:
       path: /'directory/where/your/series/are/stored/{{series_name}}/Season {{series_season}}/'<br />
       filename: '{{series_name}} S{{series_season|pad(2)}}E{{series_episode|pad(2)}}{{filename | pathext}}'
     exec:
-      auto_escape: yes
-      fail_entries: yes
+      auto_escape: yes<br />
+      fail_entries: yes<br />
       on_output:
         for_accepted: mkdir -p "{{path}}" && echo "{{location}}" > /path/to/your/third_party_log_files.log && /path/to/torrentexpander.sh && mv "$(cat "/path/to/your/third_party_log_files.log")" "{{path}}{{filename}}" && rm /path/to/your/third_party_log_files.log<br />
 ##############################################################
