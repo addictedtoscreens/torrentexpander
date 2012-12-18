@@ -1233,7 +1233,7 @@ if [ "$clean_up_filenames" == "yes" ] || [ "$imdb_funct_on" == "yes" ]; then for
 	else
 		series_title_clean_bis=`echo "$title_clean_bis" | sed 's/[()]//g' | sed 's/\[//g' | sed 's/\]//g' | sed "s/^[. _-]*//g" | sed "s/[. _-]*$//g" | sed "s/_/ /g"`;
 	fi
-	movies_title_clean_bis=`echo "$movies_title_clean_bis" | sed 's/[. _-][0-9][0-9][0-9][0-9][. _-].*//g' | sed 's/[()]//g' | sed 's/\[//g' | sed 's/\]//g' | sed "s/^[. _-]*//g" | sed "s/[. _-]*$//g" | sed "s/_/ /g"`;
+	movies_title_clean_bis=`echo "$movies_title_clean_bis" | sed 's/.[. _-][0-9][0-9][0-9][0-9][. _-].*//g' | sed 's/[()]//g' | sed 's/\[//g' | sed 's/\]//g' | sed "s/^[. _-]*//g" | sed "s/[. _-]*$//g" | sed "s/_/ /g"`;
 
 	# Remove underscores at the beginning and at the end of the filename
 	title_clean_ter=`echo "$title_clean_bis" | sed "s/^[. _-]*//g" | sed "s/[. _-]*$//g"`;
