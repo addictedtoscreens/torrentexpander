@@ -590,6 +590,7 @@ if [[ ! -w "$destination_folder" || ! -d "$destination_folder" ]]; then echo "Pe
 
 if [ ! -d "$tv_shows_post_path" ] && [ "$tv_shows_post" != "no" ]; then	echo "Your TV Shows path is incorrect - TV Shows Post will be disabled" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Your TV Shows path is incorrect - TV Shows Post will be disabled"; fi; tv_shows_post="no"; fi
 if [[ ! -w "$tv_shows_post_path" && "$tv_shows_post" != "no" ]]; then echo "Permissions on your TV Shows folder are incorrect please edit your torrentexpander_settings.ini file or your permissions for this folder - TV Shows Post will be disabled" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo -e "\nPermissions on your TV Shows folder are incorrect please edit your torrentexpander_settings.ini file or your permissions for this folder - TV Shows Post will be disabled\n"; fi; tv_shows_post="no"; fi
+if [[ "$tv_shows_post_path_mode" != "s" && "$tv_shows_post_path_mode" != "ss" && "$tv_shows_post_path_mode" != "sss" && "$tv_shows_post_path_mode" != "no" ]]; then echo "Your TV Shows path mode is incorrect - TV Shows Post will be disabled" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Your TV Shows path mode is incorrect - TV Shows Post will be disabled"; fi; tv_shows_post="no"; fi
 
 if [ ! -d "$music_post_path" ] && [ "$music_post" != "no" ]; then echo "Your music path is incorrect - Music Post will be disabled" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo "Your music path is incorrect - Music Post will be disabled"; fi; music_post="no"; fi
 if [[ ! -w "$music_post_path" && "$music_post" != "no" ]]; then echo "Permissions on your Music folder are incorrect please edit your torrentexpander_settings.ini file or your permissions for this folder - Music Post will be disabled" >> "$errors_file"; if [ "$has_display" == "yes" ]; then echo -e "\nPermissions on your Music folder are incorrect please edit your torrentexpander_settings.ini file or your permissions for this folder - Music Post will be disabled\n"; fi; music_post="no"; fi
@@ -1058,24 +1059,24 @@ if [[ "$imdb_poster" == "yes" || "$imdb_nfo" == "yes" || "$imdb_fanart" == "yes"
 if [[ "$folder_short" && "$tv_shows_fix_numbering" == "yes" ]] || [[ "$folder_short" && "$clean_up_filenames" == "yes" ]] || [[ "$folder_short" && "$imdb_funct_on" == "yes" ]]; then echo "$temp_folder$folder_short" >> "$log_file"; fi
 
 ## Try to solve TV Shown Numbering issues
-if [[ "$has_display" == "yes" && "$tv_shows_fix_numbering" == "yes" && "$(cat "$log_file" | egrep -i "([123456789])([xX])([0-9])([0-9])")" ]] || [[ "$has_display" == "yes" && "$tv_shows_fix_numbering" == "yes" && "$(cat "$log_file" | egrep -i "([. _-])([01])([0-9])([0-3])([0-9])([^pPiI])")" ]] || [[ "$has_display" == "yes" && "$tv_shows_fix_numbering" == "yes" && "$(cat "$log_file" | egrep -i "([^eE])([12345689])([0123])([0-9])([^0123456789pPiI])")" ]]; then step_number=$(( $step_number + 1 )) && echo "Step $step_number : Trying to solve TV Shows numbering issues";  fi
+if [[ "$has_display" == "yes" && "$tv_shows_fix_numbering" == "yes" && "$(cat "$log_file" | egrep -i "([. _-])([123456789])([xX])([0-9])([0-9])")" ]] || [[ "$has_display" == "yes" && "$tv_shows_fix_numbering" == "yes" && "$(cat "$log_file" | egrep -i "([. _-])([01])([0-9])([0-3])([0-9])([^pPiI])")" ]] || [[ "$has_display" == "yes" && "$tv_shows_fix_numbering" == "yes" && "$(cat "$log_file" | egrep -i ".([^eE])([12345689])([0123])([0-9])([^0123456789pPiI])")" ]]; then step_number=$(( $step_number + 1 )) && echo "Step $step_number : Trying to solve TV Shows numbering issues";  fi
 # Looking for files that look like TV shows because they contain SxEE, SSEE, SEE 
-if [[ "$tv_shows_fix_numbering" == "yes" && "$(cat "$log_file" | egrep -i "([123456789])([xX])([0-9])([0-9])")" ]] || [[ "$tv_shows_fix_numbering" == "yes" && "$(cat "$log_file" | egrep -i "([. _-])([01])([0-9])([0-3])([0-9])([^pPiI])")" ]] || [[ "$tv_shows_fix_numbering" == "yes" && "$(cat "$log_file" | egrep -i "([^eE])([12345689])([0123])([0-9])([^0123456789pPiI])")" ]]; then for line in $(cat "$log_file"); do
+if [[ "$tv_shows_fix_numbering" == "yes" && "$(cat "$log_file" | egrep -i "([. _-])([123456789])([xX])([0-9])([0-9])")" ]] || [[ "$tv_shows_fix_numbering" == "yes" && "$(cat "$log_file" | egrep -i "([. _-])([01])([0-9])([0-3])([0-9])([^pPiI])")" ]] || [[ "$tv_shows_fix_numbering" == "yes" && "$(cat "$log_file" | egrep -i ".([^eE])([12345689])([0123])([0-9])([^0123456789pPiI])")" ]]; then for line in $(cat "$log_file"); do
 	item=`echo "$(basename "$line")"`;
 	ren_file=`echo "$item"`;
 	source=`echo "$line"`;
 	# Looking for SSxEE pattern
-	if [[ "$tv_shows_fix_numbering" == "yes" && "$(echo "$line" | egrep -i "([0-9])([0-9])([xX])([0-9])([0-9])")" ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] && [[ -d "$line" || "$(echo "$line" | egrep -i "$tv_show_extensions_rev")" ]]; then
-		ren_file=`echo "$item" | sed 's;\([0-9]\)\([0-9]\)\([xX]\)\([0-9]\)\([0-9]\);\S\1\2E\4\5;g'`;
+	if [[ "$tv_shows_fix_numbering" == "yes" && "$(echo "$line" | egrep -i "([. _-])([0-9])([0-9])([xX])([0-9])([0-9])([. _-])")" ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] && [[ -d "$line" || "$(echo "$line" | egrep -i "$tv_show_extensions_rev")" ]]; then
+		ren_file=`echo "$item" | sed 's;[. _-]\([0-9]\)\([0-9]\)\([xX]\)\([0-9]\)\([0-9]\)[. _-]; S\1\2E\4\5;g'`;
 	# Looking for SxEE pattern
-	elif [[ "$tv_shows_fix_numbering" == "yes" && "$(echo "$line" | egrep -i "([123456789])([xX])([0-9])([0-9])")" ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] && [[ -d "$line" || "$(echo "$line" | egrep -i "$tv_show_extensions_rev")" ]]; then
-		ren_file=`echo "$item" | sed 's;\([123456789]\)\([xX]\)\([0-9]\)\([0-9]\);S0\1E\3\4;g'`;
+	elif [[ "$tv_shows_fix_numbering" == "yes" && "$(echo "$line" | egrep -i "([. _-])([123456789])([xX])([0-9])([0-9])([. _-])")" ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] && [[ -d "$line" || "$(echo "$line" | egrep -i "$tv_show_extensions_rev")" ]]; then
+		ren_file=`echo "$item" | sed 's;[. _-]\([123456789]\)\([xX]\)\([0-9]\)\([0-9]\)[. _-]; S0\1E\3\4;g'`;
 	# Looking for SSEE pattern
 	elif [[ "$tv_shows_fix_numbering" == "yes" && "$(echo "$line" | egrep -i "([. _-])([01])([0-9])([0-3])([0-9])([^pPiI])")" ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] && [[ -d "$line" || "$(echo "$line" | egrep -i "$tv_show_extensions_rev")" ]]; then
-		ren_file=`echo "$item" | sed 's;\([. _-]\)\([01]\)\([0-9]\)\([0-3]\)\([0-9]\)\([^pPiI]\);\1S\2\3E\4\5\6;g'`;
+		ren_file=`echo "$item" | sed 's;[. _-]\([01]\)\([0-9]\)\([0-3]\)\([0-9]\)\([^pPiI]\); S\1\2E\3\4\5;g'`;
 	# Looking for SEE pattern
-	elif [[ "$tv_shows_fix_numbering" == "yes" && "$(echo "$line" | egrep -i "([^eE])([12345689])([0123])([0-9])([^0123456789pPiI])")" ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] && [[ -d "$line" || "$(echo "$line" | egrep -i "$tv_show_extensions_rev")" ]]; then
-		ren_file=`echo "$item" | sed 's;\([^eE]\)\([12345689]\)\([0123]\)\([0-9]\)\([^0123456789pPiI]\);\1S0\2E\3\4\5;g'`;
+	elif [[ "$tv_shows_fix_numbering" == "yes" && "$(echo "$line" | egrep -i ".([^eE])([12345689])([0123])([0-9])([^0123456789pPiI])")" ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] && [[ -d "$line" || "$(echo "$line" | egrep -i "$tv_show_extensions_rev")" ]]; then
+		ren_file=`echo "$item" | sed 's;\(.\)\([^eE]\)\([12345689]\)\([0123]\)\([0-9]\)\([^0123456789pPiI]\);\1\2S0\3E\4\5\6;g'`;
 	fi
 	bis="_bis"
 	ren_location=`echo "$(dirname "$source")/$ren_file"`;
@@ -1137,7 +1138,7 @@ if [ "$clean_up_filenames" == "yes" ] || [ "$imdb_funct_on" == "yes" ]; then for
 	if [[ "$(cat "$log_file" | egrep -i "$movies_extensions_rev")" && -d "$source" && "$(echo "$title_clean_bis" | grep "[. _-]\([0-9][0-9][0-9][0-9]\)[. _-]*.*$")" == "" ]]; then
 		echo > /dev/null 2>&1;
 	else
-		movie_year=`echo "$title_clean_bis" | grep "[. _-]\([0-9][0-9][0-9][0-9]\)[. _-]*.*$" | sed 's/[()]//g' | sed 's/\[//g' | sed 's/\]//g' | sed "s;\([^_]\)$;\1_;g" | sed "s/1080/_/g" | sed "s/.*[. _-]\([0-9][0-9][0-9][0-9]\)[. _-]*.*$/\1/g"`
+		movie_year=`echo "$title_clean_bis" | grep ".[. _-]\([0-9][0-9][0-9][0-9]\)[. _-]*.*$" | sed 's/[()]//g' | sed 's/\[//g' | sed 's/\]//g' | sed "s;\([^_]\)$;\1_;g" | sed "s/1080/_/g" | sed "s/..*[. _-]\([0-9][0-9][0-9][0-9]\)[. _-]*.*$/\1/g"`
 	fi
 	if [ "$movie_year" ]; then movie_year_bis=" ($movie_year)"; fi
 	if [ "$movie_year" ]; then movie_year_ter=" %28$movie_year%29"; fi
