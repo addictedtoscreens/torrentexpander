@@ -38,12 +38,18 @@ Now you are ready to configure:
 ----
 
 Ho to configure rtorrent?
+
 {{{
-system.method.set_key = event.download.closed,torrentexpander,"execute=~/torrentexpander.sh,$d.get_base_path=,$d.get_base_filename=,$d.get_custom1="
+system.method.set_key = event.download.closed,torrentexpander,"execute=~/run.sh,$d.get_custom1=,$d.get_base_path=,$d.get_base_filename="
 }}}
 
 How to add?
+
+Put this script in your home directory and call it 'run.sh'.
+If you want to use torrentexpander with a torrent, add a label called 'torrentexpander'. That's all.
+
 {{{
-  if [ "$use_rtorrent_label" == "yes" && "$3" == "rtorrent_label"]; then USE TORRENTEXPANDER FOR THIS TORRENT
-  fi
+if [ "$1" = "torrentexpander" ]; then
+	~/torrentexpander.sh $2 $3
+fi
 }}}
