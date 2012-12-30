@@ -97,7 +97,7 @@ music_extensions="mp3,m4a,wav"
 movies_detect_patterns="HDTV,DVDRip,BDRip,BRRip,DVDR,576p,3D HSBS 720p,720p,3D HSBS 1080p,1080p,HD1080p"
 movies_detect_patterns_pt_2="TS,PPVrip,TVRip,DVDSCR,R5,Workprint,SCR,Screener,HDRip,DVDScreener"
 other_movies_patterns="pdtv,hdtv,xvid,webrip,web-dl,readnfo,ntsc,pal,ws,uncut,unrated,internal,480p,festival,bluray,extended,italian,dubbed,collection,season,nlsubs,spanish,divx,x264,hdtvrip,xxx,custom[. _-].*[. _-]subs,[^ ].*[. _-]subs,plsub,subtit,tsxvid,plsubbed,subbed,multisubs,multi-subs,fansub,retail,telesync,telecine,dvb,swesub,vostfr,3d,sbs,dvd,eng,dvd5,dvd9,torrent,torrents,www,x264,dvdripspanish,half-sbs,full-sbs"
-scene_patterns="\[[. _-]*www[. _-].*[. _-].*[. _-]*\],aaf,dvdriptorrents,skidrow,klaxxon,axxo,vomit,dita,omifast,extratorrent,2lions,fxm,duqa,newartriot,nhanc3,ddc,keltz,\[fileking[. _-]pl\],fqm,eztv,limited,real[. _-]proper,proper,repack,resync,syncfix,rerip,theatrical.cut,remastered,convert"
+scene_patterns="\[[. _-]*www[. _-].*[. _-].*[. _-]*\],aaf,dvdriptorrents,skidrow,klaxxon,axxo,vomit,dita,omifast,extratorrent,2lions,fxm,duqa,newartriot,nhanc3,ddc,keltz,\[fileking[. _-]pl\],fqm,eztv,limited,real[. _-]proper,proper,repack,resync,syncfix,rerip,theatrical.cut,remastered,convert,republic"
 audio_quality_patterns="AC3,DTS,LiNE,CAM AUDIO,LD,Studio Audio"
 ####################### Optional functionalities variables #######################
 #################### Set these variables to "no" to disable ######################
@@ -885,19 +885,19 @@ elif [[ "$destructive_mode" == "yes" && "$torrent_name" ]] && [[ -x "$torrent_da
 	# Getting torrent IDs
 	if [[ ! "$torrent_daemon_login" ]] || [[ ! "$torrent_daemon_password" ]]; then
 		daemon_ip="localhost"
-		torrent_ids=$("$torrent_daemon_bin" "$daemon_ip" download_list main > /dev/null 2>&1 | grep "Index" | sed "s;\>   Index .* String: \'\(.*\)\';\1;g")
+		torrent_ids=$("$torrent_daemon_bin" "$daemon_ip" download_list | grep "Index" | sed "s;.*Index.*String.*'\(.*\)'.*;\1;g")
 	elif [[ "$torrent_daemon_login" ]] && [[ "$torrent_daemon_password" ]]; then
 		daemon_ip="localhost"
-		torrent_ids=$("$torrent_daemon_bin" -u "$torrent_daemon_login" -p "$torrent_daemon_password" "$daemon_ip" download_list main > /dev/null 2>&1 | grep "Index" | sed "s;\>   Index .* String: \'\(.*\)\';\1;g")
+		torrent_ids=$("$torrent_daemon_bin" -u "$torrent_daemon_login" -p "$torrent_daemon_password" "$daemon_ip" download_list | grep "Index" | sed "s;.*Index.*String.*'\(.*\)'.*;\1;g")
 	fi
 	# Getting torrent ID
 	for id in $(echo -e "$torrent_ids"); do
 		if [[ ! "$torrent_daemon_login" ]] || [[ ! "$torrent_daemon_password" ]]; then
 			daemon_ip="localhost"
-			torrent_id=$("$torrent_daemon_bin" "$daemon_ip" d.get_name "$id" > /dev/null 2>&1 | grep "String" | sed "s;\> String\: \'\(.*\)\';\1;g")
+			torrent_id=$("$torrent_daemon_bin" "$daemon_ip" d.get_name "$id" | grep "String" | sed "s;.*String.*'\(.*\)';\1;g")
 		elif [[ "$torrent_daemon_login" ]] && [[ "$torrent_daemon_password" ]]; then
 			daemon_ip="localhost"
-			torrent_id=$("$torrent_daemon_bin" -u "$torrent_daemon_login" -p "$torrent_daemon_password" "$daemon_ip" d.get_name "$id" > /dev/null 2>&1 | grep "String" | sed "s;\> String\: \'\(.*\)\';\1;g")
+			torrent_id=$("$torrent_daemon_bin" -u "$torrent_daemon_login" -p "$torrent_daemon_password" "$daemon_ip" d.get_name "$id" | grep "String" | sed "s;.*String.*'\(.*\)';\1;g")
 		fi
 		# Pausing and deleting torrent
 		if [[ "$id" ]] && [ "$torrent_id" == "$torrent_name" ]; then
