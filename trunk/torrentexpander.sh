@@ -409,7 +409,7 @@ elif [[ "$check_settings" != *hird_party_log=* ]]; then echo "third_party_log=no
 fi
 
 # Adding other values in settings file
-for c in $(echo -e "destructive_mode\nuser_defined_other_movies_patterns\nuser_defined_scene_patterns\ntv_shows_fix_numbering\nclean_up_filenames\nmovies_rename_schema\nsubtitles_handling\nrepack_handling\nwii_post\nimg_post\ntv_shows_post\ntv_shows_post_path_mode\nmovies_post\nforce_single_file_movies_folder\nmusic_post\nimdb_poster\nimdb_poster_format\nimdb_nfo\nimdb_fanart\nimdb_fanart_format\ndisable_nmj_scan\ndts_post\nuser_perm_post\ngroup_perm_post\nfiles_perm_post\nfolder_perm_post\nedit_perm_as_sudo\nreset_timestamp\nsupported_extensions\ntv_show_extensions\nmovies_extensions\nmusic_extensions\ndebug_mode\nauto_update_script\nremove_torrent_from_client\ntorrent_daemon_login\ntorrent_daemon_password\ntorrent_daemon_port\nall_files_script_enabled\nall_files_script_variable_1\nall_files_script_variable_2\nall_files_script_variable_3\nall_files_script_variable_4\nall_files_script_variable_5\nprocessed_torrent_script_enabled\nprocessed_torrent_script_variable_1\nprocessed_torrent_script_variable_2\nprocessed_torrent_script_variable_3\nprocessed_torrent_script_variable_4\nprocessed_torrent_script_variable_5\npost_run_script_enabled"); do
+for c in $(echo -e "destructive_mode\nuser_defined_other_movies_patterns\nuser_defined_scene_patterns\nuser_defined_scene_patterns_hothead_edition\ntv_shows_fix_numbering\nclean_up_filenames\nmovies_rename_schema\nsubtitles_handling\nrepack_handling\nwii_post\nimg_post\ntv_shows_post\ntv_shows_post_path_mode\nmovies_post\nforce_single_file_movies_folder\nmusic_post\nimdb_poster\nimdb_poster_format\nimdb_nfo\nimdb_fanart\nimdb_fanart_format\ndisable_nmj_scan\ndts_post\nuser_perm_post\ngroup_perm_post\nfiles_perm_post\nfolder_perm_post\nedit_perm_as_sudo\nreset_timestamp\nsupported_extensions\ntv_show_extensions\nmovies_extensions\nmusic_extensions\ndebug_mode\nauto_update_script\nremove_torrent_from_client\ntorrent_daemon_login\ntorrent_daemon_password\ntorrent_daemon_port\nall_files_script_enabled\nall_files_script_variable_1\nall_files_script_variable_2\nall_files_script_variable_3\nall_files_script_variable_4\nall_files_script_variable_5\nprocessed_torrent_script_enabled\nprocessed_torrent_script_variable_1\nprocessed_torrent_script_variable_2\nprocessed_torrent_script_variable_3\nprocessed_torrent_script_variable_4\nprocessed_torrent_script_variable_5\npost_run_script_enabled"); do
 	pat="$(echo "$c" | sed "s;^.\(.*\)$;\*\1=\*;")"
 	if [[ "$check_settings" != $pat ]]; then echo "$c=${!c}" >> "$settings_file"; fi
 done
@@ -442,9 +442,8 @@ movies_extensions_rev="\.$(echo $movies_extensions | sed 's;,;\$\|\\\.;g')$"
 music_extensions_rev="\.$(echo $music_extensions | sed 's;,;\$\|\\\.;g')$"
 movies_detect_patterns_rev="[^[:alnum:]]$(echo $movies_detect_patterns | sed 's;,;[^[:alnum:]]|[^[:alnum:]];g')[^[:alnum:]]"
 movies_detect_patterns_pt_2_rev="[^[:alnum:]]$(echo $movies_detect_patterns_pt_2 | sed 's;,;[^[:alnum:]]|[^[:alnum:]];g')[^[:alnum:]]"
-other_movies_patterns="$other_movies_patterns,$user_defined_other_movies_patterns"
+other_movies_patterns="$other_movies_patterns,$audio_quality_patterns,$user_defined_other_movies_patterns"
 scene_patterns="$scene_patterns,$user_defined_scene_patterns"
-other_movies_patterns="$other_movies_patterns,$audio_quality_patterns"
 
 ##################################################################################
 ############################### Setup Assistant ##################################
@@ -1219,11 +1218,23 @@ if [ "$clean_up_filenames" == "yes" ] || [ "$imdb_funct_on" == "yes" ]; then for
 				movies_title_clean_bis="$(echo "$movies_title_clean_bis" | sed "s;[. _-]$regexp_pat[. _-];_;")"
 			fi
 		done
+		for i in $(echo -e "$(echo "$user_defined_scene_patterns_hothead_edition" | sed "s;,;\\\n;g")"); do
+			echo "toto"
+			if [ "$(echo "$title_clean_bis" | egrep -i "$i")" ]; then
+				regexp_pat="$(echo "$i" | sed "s/[aA]/[aA]/g" | sed "s/[bB]/[bB]/g" | sed "s/[cC]/[cC]/g" | sed "s/[dD]/[dD]/g" | sed "s/[eE]/[eE]/g" | sed "s/[fF]/[fF]/g" | sed "s/[gG]/[gG]/g" | sed "s/[hH]/[hH]/g" | sed "s/[iI]/[iI]/g" | sed "s/[jJ]/[jJ]/g" | sed "s/[kK]/[kK]/g" | sed "s/[lL]/[lL]/g" | sed "s/[mM]/[mM]/g" | sed "s/[nN]/[nN]/g" | sed "s/[oO]/[oO]/g" | sed "s/[pP]/[pP]/g" | sed "s/[qQ]/[qQ]/g" | sed "s/[rR]/[rR]/g" | sed "s/[sS]/[sS]/g" | sed "s/[tT]/[tT]/g" | sed "s/[uU]/[uU]/g" | sed "s/[vV]/[vV]/g" | sed "s/[wW]/[wW]/g" | sed "s/[xX]/[xX]/g" | sed "s/[yY]/[yY]/g" | sed "s/[zZ]/[zZ]/g")"; title_clean_bis="$(echo "$title_clean_bis" | sed "s;$regexp_pat.*;_;")";
+				movies_title_clean_bis="$(echo "$movies_title_clean_bis" | sed "s;$regexp_pat.*;_;")"
+			fi
+		done
 	else
 		for i in $(echo -e "$(echo "$scene_patterns" | sed "s;,;\\\n;g")"); do
 			if [ "$(echo "$title_clean_bis" | egrep -i "[. _-]$i[. _-]")" ]; then
 				regexp_pat="$(echo "$i" | sed "s/[aA]/[aA]/g" | sed "s/[bB]/[bB]/g" | sed "s/[cC]/[cC]/g" | sed "s/[dD]/[dD]/g" | sed "s/[eE]/[eE]/g" | sed "s/[fF]/[fF]/g" | sed "s/[gG]/[gG]/g" | sed "s/[hH]/[hH]/g" | sed "s/[iI]/[iI]/g" | sed "s/[jJ]/[jJ]/g" | sed "s/[kK]/[kK]/g" | sed "s/[lL]/[lL]/g" | sed "s/[mM]/[mM]/g" | sed "s/[nN]/[nN]/g" | sed "s/[oO]/[oO]/g" | sed "s/[pP]/[pP]/g" | sed "s/[qQ]/[qQ]/g" | sed "s/[rR]/[rR]/g" | sed "s/[sS]/[sS]/g" | sed "s/[tT]/[tT]/g" | sed "s/[uU]/[uU]/g" | sed "s/[vV]/[vV]/g" | sed "s/[wW]/[wW]/g" | sed "s/[xX]/[xX]/g" | sed "s/[yY]/[yY]/g" | sed "s/[zZ]/[zZ]/g")"; title_clean_bis="$(echo "$title_clean_bis" | sed "s;[. _-]$regexp_pat[. _-];_;")";
-				title_clean_bis="$(echo "$title_clean_bis" | sed "s;[. _-]$regexp_pat[. _-];_;")"
+			fi
+		done
+		for i in $(echo -e "$(echo "$user_defined_scene_patterns_hothead_edition" | sed "s;,;\\\n;g")"); do
+			echo "toto"
+			if [ "$(echo "$title_clean_bis" | egrep -i "$i")" ]; then
+				regexp_pat="$(echo "$i" | sed "s/[aA]/[aA]/g" | sed "s/[bB]/[bB]/g" | sed "s/[cC]/[cC]/g" | sed "s/[dD]/[dD]/g" | sed "s/[eE]/[eE]/g" | sed "s/[fF]/[fF]/g" | sed "s/[gG]/[gG]/g" | sed "s/[hH]/[hH]/g" | sed "s/[iI]/[iI]/g" | sed "s/[jJ]/[jJ]/g" | sed "s/[kK]/[kK]/g" | sed "s/[lL]/[lL]/g" | sed "s/[mM]/[mM]/g" | sed "s/[nN]/[nN]/g" | sed "s/[oO]/[oO]/g" | sed "s/[pP]/[pP]/g" | sed "s/[qQ]/[qQ]/g" | sed "s/[rR]/[rR]/g" | sed "s/[sS]/[sS]/g" | sed "s/[tT]/[tT]/g" | sed "s/[uU]/[uU]/g" | sed "s/[vV]/[vV]/g" | sed "s/[wW]/[wW]/g" | sed "s/[xX]/[xX]/g" | sed "s/[yY]/[yY]/g" | sed "s/[zZ]/[zZ]/g")"; title_clean_bis="$(echo "$title_clean_bis" | sed "s;$regexp_pat.*;_;")";
 			fi
 		done
 	fi
