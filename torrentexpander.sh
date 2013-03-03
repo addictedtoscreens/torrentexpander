@@ -1017,6 +1017,8 @@ if [[ $files -eq 1 ]]; then
 	extension=`echo "$item" | sed 's;.*\.;.;'`;
 	if [[ "$item" != "$temp_folder$folder_short$extension" ]]; then mv "$item" "$temp_folder$folder_short$extension"; fi && echo "$temp_folder$folder_short$extension" >> "$log_file"
 	subtitles_dest=`echo "$subtitles_directory/$(basename "$item")"`
+	already_subtitles=`echo "$(echo "$item" | sed 's/\(.*\)\..*/\1\.srt/')"`
+	if [[ "$subtitles_mode" != "yes" && "$subtitles_handling" == "yes" && ! -f "$already_subtitles" && "$(echo "$item" | egrep -i "\.avi$|\.mkv$|\.divx$|\.mp4$|\.ts$")" ]]; then if [ ! -d "$subtitles_directory" ]; then mkdir -p "$subtitles_directory"; fi ; echo "$(basename "$item")" > "$subtitles_dest"; fi
 	# Reset folder_short variable because no folder will be generated
 	folder_short=""
 fi
