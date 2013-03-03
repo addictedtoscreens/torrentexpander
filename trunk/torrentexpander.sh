@@ -273,10 +273,10 @@ while [ -h "$PRG" ] ; do
 	if expr "$link" : '/.*' > /dev/null; then
 		PRG="$link"
 	else
-		PRG="`dirname "$PRG"`/$link"
+		PRG="`dirname -- "$PRG"`/$link"
 	fi
 done
-script_path=`dirname "$PRG"`
+script_path=`dirname -- "$PRG"`
 
 # settings_file and debug_log will be stored in the same directory as the script
 settings_file="$script_path/torrentexpander_settings.ini"
