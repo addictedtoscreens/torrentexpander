@@ -1069,16 +1069,16 @@ if [[ "$tv_shows_fix_numbering" == "yes" && "$(cat "$log_file" | egrep -i "([. _
 	source=`echo "$line"`;
 	# Looking for SSxEE pattern
 	if [[ "$tv_shows_fix_numbering" == "yes" && "$(echo "$line" | egrep -i "([. _-])([0-9])([0-9])([xX])([0-9])([0-9])([. _-])")" ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] && [[ -d "$line" || "$(echo "$line" | egrep -i "$tv_show_extensions_rev")" ]]; then
-		ren_file=`echo "$item" | sed 's;[. _-]\([0-9]\)\([0-9]\)\([xX]\)\([0-9]\)\([0-9]\)[. _-]; S\1\2E\4\5;g'`;
+		ren_file=`echo "$item" | sed 's;\(*\)[. _-]\([0-9]\)\([0-9]\)\([xX]\)\([0-9]\)\([0-9]\)[. _-];\1 S\2\2E\5\6;g'`;
 	# Looking for SxEE pattern
 	elif [[ "$tv_shows_fix_numbering" == "yes" && "$(echo "$line" | egrep -i "([. _-])([123456789])([xX])([0-9])([0-9])([. _-])")" ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] && [[ -d "$line" || "$(echo "$line" | egrep -i "$tv_show_extensions_rev")" ]]; then
-		ren_file=`echo "$item" | sed 's;[. _-]\([123456789]\)\([xX]\)\([0-9]\)\([0-9]\)[. _-]; S0\1E\3\4;g'`;
+		ren_file=`echo "$item" | sed 's;\(*\)[. _-]\([123456789]\)\([xX]\)\([0-9]\)\([0-9]\)[. _-];\1 S0\2E\4\5;g'`;
 	# Looking for SSEE pattern
 	elif [[ "$tv_shows_fix_numbering" == "yes" && "$(echo "$line" | egrep -i "([. _-])([01])([0-9])([0-3])([0-9])([^pPiI])")" ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] && [[ -d "$line" || "$(echo "$line" | egrep -i "$tv_show_extensions_rev")" ]]; then
-		ren_file=`echo "$item" | sed 's;[. _-]\([01]\)\([0-9]\)\([0-3]\)\([0-9]\)\([^pPiI]\); S\1\2E\3\4\5;g'`;
+		ren_file=`echo "$item" | sed 's;\(*\)[. _-]\([01]\)\([0-9]\)\([0-3]\)\([0-9]\)\([^pPiI]\);\1 S\2\3E\4\5\6;g'`;
 	# Looking for SEE pattern
 	elif [[ "$tv_shows_fix_numbering" == "yes" && "$(echo "$line" | egrep -i ".([^eE])([12345689])([0123])([0-9])([^0123456789pPiI])")" ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] && [[ -d "$line" || "$(echo "$line" | egrep -i "$tv_show_extensions_rev")" ]]; then
-		ren_file=`echo "$item" | sed 's;\(.\)\([^eE]\)\([12345689]\)\([0123]\)\([0-9]\)\([^0123456789pPiI]\);\1\2S0\3E\4\5\6;g'`;
+		ren_file=`echo "$item" | sed 's;\(*\)\(.\)\([^eE]\)\([12345689]\)\([0123]\)\([0-9]\)\([^0123456789pPiI]\);\1\2\3S0\4E\5\6\7;g'`;
 	fi
 	bis="_bis"
 	ren_location=`echo "$(dirname "$source")/$ren_file"`;
