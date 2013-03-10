@@ -816,6 +816,7 @@ for item in $(if [[ "$current_folder" ]]; then find "$current_folder" -type d -f
 	fi
 done
 
+
 ## If destructive_mode is enabled, remove original torrent
 cd "$destination_folder"
 if [[ "$has_display" == "yes" && "$destructive_mode" == "yes" ]]; then
@@ -983,6 +984,7 @@ done
 ## Count number of resulting files and disable optional functionalities if no supported file
 count=0 && files=$(( $count + $(find "$temp_folder_without_slash" -type f | egrep -i "$supported_extensions_rev" | wc -l) ))
 
+
 ## No supported file, disable all optional features except for permissions and timestamp
 if [[ $files -eq 0 ]]; then
 	tv_shows_fix_numbering="no" && clean_up_filenames="no" && dts_post="no" && img_post="no" && wii_post="no" && tv_shows_post="no" && music_post="no" && movies_post="no" && imdb_poster="no" && imdb_nfo="no" && imdb_fanart="no" && debug_mode="no" && subtitles_handling="no" && repack_handling="no" && force_single_file_movies_folder="no" && disable_nmj_scan="no"
@@ -1000,7 +1002,9 @@ if [[ $files -eq 0 ]]; then
 		for item in $(find "$temp_folder" -type f); do
 			item=`echo "$item"`
 			mkdir -p "$temp_folder$folder_short/"
-			mv -f "$item" "$temp_folder$folder_short/"
+			if [ ! -f "$temp_folder$folder_short/$(basename "$item")" ]; then
+				mv -f "$item" "$temp_folder$folder_short/"
+			fi
 			echo "$item" >> "$log_file"
 		done
 	fi
