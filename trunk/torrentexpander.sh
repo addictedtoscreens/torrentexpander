@@ -791,7 +791,7 @@ for item in $(if [[ "$current_folder" ]]; then find "$current_folder" -type d -f
 	elif [[ "$(ls $item | egrep -i -v "\.[0-9][0-9][0-9]$|\.r[0-9][0-9]$|\.rar$|\.001$|\.zip$")" ]]; then
 		# 
 		if [[ -d "$item" && "$(ls "$item" | egrep -i -v "\.[0-9][0-9][0-9]$|\.r[0-9][0-9]$|\.rar$|\.001$|\.zip$")" ]]; then otherFiles=`find "$item" -maxdepth 1 ! -name "._*" -type f -follow | egrep -i -v "\.[0-9][0-9][0-9]$|\.r[0-9][0-9]$|\.rar$|\.001$|\.zip$"`
-		dest_path=`echo "$temp_folder$(dirname "item")/"`
+		dest_path=`echo "$temp_folder$(echo "$item" | sed "s;.*/;;g")/"`
 		elif [[ "$(echo "$item" | egrep -i -v "\.[0-9][0-9][0-9]$|\.r[0-9][0-9]$|\.rar$|\.001$|\.zip$")" ]]; then otherFiles=`echo "$item" | egrep -i -v "\.[0-9][0-9][0-9]$|\.r[0-9][0-9]$|\.rar$|\.001$|\.zip$"`
 		dest_path=`echo "$temp_folder"`
 		fi
@@ -802,7 +802,7 @@ for item in $(if [[ "$current_folder" ]]; then find "$current_folder" -type d -f
 			dest_path_2=`echo "$dest_path$(basename "$otherFile")"`
 			while [ -f "$dest_path_2" ]; do
 				if [[ count -eq 1 ]]; then
-					dest_path_2=`echo "$dest_path$(echo "$(basename "$otherFile")" | sed 's/\(.*\)\..*/\1/')$(echo "$otherFile" | sed 's;.*\.;.;')"`;
+					dest_path_2=`echo "$dest_path$(echo "$(basename "$otherFile")")"`;
 				else
 					dest_path_2=`echo "$dest_path$(echo "$(basename "$otherFile")" | sed 's/\(.*\)\..*/\1/') [$count]$(echo "$otherFile" | sed 's;.*\.;.;')"`;
 				fi
@@ -815,7 +815,6 @@ for item in $(if [[ "$current_folder" ]]; then find "$current_folder" -type d -f
 		done
 	fi
 done
-
 
 ## If destructive_mode is enabled, remove original torrent
 cd "$destination_folder"
@@ -1008,7 +1007,6 @@ if [[ $files -eq 0 ]]; then
 fi
 
 
-
 ## If only one resulting file rename it according to the initial torrent
 if [[ $files -eq 1 ]]; then
 	if [ ! "$folder_short" ]; then folder_short=`echo "$torrent" | sed 's/\(.*\)\..*/\1/' | sed 's;.*/;;g'`; fi
@@ -1038,7 +1036,9 @@ if [[ $files -gt 1 ]]; then for directory in $(find "$temp_folder_without_slash"
 	# We ll move all the other files to a directory named after the torrent
 	elif [ "$(ls $directory | egrep -i "$supported_extensions_rev" )" ]; then
 		otherFiles=`ls $directory | egrep -i "$supported_extensions_rev"`;
-		for f in $(echo -e "$otherFiles"); do item=`echo "$directory/$f"`; mkdir -p "$temp_folder$folder_short/" && mv -f "$item" "$temp_folder$folder_short/"; done
+		if [ ! -f "$temp_folder$folder_short/$(basename $item)" ]; then
+			for f in $(echo -e "$otherFiles"); do item=`echo "$directory/$f"`; mkdir -p "$temp_folder$folder_short/" && mv -f "$item" "$temp_folder$folder_short/"; done
+		fi
 	fi
 done
 
@@ -1050,6 +1050,7 @@ for item in $(find "$temp_folder$folder_short" -type f | egrep -i "$supported_ex
 	echo "$item" >> "$log_file"
 done
 fi
+
 
 ######################### Optional functionalities ################################
 
@@ -1527,7 +1528,6 @@ for line in $(cat "$log_file"); do
 		echo "$dvd_file" >> "$log_file"
 	fi
 done
-
 
 
 ## Copy or move TV Shows, movies and music to a specific folder
