@@ -1065,24 +1065,24 @@ if [[ "$imdb_poster" == "yes" || "$imdb_nfo" == "yes" || "$imdb_fanart" == "yes"
 if [[ "$folder_short" && "$tv_shows_fix_numbering" == "yes" ]] || [[ "$folder_short" && "$clean_up_filenames" == "yes" ]] || [[ "$folder_short" && "$imdb_funct_on" == "yes" ]]; then echo "$temp_folder$folder_short" >> "$log_file"; fi
 
 ## Try to solve TV Shown Numbering issues
-if [[ "$has_display" == "yes" && "$tv_shows_fix_numbering" == "yes" && "$(cat "$log_file" | egrep -i "([. _-])([123456789])([xX])([0-9])([0-9])")" ]] || [[ "$has_display" == "yes" && "$tv_shows_fix_numbering" == "yes" && "$(cat "$log_file" | egrep -i "([. _-])([01])([0-9])([0-3])([0-9])([^pPiI])")" ]] || [[ "$has_display" == "yes" && "$tv_shows_fix_numbering" == "yes" && "$(cat "$log_file" | egrep -i ".([^eE])([12345689])([0123])([0-9])([^0123456789pPiI])")" ]]; then step_number=$(( $step_number + 1 )) && echo "Step $step_number : Trying to solve TV Shows numbering issues";  fi
+if [[ "$has_display" == "yes" && "$tv_shows_fix_numbering" == "yes" && "$(cat "$log_file" | egrep -i "([. _-])([0-9])([0-9])([xX])([0-9])([0-9])([. _-])")" ]] || [[ "$has_display" == "yes" && "$tv_shows_fix_numbering" == "yes" && "$(cat "$log_file" | egrep -i "([. _-])([123456789])([xX])([0-9])([0-9])")" ]] || [[ "$has_display" == "yes" && "$tv_shows_fix_numbering" == "yes" && "$(cat "$log_file" | egrep -i "([. _-])([01])([0-9])([0-3])([0-9])([^pPiI])")" ]] || [[ "$has_display" == "yes" && "$tv_shows_fix_numbering" == "yes" && "$(cat "$log_file" | egrep -i ".([^eE])([12345689])([0123])([0-9])([^0123456789pPiI])")" ]]; then step_number=$(( $step_number + 1 )) && echo "Step $step_number : Trying to solve TV Shows numbering issues";  fi
 # Looking for files that look like TV shows because they contain SxEE, SSEE, SEE 
-if [[ "$tv_shows_fix_numbering" == "yes" && "$(cat "$log_file" | egrep -i "([. _-])([123456789])([xX])([0-9])([0-9])")" ]] || [[ "$tv_shows_fix_numbering" == "yes" && "$(cat "$log_file" | egrep -i "([. _-])([01])([0-9])([0-3])([0-9])([^pPiI])")" ]] || [[ "$tv_shows_fix_numbering" == "yes" && "$(cat "$log_file" | egrep -i ".([^eE])([12345689])([0123])([0-9])([^0123456789pPiI])")" ]]; then for line in $(cat "$log_file"); do
+if [[ "$tv_shows_fix_numbering" == "yes" && "$(cat "$log_file" | egrep -i "([. _-])([0-9])([0-9])([xX])([0-9])([0-9])([. _-])")" ]] || [[ "$tv_shows_fix_numbering" == "yes" && "$(cat "$log_file" | egrep -i "([. _-])([123456789])([xX])([0-9])([0-9])")" ]] || [[ "$tv_shows_fix_numbering" == "yes" && "$(cat "$log_file" | egrep -i "([. _-])([01])([0-9])([0-3])([0-9])([^pPiI])")" ]] || [[ "$tv_shows_fix_numbering" == "yes" && "$(cat "$log_file" | egrep -i ".([^eE])([12345689])([0123])([0-9])([^0123456789pPiI])")" ]]; then for line in $(cat "$log_file"); do
 	item=`echo "$(basename "$line")"`;
 	ren_file=`echo "$item"`;
 	source=`echo "$line"`;
 	# Looking for SSxEE pattern
 	if [[ "$tv_shows_fix_numbering" == "yes" && "$(echo "$line" | egrep -i "([. _-])([0-9])([0-9])([xX])([0-9])([0-9])([. _-])")" ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] && [[ -d "$line" || "$(echo "$line" | egrep -i "$tv_show_extensions_rev")" ]]; then
-		ren_file=`echo "$item" | sed 's;\(*\)[. _-]\([0-9]\)\([0-9]\)\([xX]\)\([0-9]\)\([0-9]\)[. _-];\1 S\2\2E\5\6;g'`;
+		ren_file=`echo "$item" | sed 's;\(.*\)[. _-]\([0-9]\)\([0-9]\)\([xX]\)\([0-9]\)\([0-9]\)\([. _-]\);\1 S\2\3E\5\6\7;g'`;
 	# Looking for SxEE pattern
 	elif [[ "$tv_shows_fix_numbering" == "yes" && "$(echo "$line" | egrep -i "([. _-])([123456789])([xX])([0-9])([0-9])([. _-])")" ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] && [[ -d "$line" || "$(echo "$line" | egrep -i "$tv_show_extensions_rev")" ]]; then
-		ren_file=`echo "$item" | sed 's;\(*\)[. _-]\([123456789]\)\([xX]\)\([0-9]\)\([0-9]\)[. _-];\1 S0\2E\4\5;g'`;
+		ren_file=`echo "$item" | sed 's;\(.*\)[. _-]\([123456789]\)\([xX]\)\([0-9]\)\([0-9]\)\([. _-]\);\1 S0\2E\4\5\6;g'`;
 	# Looking for SSEE pattern
 	elif [[ "$tv_shows_fix_numbering" == "yes" && "$(echo "$line" | egrep -i "([. _-])([01])([0-9])([0-3])([0-9])([^pPiI])")" ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] && [[ -d "$line" || "$(echo "$line" | egrep -i "$tv_show_extensions_rev")" ]]; then
-		ren_file=`echo "$item" | sed 's;\(*\)[. _-]\([01]\)\([0-9]\)\([0-3]\)\([0-9]\)\([^pPiI]\);\1 S\2\3E\4\5\6;g'`;
+		ren_file=`echo "$item" | sed 's;\(.*\)[. _-]\([01]\)\([0-9]\)\([0-3]\)\([0-9]\)\([^pPiI]\);\1 S\2\3E\4\5\6;g'`;
 	# Looking for SEE pattern
 	elif [[ "$tv_shows_fix_numbering" == "yes" && "$(echo "$line" | egrep -i ".([^eE])([12345689])([0123])([0-9])([^0123456789pPiI])")" ]] && [[ ! "$(echo "$line" | egrep -i "\.iso$|\.img$")" || ! "$(cat "$log_file" | egrep -i "\.dvd$")" ]] && [[ -d "$line" || "$(echo "$line" | egrep -i "$tv_show_extensions_rev")" ]]; then
-		ren_file=`echo "$item" | sed 's;\(*\)\(.\)\([^eE]\)\([12345689]\)\([0123]\)\([0-9]\)\([^0123456789pPiI]\);\1\2\3S0\4E\5\6\7;g'`;
+		ren_file=`echo "$item" | sed 's;\(.*\)\(.\)\([^eE]\)\([12345689]\)\([0123]\)\([0-9]\)\([^0123456789pPiI]\);\1\2\3S0\4E\5\6\7;g'`;
 	fi
 	bis="_bis"
 	ren_location=`echo "$(dirname "$source")/$ren_file"`;
