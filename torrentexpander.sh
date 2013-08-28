@@ -1379,14 +1379,14 @@ if [ "$imdb_title" ] && [ "$imdb_funct_on" == "yes" ] && [ "$subtitles_mode" != 
 	# Downloading imdbWebService XML and storing it in a variable
 	if [[ "$wget_curl" == *wget* ]]; then
 		# Using wget to fetch data if available
-		xml_cont=`echo "$("$wget_curl" -q "http://ks391601.kimsufi.com/imdbWebService.php?m=$imdb_title&o=xml" -O -; wait)"`;
+		xml_cont=`echo "$("$wget_curl" -q "http://ks211522.kimsufi.com/imdbWebService.php?m=$imdb_title&o=xml" -O -; wait)"`;
 	elif [[ "$wget_curl" == *curl* ]]; then
 		# Using curl to fetch data if available
-		xml_cont=`echo "$("$wget_curl" -silent -i "http://ks391601.kimsufi.com/imdbWebService.php?m=$imdb_title&o=xml"; wait)"`;
+		xml_cont=`echo "$("$wget_curl" -silent -i "http://ks211522.kimsufi.com/imdbWebService.php?m=$imdb_title&o=xml"; wait)"`;
 	fi
 	
 	# Adding XML path to the debug log
-	if [[ "$debug_mode" == "yes" ]]; then echo "IMDB XML URL: http://ks391601.kimsufi.com/imdbWebService.php?m=$imdb_title&o=xml" >> "$debug_log"; fi
+	if [[ "$debug_mode" == "yes" ]]; then echo "IMDB XML URL: http://ks211522.kimsufi.com/imdbWebService.php?m=$imdb_title&o=xml" >> "$debug_log"; fi
 	if [ "$xml_cont" ]; then
 		# Getting IMDB URL from the XML file
 		imdb_url=`echo "$(echo "$xml_cont" | grep "<IMDB_URL>" | sed 's/^[ \t]*//' | sed 's/[ \t]*$//' | sed 's/<[^>]*>//g')"`;
